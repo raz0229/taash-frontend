@@ -60,6 +60,7 @@ class _GameScreenState extends State<GameScreen>
   int turnSerial = 0;
   String lastTurn = '';
   int _lastHandCount = -1;
+  int _lastPlayAreaLength = -1;
   String? _lastCelebratedChatId;
   @override
   String notice = '';
@@ -100,6 +101,7 @@ class _GameScreenState extends State<GameScreen>
   void _resetTurnTimer() {
     final s = session.snapshot;
     if (s == null) return;
+    turnSerial++;
     _turnTimer.duration = Duration(
       seconds: s.room.game == GameType.tc ? 120 : 60,
     );
@@ -121,14 +123,20 @@ class _GameScreenState extends State<GameScreen>
     final handCount = currentPlayer?.handCount ?? 0;
 
     if (lastTurn != s.currentPlayerId) {
-      turnSerial++;
       lastTurn = s.currentPlayerId;
       takenDiscard = null;
       _lastHandCount = handCount;
+      _lastPlayAreaLength = s.gameState is DaketiState ? (s.gameState as DaketiState).playArea.length : -1;
       _resetTurnTimer();
     } else if (_lastHandCount != handCount) {
       _lastHandCount = handCount;
       _resetTurnTimer();
+    } else if (s.gameState is DaketiState) {
+      final playAreaLength = (s.gameState as DaketiState).playArea.length;
+      if (_lastPlayAreaLength != playAreaLength) {
+        _lastPlayAreaLength = playAreaLength;
+        _resetTurnTimer();
+      }
     }
 
     if (s.you.hand.length == 10) takenDiscard = null;

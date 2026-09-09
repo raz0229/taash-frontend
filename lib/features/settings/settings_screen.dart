@@ -2,6 +2,7 @@ import 'package:taash/l10n/copy.dart';
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 import 'package:url_launcher/url_launcher.dart';
+import '../../core/audio/audio_system.dart';
 import '../../core/auth/auth_controller.dart';
 import '../../core/errors/app_failure.dart';
 import '../../core/preferences/preferences.dart';
@@ -130,14 +131,24 @@ class _SettingsScreenState extends State<SettingsScreen> {
             title: const Text(Copy.soundEffects),
             subtitle: const Text(Copy.audioAssetsAreNotAvailableInThis),
             value: widget.preferences.sfx,
-            onChanged: (v) => widget.preferences.set('sfx', v),
+            onChanged: (v) {
+              widget.preferences.set('sfx', v);
+              audio.sfxEnabled = v;
+            },
           ),
           SwitchListTile.adaptive(
             contentPadding: EdgeInsets.zero,
             title: const Text(Copy.music),
             subtitle: const Text(Copy.yourPreferenceIsSavedForFutureAudio),
             value: widget.preferences.music,
-            onChanged: (v) => widget.preferences.set('music', v),
+            onChanged: (v) {
+              widget.preferences.set('music', v);
+              if (v) {
+                audio.playBgm();
+              } else {
+                audio.stopBgm();
+              }
+            },
           ),
           SwitchListTile.adaptive(
             contentPadding: EdgeInsets.zero,

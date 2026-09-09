@@ -5,7 +5,7 @@ import 'package:shared_preferences/shared_preferences.dart';
 class Preferences extends ChangeNotifier {
   SharedPreferences? _store;
   bool sfx = true, music = false, haptics = true, reducedMotion = false;
-  static const audioAvailable = false;
+  static const audioAvailable = true;
   Future<void> load() async {
     _store = await SharedPreferences.getInstance();
     sfx = _store!.getBool('sfx') ?? true;

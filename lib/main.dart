@@ -37,6 +37,7 @@ Future<void> main() async {
   });
   await SystemChrome.setPreferredOrientations([DeviceOrientation.portraitUp]);
   await SystemChrome.setEnabledSystemUIMode(SystemUiMode.edgeToEdge);
+  await audio.init();
   runApp(TaashApp(config: AppConfig.fromEnvironment()));
 }
 
@@ -71,6 +72,7 @@ class _TaashAppState extends State<TaashApp> {
     } catch (_) {
       /* Preferences remain usable in memory if storage is unavailable. */
     }
+    audio.sfxEnabled = preferences.sfx;
     await Future.wait([
       auth.restore(),
       Future<void>.delayed(const Duration(milliseconds: 650)),
@@ -377,7 +379,7 @@ class _LobbyShellState extends State<LobbyShell> {
   @override
   void initState() {
     super.initState();
-    audio.playBgm();
+    if (widget.preferences.music) audio.playBgm();
   }
 
   Future<V?> panel<V>(Widget Function(BuildContext) builder) =>
@@ -448,7 +450,7 @@ class _LobbyShellState extends State<LobbyShell> {
     // GameScreen obtains the explicit leave confirmation and sends room.leave.
     session.dispose();
     audio.playSfx('leave_room');
-    audio.playBgm();
+    if (widget.preferences.music) audio.playBgm();
     if (mounted) setState(() => room = null);
     try {
       await widget.auth.refreshProfile();

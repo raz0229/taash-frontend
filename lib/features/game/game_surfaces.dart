@@ -448,7 +448,7 @@ class _AnimatedCard extends StatelessWidget {
       builder: (context, val, child) {
         return Transform.scale(
           scale: val,
-          child: Opacity(opacity: val, child: child),
+          child: Opacity(opacity: val.clamp(0.0, 1.0), child: child),
         );
       },
       child: child,

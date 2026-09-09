@@ -9,15 +9,41 @@ class AudioSystem {
   late final AudioPlayer _bgmPlayer;
 
   bool _bgmPlaying = false;
+  bool sfxEnabled = true;
 
   bool isTestMode = false;
 
   bool get _isTest => isTestMode;
 
+  static final _bgmContext = AudioContext(
+    android: const AudioContextAndroid(
+      usageType: AndroidUsageType.game,
+      contentType: AndroidContentType.music,
+      audioFocus: AndroidAudioFocus.gain,
+    ),
+    iOS: AudioContextIOS(
+      category: AVAudioSessionCategory.playback,
+      options: {AVAudioSessionOptions.mixWithOthers},
+    ),
+  );
+
+  static final _sfxContext = AudioContext(
+    android: const AudioContextAndroid(
+      usageType: AndroidUsageType.game,
+      contentType: AndroidContentType.sonification,
+      audioFocus: AndroidAudioFocus.none,
+    ),
+    iOS: AudioContextIOS(
+      category: AVAudioSessionCategory.playback,
+      options: {AVAudioSessionOptions.mixWithOthers},
+    ),
+  );
+
   Future<void> init() async {
     if (_isTest) return;
     _bgmPlayer = AudioPlayer();
     await _bgmPlayer.setReleaseMode(ReleaseMode.loop);
+    await _bgmPlayer.setAudioContext(_bgmContext);
   }
 
   Future<void> playBgm() async {
@@ -36,10 +62,12 @@ class AudioSystem {
 
   Future<void> playSfx(String name) async {
     if (_isTest) return;
+    if (!sfxEnabled) return;
     try {
-    final player = AudioPlayer();
-    await player.play(AssetSource('audio/$name.ogg'));
-    player.onPlayerComplete.listen((_) => player.dispose());
+      final player = AudioPlayer();
+      await player.setAudioContext(_sfxContext);
+      await player.play(AssetSource('audio/$name.ogg'));
+      player.onPlayerComplete.listen((_) => player.dispose());
     } catch (_) {}
   }
 }

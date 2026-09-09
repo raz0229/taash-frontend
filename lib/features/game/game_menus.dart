@@ -230,6 +230,7 @@ mixin _GameMenus on State<GameScreen> {
                 value: widget.preferences!.sfx,
                 onChanged: (v) {
                   widget.preferences!.set('sfx', v);
+                  audio.sfxEnabled = v;
                   setSheet(() {});
                 },
                 title: const Text(Copy.soundEffects),
@@ -239,6 +240,11 @@ mixin _GameMenus on State<GameScreen> {
                 value: widget.preferences!.music,
                 onChanged: (v) {
                   widget.preferences!.set('music', v);
+                  if (v) {
+                    audio.playBgm();
+                  } else {
+                    audio.stopBgm();
+                  }
                   setSheet(() {});
                 },
                 title: const Text(Copy.music),
