@@ -1,0 +1,17 @@
+[
+  { "pfp_id": 0, "pfp_cost_in_coins": 0, "avatar_name": "Pappu", "avatar_rank": "common", "pfp_picture_in_frontend": "0.png"},
+  { "pfp_id": 1, "pfp_cost_in_coins": 0, "avatar_name": "Pinky", "avatar_rank": "common", "pfp_picture_in_frontend": "1.png" },
+  { "pfp_id": 2, "pfp_cost_in_coins": 250, "avatar_name": "Bunty", "avatar_rank": "common", "pfp_picture_in_frontend": "2.png" },
+  { "pfp_id": 3, "pfp_cost_in_coins": 1000, "avatar_name": "Lora", "avatar_rank": "common", "pfp_picture_in_frontend": "3.png" },
+  { "pfp_id": 4, "pfp_cost_in_coins": 2500, "avatar_name": "Nomi", "avatar_rank": "common", "pfp_picture_in_frontend": "4.png" },
+  { "pfp_id": 5, "pfp_cost_in_coins": 2500, "avatar_name": "Soni", "avatar_rank": "common", "pfp_picture_in_frontend": "5.png" },
+  { "pfp_id": 6, "pfp_cost_in_coins": 8000, "avatar_name": "Mannu", "avatar_rank": "rare", "pfp_picture_in_frontend": "6.png"},
+  { "pfp_id": 7, "pfp_cost_in_coins": 15000, "avatar_name": "Gujjar", "avatar_rank": "rare", "pfp_picture_in_frontend": "7.png"},
+  { "pfp_id": 8, "pfp_cost_in_coins": 25000, "avatar_name": "Rajput", "avatar_rank": "epic", "pfp_picture_in_frontend": "8.png"},
+  { "pfp_id": 9, "pfp_cost_in_coins": 30000, "avatar_name": "Jutt", "avatar_rank": "epic", "pfp_picture_in_frontend": "9.png"},
+  { "pfp_id": 10, "pfp_cost_in_coins": 30000, "avatar_name": "Queen", "avatar_rank": "epic", "pfp_picture_in_frontend": "10.png"},
+  { "pfp_id": 11, "pfp_cost_in_coins": 50000, "avatar_name": "Bhalu", "avatar_rank": "legendary", "pfp_picture_in_frontend": "11.png"},
+  { "pfp_id": 12, "pfp_cost_in_coins": 51000, "avatar_name": "Joker", "avatar_rank": "legendary", "pfp_picture_in_frontend": "12.png"},
+  { "pfp_id": 13, "pfp_cost_in_coins": 80000, "avatar_name": "Batman", "avatar_rank": "legendary", "pfp_picture_in_frontend": "13.png"},
+  {"pfp_id": 14, "pfp_cost_in_coins": 90000, "avatar_name": "Dev", "avatar_rank": "legendary", "pfp_picture_in_frontend": "14.png"}
+]

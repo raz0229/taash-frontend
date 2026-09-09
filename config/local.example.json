@@ -1,0 +1,10 @@
+{
+  "MOCK_BACKEND": "false",
+  "TAASH_API_URL": "http://10.0.2.2:8080",
+  "FIREBASE_API_KEY": "",
+  "ALLOW_INSECURE_API": "true",
+  "PRIVACY_URL": "",
+  "TERMS_URL": "",
+  "ACCOUNT_DELETION_URL": "",
+  "SUPPORT_EMAIL": ""
+}

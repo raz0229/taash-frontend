@@ -1,0 +1,838 @@
+{
+  "@@locale": "en",
+  "thisBuildNeedsItsTaashOnlineServerConnection": "This build needs its TaashOnline server connection. You can explore the game guides while it is being configured.",
+  "yourRoomIsNearlyReady": "Your room is nearly ready",
+  "use125LettersNumbersOrSpaces": "Use 1–25 letters, numbers or spaces.",
+  "useAtLeast6Characters": "Use at least 6 characters.",
+  "enterAValidEmailAddress": "Enter a valid email address.",
+  "tapACardThenUseTheAction": "Tap a card, then use the action button. Dragging is optional.",
+  "inTCYarakIsTheRankAfter": "In TC, Yarak is the rank after the indicator.",
+  "inDaketiMatchingACollectionSTop": "In Daketi, matching a collection’s top rank can steal it.",
+  "inBluffAnEmptyHandCanStill": "In Bluff, an empty hand can still be challenged.",
+  "bhabhiStartsWithHukamYakkaHY": "Bhabhi starts with Hukam Yakka — h-y.",
+  "settingTheRoom": "Setting the room…",
+  "taashonlineIsUnderMaintenanceYourSavedSession": "TaashOnline is under maintenance. Your saved session is safe. Please try again shortly.",
+  "makeYourselfAtHome": "Make yourself at home",
+  "findRoom": "Find room",
+  "enterYourRoomCode": "Enter your room code",
+  "virtualCoinsOnlyEntryFeesAreNot": "Virtual coins only. Entry fees are not refunded when you leave.",
+  "otherPlayersCanFindYourRoomBots": "Other players can find your room. Bots may fill empty seats shortly.",
+  "onlyPlayersWithYourCodeCanJoin": "Only players with your code can join. Invite enough friends to fill every seat.",
+  "privateRoom": "Private room",
+  "roomName": "Room name",
+  "joinByCode": "Join by code",
+  "createRoom": "Create room",
+  "findARoom": "Find a room",
+  "about": "About",
+  "leaders": "Leaders",
+  "avatars": "Avatars",
+  "learn": "Learn",
+  "home": "Home",
+  "country": "Country",
+  "checkYourInboxIncludingSpamOrJunk": "Check your inbox, including Spam or Junk, for the password reset link.",
+  "sendResetLink": "Send reset link",
+  "forgotPassword": "Forgot password?",
+  "yourNameAtTheRoom": "Your name at the room",
+  "password": "Password",
+  "emailAddress": "Email address",
+  "createAccount": "Create account",
+  "letSPlay": "Let’s play",
+  "fourFamiliarGamesARoomForEveryone": "Four familiar games. A room for everyone.",
+  "yourNextCardNightStartsHere": "Your next card night\nstarts here.",
+  "goodCardsBetterCompany": "Good cards. Better company.",
+  "taashonline": "TaashOnline",
+  "pleaseSignInToContinue": "Please sign in to continue.",
+  "theServerCouldNotMatchYourAccount": "The server could not match your account. Please contact support.",
+  "theSessionChangedPleaseTryAgain": "The session changed. Please try again.",
+  "weCouldNotCompleteSignInPlease": "We could not complete sign-in. Please try again.",
+  "signInIsAlreadyInProgress": "Sign-in is already in progress.",
+  "weCouldNotRestoreYourSavedSession": "We could not restore your saved session. Please sign in again.",
+  "cancel": "Cancel",
+  "avatar": "Avatar {value0}",
+  "@avatar": {
+    "placeholders": {
+      "value0": {
+        "type": "Object"
+      }
+    }
+  },
+  "tryAgain": "Try again",
+  "taashonline1001": "TaashOnline · 1.0.0 (1)",
+  "deleteAccount": "Delete account",
+  "deletingAccount": "Deleting account…",
+  "signOut": "Sign out",
+  "contactSherazTech": "Contact SherazTech",
+  "accountDeletionInformation": "Account deletion information",
+  "termsCommunityRules": "Terms & community rules",
+  "privacyPolicy": "Privacy policy",
+  "keepTheFeedbackSimplifyTheMovement": "Keep the feedback. Simplify the movement.",
+  "reduceMotion": "Reduce motion",
+  "hapticFeedback": "Haptic feedback",
+  "yourPreferenceIsSavedForFutureAudio": "Your preference is saved for future audio.",
+  "music": "Music",
+  "audioAssetsAreNotAvailableInThis": "Audio assets are not available in this build.",
+  "soundEffects": "Sound effects",
+  "taashonlineAccount": "TaashOnline account",
+  "yourCARDNIGHT": "YOUR CARD NIGHT",
+  "settings": "Settings",
+  "weCouldNotConfirmAccountDeletionPlease": "We could not confirm account deletion. Please try again.",
+  "yourTaashOnlineAccountProfileCoinsAvatarOwnership": "Your TaashOnline account, profile, coins, avatar ownership and game records will be removed. This cannot be undone.",
+  "deleteYourAccount": "Delete your account?",
+  "youCanSignBackInWheneverYou": "You can sign back in whenever you’re ready for another card night.",
+  "leaveForNow": "Leave for now?",
+  "weCouldNotOpenTheLinkPlease": "We could not open the link. Please try again.",
+  "thisLinkHasNotBeenConfiguredFor": "This link has not been configured for this build.",
+  "supportEMAIL": "SUPPORT_EMAIL",
+  "accountDELETIONURL": "ACCOUNT_DELETION_URL",
+  "termsURL": "TERMS_URL",
+  "privacyURL": "PRIVACY_URL",
+  "setsRunsAndALittleYarakMagic": "Sets, runs, and a little Yarak magic.",
+  "playItCoolCallTheirBluff": "Play it cool. Call their bluff.",
+  "matchRanksCaptureCardsCollectPoints": "Match ranks. Capture cards. Collect points.",
+  "finishYourHandDodgeTheThullu": "Finish your hand. Dodge the Thullu.",
+  "findYourWinningCombination": "Find your winning combination.",
+  "leaveTheCardsKeepTheCompany": "Leave the cards. Keep the company.",
+  "yourNextGreatStoryStartsAtThe": "Your next great story starts at the room.",
+  "coins": "{value0}  ·  {value1} coins",
+  "@coins": {
+    "placeholders": {
+      "value0": {
+        "type": "Object"
+      },
+      "value1": {
+        "type": "Object"
+      }
+    }
+  },
+  "nextGame": "Next game",
+  "previousGame": "Previous game",
+  "tissarChausar": "Tissar Chausar",
+  "tonightSROOM": "TONIGHT’S ROOM",
+  "pullUpAChairPickYourGame": "Pull up a chair. Pick your game.",
+  "goodTOSEEYOU": "GOOD TO SEE YOU, {value0}",
+  "@goodTOSEEYOU": {
+    "placeholders": {
+      "value0": {
+        "type": "Object"
+      }
+    }
+  },
+  "openYourProfile": "Open your profile",
+  "player": "Player",
+  "donkey": "Donkey",
+  "tomato": "Tomato",
+  "heart": "Heart",
+  "rose": "Rose",
+  "applause": "Applause",
+  "grr": "Grr",
+  "ohNo": "Oh no",
+  "shukriya": "Shukriya",
+  "phew": "Phew",
+  "laugh": "Laugh",
+  "sendMessage": "Send message",
+  "messageTheRoom": "Message the room",
+  "keepItFriendlyNoAbuseLinksOr": "Keep it friendly. No abuse, links or personal information.",
+  "you": "You",
+  "messagesAreSharedWithEveryoneAtThis": "Messages are shared with everyone at this room.",
+  "sayAFriendlyHello": "Say a friendly hello",
+  "messagesAndReactionsAreHiddenOnThis": "Messages and reactions are hidden on this device. You can unmute any time.",
+  "chatIsUnavailableForThisBuild": "Chat is unavailable for this build.",
+  "muteRoomChat": "Mute room chat",
+  "unmuteRoomChat": "Unmute room chat",
+  "aroundTheRoom": "Around the room",
+  "yourMessageWasNotConfirmedCheckChat": "Your message was not confirmed. Check chat before sending again.",
+  "linksAreNotAllowedInRoomChat": "Links are not allowed in room chat.",
+  "keepYourMessageTo150Characters": "Keep your message to 150 characters.",
+  "searchNameOrCountryCode": "Search name or country code",
+  "chooseYourCountry": "Choose your country",
+  "backToSignIn": "Back to sign in",
+  "hidePassword": "Hide password",
+  "showPassword": "Show password",
+  "register": "Register",
+  "signIn": "Sign in",
+  "weLlEmailYouALinkTo": "We’ll email you a link to reset your password.",
+  "thereSASeatWithYourName": "There’s a seat\nwith your name on it.",
+  "backToTheRoom": "Back to the room.",
+  "learnTheGames": "Learn the games",
+  "weCouldNotConnectPleaseTryAgain": "We could not connect. Please try again.",
+  "chooseYourCountryToContinue": "Choose your country to continue.",
+  "duplicateAvatarIDs": "Duplicate avatar IDs",
+  "ustaad": "Ustaad",
+  "raahi": "Raahi",
+  "invalidAvatarCatalog": "Invalid avatar catalog",
+  "moreCoinsNeeded": "More coins needed",
+  "unlock": "Unlock",
+  "unlockFree": "Unlock free",
+  "select": "Select",
+  "selected": "Selected",
+  "virtualCoins": "{value0} virtual coins",
+  "@virtualCoins": {
+    "placeholders": {
+      "value0": {
+        "type": "Object"
+      }
+    }
+  },
+  "inYourCollection": "In your collection",
+  "yourCurrentLook": "Your current look",
+  "noAvatarsInThisCollectionYet": "No avatars in this collection yet.",
+  "checkCollection": "Check collection",
+  "refreshingCollection": "Refreshing collection",
+  "virtualCoins2": "{value0} virtual coins",
+  "@virtualCoins2": {
+    "placeholders": {
+      "value0": {
+        "type": "Object"
+      }
+    }
+  },
+  "makeAnEntrance": "Make an entrance.",
+  "yourCollectionIsSavedWithYourAccount": "Your collection is saved with your account.",
+  "signInToChooseYourLook": "Sign in to choose your look",
+  "pleaseTryAgain": "Please try again.",
+  "collectionUnavailable": "Collection unavailable",
+  "loadingAvatars": "Loading avatars",
+  "refreshCollectionAndBalance": "Refresh collection and balance",
+  "avatarCollection": "Avatar collection",
+  "weCouldNotChangeYourAvatarPlease": "We could not change your avatar. Please try again.",
+  "yourAvatarActionMayHaveCompletedRefresh": "Your avatar action may have completed. Refresh your balance and collection before making another change.",
+  "unlockFor": "Unlock for {value0}",
+  "@unlockFor": {
+    "placeholders": {
+      "value0": {
+        "type": "Object"
+      }
+    }
+  },
+  "unlockForFree": "Unlock for free",
+  "virtualCoinsYourBalanceCoinsThisUnlocks": "{value0} virtual coins\nYour balance: {value1} coins\n\nThis unlocks the avatar. You can select it afterward.",
+  "@virtualCoinsYourBalanceCoinsThisUnlocks": {
+    "placeholders": {
+      "value0": {
+        "type": "Object"
+      },
+      "value1": {
+        "type": "Object"
+      }
+    }
+  },
+  "unlock2": "Unlock {value0}?",
+  "@unlock2": {
+    "placeholders": {
+      "value0": {
+        "type": "Object"
+      }
+    }
+  },
+  "weCouldNotLoadTheAvatarCollection": "We could not load the avatar collection. Please try again.",
+  "position": "Position {value0}{value1}",
+  "@position": {
+    "placeholders": {
+      "value0": {
+        "type": "Object"
+      },
+      "value1": {
+        "type": "Object"
+      }
+    }
+  },
+  "bronze": "Bronze",
+  "silver": "Silver",
+  "gold": "Gold",
+  "rankedByTheServerSAllTime": "Ranked by the server’s all-time points. Only players with positive points appear.",
+  "noPositiveScoresHaveBeenRecordedFor": "No positive scores have been recorded for this game yet.",
+  "theHonoursAreWaiting": "The honours are waiting",
+  "refreshingLeaderboard": "Refreshing leaderboard",
+  "leaderboardUnavailable": "Leaderboard unavailable",
+  "loadingLeaderboard": "Loading leaderboard",
+  "tc": "TC",
+  "tenPlayersOneGamePointsEarnedAt": "Ten players. One game. Points earned at the room.",
+  "theRoomHonours": "The room honours",
+  "leaveYourMark": "Leave your mark",
+  "refreshLeaderboard": "Refresh leaderboard",
+  "leaderboard": "Leaderboard",
+  "weCouldNotLoadTheLeaderboardPlease": "We could not load the leaderboard. Please try again.",
+  "openSourceLicenses": "Open-source licenses",
+  "taashonline10012": "TaashOnline 1.0.0 (1)",
+  "virtualCoinsRealCompany": "Virtual coins. Real company.",
+  "bhabhiDaketiBluffAndTissarChausarFamiliar": "Bhabhi, Daketi, Bluff and Tissar Chausar. Familiar games, new faces, and the shared joy of a good card night.",
+  "madeForOneMoreRound": "Made for\none more round.",
+  "backToTheLobby": "Back to the lobby",
+  "place": "Place {value0}",
+  "@place": {
+    "placeholders": {
+      "value0": {
+        "type": "Object"
+      }
+    }
+  },
+  "firstPlace": "First place",
+  "theServerHasNotProvidedFinalPlaces": "The server has not provided final places. Your profile will show settled statistics when available.",
+  "viewFinalPlaces": "View final places",
+  "theServerChecksYour433": "The server checks your 4 + 3 + 3 groups. An invalid claim leaves your hand unchanged.",
+  "chooseOneCardToDiscard": "Choose one card to discard",
+  "drawFromStockOrTakeTheTop": "Draw from stock or take the top discard",
+  "matchARankToCollectCardsYou": "Match a rank to collect cards. You may draw up to five.",
+  "thePileStaysFaceDownOnlyThe": "The pile stays face down. Only the server knows the truth.",
+  "play14CardsPassOrChallenge": "Play 1–4 cards, pass, or challenge",
+  "choose24CardsAndDeclareA": "Choose 2–4 cards and declare a rank",
+  "chooseOneCardToLead": "Choose one card to lead",
+  "openWithYakkaOfHukam": "Open with Yakka of Hukam",
+  "exploreTheRevealedCardsBeforeViewingThe": "Explore the revealed cards before viewing the final places.",
+  "theWinningHand": "The winning hand",
+  "finalPlacesComeFromTheServerYour": "Final places come from the server. Your profile refreshes with the latest coins and XP.",
+  "yourLocalTurnTimeEndedLeavingThe": "Your local turn time ended. Leaving the room…",
+  "thisDeviceAllows60SecondsPerTurn": "This device allows 60 seconds per turn, or 120 for TC. When your local time ends, it requests leave. Reconnecting or resuming restarts this guide; it is not a server deadline.",
+  "localTurnGuide": "Local turn guide",
+  "yourPlaceMayBeLostAndThe": "Your place may be lost and the entry fee is not refunded. The remaining players can continue.",
+  "leaveThisRoom": "Leave this room?",
+  "checkingYourMove": "Checking your move…",
+  "thatActionCouldNotBeConfirmedCheck": "That action could not be confirmed. Check the room before trying again.",
+  "offlineYourLastRoomIsStillHere": "Offline · your last room is still here",
+  "thisRoomIsNoLongerAvailable": "This room is no longer available",
+  "connectionRestored": "Connection restored",
+  "backOnlineRestoringYourRoom": "Back online · restoring your room",
+  "reconnectingCheckingYourSeat": "Reconnecting · checking your seat",
+  "gettingYourRoomReady": "Getting your room ready…",
+  "yourTurn": "Your turn",
+  "shareTheRoomCodeWithFriendsTo": "Share the room code with friends to fill your room.",
+  "botsMayFillEmptySeatsShortly": "Bots may fill empty seats shortly.",
+  "theGameStartsWhenEverySeatIs": "The game starts when every seat is filled.",
+  "leaveRoom": "Leave room",
+  "copyCode": "Copy code",
+  "roomCodeCopied": "Room code copied",
+  "taashonlineIsTakingAMaintenanceBreak": "TaashOnline is taking a maintenance break.",
+  "connectionLostCheckingYourSeat": "Connection lost. Checking your seat…",
+  "returnToLobby": "Return to lobby",
+  "retryConnection": "Retry connection",
+  "backToTheRoom2": "Back to the room",
+  "selectCard": "Select card",
+  "deselectCard": "Deselect card",
+  "moveLater": "Move {value0} later",
+  "@moveLater": {
+    "placeholders": {
+      "value0": {
+        "type": "Object"
+      }
+    }
+  },
+  "moveEarlier": "Move {value0} earlier",
+  "@moveEarlier": {
+    "placeholders": {
+      "value0": {
+        "type": "Object"
+      }
+    }
+  },
+  "useTheArrowsToArrangeYourHand": "Use the arrows to arrange your hand. Moving cards changes only your view.",
+  "yourCardsYourOrder": "Your cards, your order",
+  "tapToSelectHoldToDragArrange": "Tap to select · hold to drag · arrange for a full view",
+  "yourHandIsEmptyFollowTheRoom": "Your hand is empty. Follow the room for your result.",
+  "inspectAndArrangeYourCards": "Inspect and arrange your cards",
+  "sortBySuitAndRank": "Sort by suit and rank",
+  "sortByRank": "Sort by rank",
+  "clear": "Clear",
+  "yourHAND": "YOUR HAND  ·  {value0}",
+  "@yourHAND": {
+    "placeholders": {
+      "value0": {
+        "type": "Object"
+      }
+    }
+  },
+  "chooseUpToFourCardsForBluff": "Choose up to four cards for Bluff.",
+  "paused": "Paused",
+  "yakka": "YAKKA",
+  "tapTo": "Tap to {value0}",
+  "@tapTo": {
+    "placeholders": {
+      "value0": {
+        "type": "Object"
+      }
+    }
+  },
+  "faceDownCard": "Face-down card",
+  "cards": "{value0} cards",
+  "@cards": {
+    "placeholders": {
+      "value0": {
+        "type": "Object"
+      }
+    }
+  },
+  "place2": "Place {value0}",
+  "@place2": {
+    "placeholders": {
+      "value0": {
+        "type": "Object"
+      }
+    }
+  },
+  "playing": "Playing",
+  "bot": "Bot",
+  "cards2": "{value0}{value1}{value2}, {value3} cards{value4}",
+  "@cards2": {
+    "placeholders": {
+      "value0": {
+        "type": "Object"
+      },
+      "value1": {
+        "type": "Object"
+      },
+      "value2": {
+        "type": "Object"
+      },
+      "value3": {
+        "type": "Object"
+      },
+      "value4": {
+        "type": "Object"
+      }
+    }
+  },
+  "gola": "Gola",
+  "begi": "Begi",
+  "kinga": "Kinga",
+  "yakka2": "Yakka",
+  "noSuit": "No suit",
+  "pawn": "Pawn",
+  "hukam": "Hukam",
+  "eit": "Eit",
+  "chirri": "Chirri",
+  "unrecognizedCard": "Unrecognized card",
+  "roomChat": "Room chat",
+  "chatMuted": "Chat muted",
+  "yourTurn2": "Your turn · {value0}",
+  "@yourTurn2": {
+    "placeholders": {
+      "value0": {
+        "type": "Object"
+      }
+    }
+  },
+  "backToLobby": "Back to lobby",
+  "weReWaitingForTheServerTo": "We’re waiting for the server to confirm your place.",
+  "yourSeatIsUnavailable": "Your seat is unavailable",
+  "roomOptions": "Room options",
+  "connecting": "Connecting",
+  "yourCardsStayHiddenThisIsThe": "Your {value0} cards stay hidden. This is the rank you claim.",
+  "@yourCardsStayHiddenThisIsThe": {
+    "placeholders": {
+      "value0": {
+        "type": "Object"
+      }
+    }
+  },
+  "whatRankDoYouDeclare": "What rank do you declare?",
+  "discard": "Discard",
+  "thisEndsYourTurnYourRemainingCards": "This ends your turn. Your remaining cards keep their order.",
+  "discard2": "Discard {value0}?",
+  "@discard2": {
+    "placeholders": {
+      "value0": {
+        "type": "Object"
+      }
+    }
+  },
+  "followTheLeadSuitWhenYouHave": "Follow the lead suit when you have it.",
+  "anHonestPlayYouTakeThePile": "An honest play. You take the pile.",
+  "bluffCaughtThePreviousPlayerTakesThe": "Bluff caught! The previous player takes the pile.",
+  "weCouldNotConfirmLeavingCheckYour": "We could not confirm leaving. Check your connection, then try again.",
+  "leaveRoom": "Leave room",
+  "checkMyHand": "Check my hand",
+  "claimYour433": "Claim your 4 + 3 + 3?",
+  "claimVictory": "Claim victory",
+  "recycle": "Recycle",
+  "takeDiscard": "Take discard",
+  "drawStock": "Draw stock",
+  "pass": "Pass",
+  "challenge": "Challenge",
+  "playCards": "Play {value0} cards",
+  "@playCards": {
+    "placeholders": {
+      "value0": {
+        "type": "Object"
+      }
+    }
+  },
+  "playCard": "Play card",
+  "haptics": "Haptics",
+  "audioPackUnavailableInThisBuild": "Audio pack unavailable in this build",
+  "room": "Room {value0}",
+  "@room": {
+    "placeholders": {
+      "value0": {
+        "type": "Object"
+      }
+    }
+  },
+  "yourRoom": "Your room",
+  "sendCoins": "Send · {value0} coins",
+  "@sendCoins": {
+    "placeholders": {
+      "value0": {
+        "type": "Object"
+      }
+    }
+  },
+  "spendVirtualCoins": "Spend {value0} virtual coins {value1}.",
+  "@spendVirtualCoins": {
+    "placeholders": {
+      "value0": {
+        "type": "Object"
+      },
+      "value1": {
+        "type": "Object"
+      }
+    }
+  },
+  "send": "Send {value0}?",
+  "@send": {
+    "placeholders": {
+      "value0": {
+        "type": "Object"
+      }
+    }
+  },
+  "youNeedVirtualCoinsForThisReaction": "You need {value0} virtual coins for this reaction.",
+  "@youNeedVirtualCoinsForThisReaction": {
+    "placeholders": {
+      "value0": {
+        "type": "Object"
+      }
+    }
+  },
+  "coins2": "{value0} coins",
+  "@coins2": {
+    "placeholders": {
+      "value0": {
+        "type": "Object"
+      }
+    }
+  },
+  "balanceCoins": "Balance: {value0} coins",
+  "@balanceCoins": {
+    "placeholders": {
+      "value0": {
+        "type": "Object"
+      }
+    }
+  },
+  "expressYourself": "Express yourself",
+  "theReactionCatalogCouldNotBeLoaded": "The reaction catalog could not be loaded.",
+  "costsVirtualCoinsReviewBeforeSending": "Costs virtual coins · review before sending",
+  "sendAReaction": "Send a reaction",
+  "exploreCollection": "Explore collection",
+  "botsPlayByTheSameGameRules": "Bots play by the same game rules.",
+  "botPlayer": "Bot player",
+  "playerStatistics": "Player statistics",
+  "noCardsCollectedYet": "No cards collected yet.",
+  "collectedCardsTheLastCardIsOn": "{value0} collected cards · the last card is on top",
+  "@collectedCardsTheLastCardIsOn": {
+    "placeholders": {
+      "value0": {
+        "type": "Object"
+      }
+    }
+  },
+  "empty": "Empty",
+  "setsTheYarakRank": "Sets the Yarak rank",
+  "indicator": "Indicator",
+  "cards3": "{value0} cards",
+  "@cards3": {
+    "placeholders": {
+      "value0": {
+        "type": "Object"
+      }
+    }
+  },
+  "stock": "Stock",
+  "cardsAreYarak": "{value0} cards are Yarak",
+  "@cardsAreYarak": {
+    "placeholders": {
+      "value0": {
+        "type": "Object"
+      }
+    }
+  },
+  "findYour433": "Find your 4 + 3 + 3",
+  "tissarCHAUSAR": "TISSAR CHAUSAR",
+  "exploreYourCollection": "Explore your collection",
+  "thePlayAreaIsClear": "The play area is clear",
+  "makeTheMatchTakeTheCards": "Make the match. Take the cards.",
+  "daketi": "DAKETI",
+  "hiddenPileCards": "Hidden pile, {value0} cards",
+  "@hiddenPileCards": {
+    "placeholders": {
+      "value0": {
+        "type": "Object"
+      }
+    }
+  },
+  "keepAStraightFace": "Keep a straight face",
+  "bluff": "BLUFF",
+  "playACardToBeginTheTrick": "Play a card to begin the trick",
+  "followSuitWhenYouCan": "Follow suit when you can",
+  "theRoomIsYours": "The room is yours",
+  "thullu": "Thullu!",
+  "bhabhi": "BHABHI",
+  "waitingForTheLatestRoom": "Waiting for the latest room…",
+  "rankUnavailable": "Rank unavailable",
+  "mythic": "Mythic",
+  "legend": "Legend",
+  "grandmaster": "Grandmaster",
+  "master": "Master",
+  "elite": "Elite",
+  "expert": "Expert",
+  "pro": "Pro",
+  "hotShot": "Hot Shot",
+  "veteran": "Veteran",
+  "upNComer": "Up N Comer",
+  "amateur": "Amateur",
+  "tinkerer": "Tinkerer",
+  "apprentice": "Apprentice",
+  "rookie": "Rookie",
+  "newbie": "Newbie",
+  "unranked": "Unranked",
+  "mythicAchievedKeepMakingYourMark": "Mythic achieved. Keep making your mark.",
+  "pointsAreSavedRankProgressIsUnavailable": "Points are saved. Rank progress is unavailable for this range.",
+  "rank": "Rank {value0} · {value1}",
+  "@rank": {
+    "placeholders": {
+      "value0": {
+        "type": "Object"
+      },
+      "value1": {
+        "type": "Object"
+      }
+    }
+  },
+  "firstRankAtPoints": "First rank at {value0} points",
+  "@firstRankAtPoints": {
+    "placeholders": {
+      "value0": {
+        "type": "Object"
+      }
+    }
+  },
+  "noCompletedGamesRecordedYetYourStory": "No completed games recorded yet. Your story starts with the next room.",
+  "currentWinStreak": "Current win streak",
+  "winRate": "Win rate",
+  "gamesWon": "Games won",
+  "gamesPlayed": "Games played",
+  "totalPoints": "Total points",
+  "atTheRoom": "At the room",
+  "yourGameYourStory": "Your game, your story",
+  "joinedDateUnavailable": "Joined date unavailable",
+  "atTheRoomSince": "At the room since {value0}",
+  "@atTheRoomSince": {
+    "placeholders": {
+      "value0": {
+        "type": "Object"
+      }
+    }
+  },
+  "refreshingProfile": "Refreshing profile",
+  "thisPlayerCouldNotBeFound": "This player could not be found.",
+  "profileUnavailable": "Profile unavailable",
+  "loadingPlayerProfile": "Loading player profile",
+  "botsKeepTheGameMovingTheyDo": "Bots keep the game moving. They do not have a persistent player profile.",
+  "meetYourRoomBot": "Meet your room bot",
+  "refreshProfile": "Refresh profile",
+  "playerProfile": "Player profile",
+  "yourProfile": "Your profile",
+  "weCouldNotLoadThisProfilePlease": "We could not load this profile. Please try again.",
+  "youNeedMoreCoins": "You need {value0} more coins.",
+  "@youNeedMoreCoins": {
+    "placeholders": {
+      "value0": {
+        "type": "Object"
+      }
+    }
+  },
+  "coins3": "{value0} coins",
+  "@coins3": {
+    "placeholders": {
+      "value0": {
+        "type": "Object"
+      }
+    }
+  },
+  "yourBalance": "Your balance",
+  "coins4": "{value0} coins",
+  "@coins4": {
+    "placeholders": {
+      "value0": {
+        "type": "Object"
+      }
+    }
+  },
+  "entryFee": "Entry fee",
+  "findAnotherRoom": "Find another room",
+  "thisRoomHasStarted": "This room has started",
+  "enterCoins": "Enter · {value0} coins",
+  "@enterCoins": {
+    "placeholders": {
+      "value0": {
+        "type": "Object"
+      }
+    }
+  },
+  "players": "{value0} · {value1}/{value2} players",
+  "@players": {
+    "placeholders": {
+      "value0": {
+        "type": "Object"
+      },
+      "value1": {
+        "type": "Object"
+      },
+      "value2": {
+        "type": "Object"
+      }
+    }
+  },
+  "lookingForARoom": "Looking for a room…",
+  "enterTheSixCharacterRoomCode": "Enter the six-character room code.",
+  "abc234": "ABC 234",
+  "roomCode": "Room code",
+  "createEnter": "Create & enter",
+  "morePlayers": "More players",
+  "fewerPlayers": "Fewer players",
+  "seatsAtYourRoom": "Seats at your room",
+  "game": "Game",
+  "use125EnglishLettersNumbersOr": "Use 1–25 English letters, numbers or spaces.",
+  "fridayCardNight": "Friday card night",
+  "weLlFindAPublicRoomWith": "We’ll find a public room with room for you.",
+  "pasteTheSixCharacterCodeYourFriend": "Paste the six-character code your friend shared.",
+  "chooseTheGameWeLlDealThe": "Choose the game. We’ll deal the cards.",
+  "friendsAreExpectingYou": "Friends are\nexpecting you.",
+  "makeRoomForAGoodNight": "Make room for\na good night.",
+  "theROOMISYOURS": "THE ROOM IS YOURS",
+  "findYourCompany": "Find your company",
+  "weCouldNotCreateTheRoomPlease": "We could not create the room. Please try again.",
+  "theRoomMayHaveBeenCreatedBut": "The room may have been created, but its code was not received. Check your connection before creating another room.",
+  "entryFeeVirtualCoinsBalanceCoins": "Entry fee: {value0} virtual coins.\nBalance: {value1} coins.\n\n{value2}",
+  "@entryFeeVirtualCoinsBalanceCoins": {
+    "placeholders": {
+      "value0": {
+        "type": "Object"
+      },
+      "value1": {
+        "type": "Object"
+      },
+      "value2": {
+        "type": "Object"
+      }
+    }
+  },
+  "createAndEnter": "Create and enter {value0}?",
+  "@createAndEnter": {
+    "placeholders": {
+      "value0": {
+        "type": "Object"
+      }
+    }
+  },
+  "youNeedVirtualCoinsToEnterThis": "You need {value0} virtual coins to enter this room.",
+  "@youNeedVirtualCoinsToEnterThis": {
+    "placeholders": {
+      "value0": {
+        "type": "Object"
+      }
+    }
+  },
+  "weCouldNotReadThisRoomPlease": "We could not read this room. Please try again.",
+  "thisIsALearningExerciseItDoes": "This is a learning exercise. It does not spend coins or change a live game.",
+  "nextStep": "Next step",
+  "practiceAgain": "Practice again",
+  "previous": "Previous",
+  "tryAgain2": "Try again. {value0}",
+  "@tryAgain2": {
+    "placeholders": {
+      "value0": {
+        "type": "Object"
+      }
+    }
+  },
+  "tapACardToLearnItsName": "Tap a card to learn its name.",
+  "practiceSTEPOF3": "PRACTICE · STEP {value0} OF 3",
+  "@practiceSTEPOF3": {
+    "placeholders": {
+      "value0": {
+        "type": "Object"
+      }
+    }
+  },
+  "fromFirstCardToOneMoreRound": "From first card\nto one more round.",
+  "learnATYOURPACE": "LEARN AT YOUR PACE",
+  "pickAnotherCardToDiscardTheServer": "Pick another card to discard. The server validates your claim and reveals the winning hand.",
+  "yes": "Yes",
+  "noChooseAnotherCard": "No, choose another card",
+  "canYouImmediatelyReturnThePickedDiscard": "Can you immediately return the picked discard?",
+  "drawStockOrTakeTheTopDiscard": "Draw stock or take the top discard to reach eleven, then discard to return to ten. You cannot immediately return the card you just took from discard. A claim can be checked with ten or eleven cards.",
+  "drawArrangeDiscard": "Draw, arrange, discard",
+  "yakkaFollowsKingaEveryYakkaBecomesA": "Yakka follows Kinga. Every Yakka becomes a wildcard for this game.",
+  "ifTheIndicatorIsKingaWhichRank": "If the indicator is Kinga, which rank is Yarak?",
+  "yarakIsTheRankImmediatelyAfterThe": "Yarak is the rank immediately after the indicator, wrapping Yakka to 2. Cards of that rank are wild. The indicator stays visible and Yarak does not change on recycle.",
+  "meetYourYarak": "Meet your Yarak",
+  "pawn345IsASame": "Pawn 3–4–5 is a same-suit run. A whole winning hand still needs server validation.",
+  "anUnrelatedTrio": "An unrelated trio",
+  "isThisAValidTypeOfGroup": "Is this a valid type of group?",
+  "buildOneGroupOfFourAndTwo": "Build one group of four and two groups of three. Groups can be same-rank sets or consecutive cards of one suit. You begin with ten cards.",
+  "find433": "Find 4 + 3 + 3",
+  "yakkaIsWorth20PointsWatchExposed": "Yakka is worth 20 points. Watch exposed collection tops for valuable captures.",
+  "howManyPointsIsYakkaWorth": "How many points is Yakka worth?",
+  "yourFinalCollectionDecidesYourPointsYakka": "Your final collection decides your points. Yakka is 20; Kinga, Begi and Gola are 10; every numeric card is 5. The server orders the final standings.",
+  "makeEveryCardCount": "Make every card count",
+  "afterStockRunsOutEveryPlayedCard": "After stock runs out, every played card advances the turn.",
+  "noPlayAdvances": "No, play advances",
+  "stockIsEmptyDoesACaptureKeep": "Stock is empty. Does a capture keep your turn?",
+  "keepAnEyeOnTheTops": "Keep an eye on the tops",
+  "matchingRanks": "Matching ranks",
+  "matchingSuits": "Matching suits",
+  "whatMakesACapture": "What makes a capture?",
+  "startWithFourCardsDrawFromStock": "Start with four cards. Draw from stock while your hand has fewer than five. Matching ranks captures room cards and can steal matching tops of collections.",
+  "buildYourCollection": "Build your collection",
+  "waitForServerConfirmationACaughtProvisional": "Wait for server confirmation. A caught provisional winner is restored to play.",
+  "itMayStillBeChallenged": "It may still be challenged",
+  "always": "Always",
+  "isAnEmptyHandAnImmediateFinal": "Is an empty hand an immediate final victory?",
+  "ifTheLastPlayIsABluff": "If the last play is a bluff, that player takes the pile. If honest, you take it. An empty hand stays provisional until the next player accepts it or the challenge resolves.",
+  "callItCarefully": "Call it carefully",
+  "theRoundKeepsItsDeclaredRankUntil": "The round keeps its declared rank until resolved. Your hidden cards need not match your claim.",
+  "yesEveryTurn": "Yes, every turn",
+  "noKeepTheDeclaredRank": "No, keep the declared rank",
+  "canTheNextPlayerChangeAnActive": "Can the next player change an active rank?",
+  "laterPlaysUse14CardsAnd": "Later plays use 1–4 cards and keep the declared rank. You can pass or challenge the previous play on your turn.",
+  "keepTheStoryGoing": "Keep the story going",
+  "howManyCardsOpenANewRound": "How many cards open a new round?",
+  "finishYourCardsTheHYHolder": "Finish your cards. The h-y holder starts, but can play any 2–4 cards face-down and declare a rank.",
+  "eitGolaIsHighestInTheLead": "Eit Gola is highest in the lead suit. Pawn Kinga gives the Thullu.",
+  "thePawnKingaPlayer": "The Pawn Kinga player",
+  "theEitGolaPlayer": "The Eit Gola player",
+  "whoTakesThisOffSuitThullu": "Who takes this off-suit Thullu?",
+  "theHighestLeadSuitPlayerPicksUp": "The highest lead-suit player picks up the trick when someone legally goes off-suit. A normal completed trick clears; its highest player leads next if still active.",
+  "watchTheThullu": "Watch the Thullu",
+  "youMustFollowEitWhileYouHave": "You must follow Eit while you have it. The server checks your move.",
+  "anEitCard": "An Eit card",
+  "eitLeadsAndYouHoldEitWhat": "Eit leads and you hold Eit. What do you play?",
+  "whenYouHaveTheLeadSuitYou": "When you have the lead suit, you must play it. After the first trick, an off-suit card can give Thullu to the highest lead-suit player.",
+  "followTheLead": "Follow the lead",
+  "hukamYakkaStartsTheFirstTrickThe": "Hukam Yakka starts the first trick. The server assigns the first turn.",
+  "anyKinga": "Any Kinga",
+  "hukamYakka": "Hukam Yakka",
+  "whichCardOpensTheFirstTrick": "Which card opens the first trick?",
+  "finishYourHandBeforeTheLastPlayer": "Finish your hand before the last player. The first turn belongs to whoever holds Hukam Yakka, h-y.",
+  "leaveTheCardsBehind": "Leave the cards behind",
+  "weCouldNotConnectToTheRoom": "We could not connect to the room. Your room code is {value0}.",
+  "@weCouldNotConnectToTheRoom": {
+    "placeholders": {
+      "value0": {
+        "type": "Object"
+      }
+    }
+  },
+  "letSGetYouConnected": "Let’s get you connected",
+  "learnTheFourGames": "Learn the four games"
+}

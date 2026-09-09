@@ -1,0 +1,10 @@
+{
+  "MOCK_BACKEND": "false",
+  "TAASH_API_URL": "",
+  "FIREBASE_API_KEY": "",
+  "ALLOW_INSECURE_API": "false",
+  "PRIVACY_URL": "",
+  "TERMS_URL": "",
+  "ACCOUNT_DELETION_URL": "",
+  "SUPPORT_EMAIL": ""
+}

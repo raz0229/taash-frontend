@@ -1,0 +1,12 @@
+[
+    {"anim_id": 0, "anim_cost_in_coins": 250, "static": true, "contributor": "Laughing by Google Inc.", "anim_href_in_frontend": "0.gif" },
+    {"anim_id": 1, "anim_cost_in_coins": 250, "static": true, "contributor": "Hot Face by Google Inc. on IconScout", "anim_href_in_frontend": "1.gif" },
+    {"anim_id": 2, "anim_cost_in_coins": 300, "static": true, "contributor":"Folded Hands by Google Inc. on IconScout","anim_href_in_frontend": "2.gif" },
+    {"anim_id": 3, "anim_cost_in_coins": 300, "static": true, "contributor": "Concerned Emoji by Google Inc. on IconScout", "anim_href_in_frontend": "3.gif" },
+    {"anim_id": 4, "anim_cost_in_coins": 350, "static": true, "contributor": "Angry emoji by Google Inc. on IconScout", "anim_href_in_frontend": "4.gif" },
+    {"anim_id": 5, "anim_cost_in_coins": 350, "static": true, "contributor": "Clap by Google Inc.", "anim_href_in_frontend": "5.gif" },
+    {"anim_id": 6, "anim_cost_in_coins": 1000, "static": false, "contributor": "Flying Rose by LordIcon", "anim_href_in_frontend": "6.gif" },
+    {"anim_id": 7, "anim_cost_in_coins": 1000, "static": false, "contributor": "Sparkling Heart by LordIcon", "anim_href_in_frontend": "7.gif" },
+    {"anim_id": 8, "anim_cost_in_coins": 1500, "static": false, "contributor": "Tomato Splash by LottieFiles", "anim_href_in_frontend": "8.gif" },
+    {"anim_id": 9, "anim_cost_in_coins": 1500, "static": false, "contributor": "Donkey Braying by LottieFiles", "anim_href_in_frontend": "9.gif" }
+]
