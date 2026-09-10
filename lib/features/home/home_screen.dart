@@ -394,6 +394,22 @@ class _RewardSheetState extends State<_RewardSheet> {
   bool _processing = false;
   String? _error;
 
+  @override
+  void initState() {
+    super.initState();
+    widget.adService.addListener(_onAdChanged);
+  }
+
+  @override
+  void dispose() {
+    widget.adService.removeListener(_onAdChanged);
+    super.dispose();
+  }
+
+  void _onAdChanged() {
+    if (mounted) setState(() {});
+  }
+
   Future<void> _watchAd() async {
     if (_loading || _processing) return;
     setState(() {

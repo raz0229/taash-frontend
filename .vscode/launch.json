@@ -1,25 +1,21 @@
 {
-    "version": "0.2.0",
-    "configurations": [
-        {
-            "name": "TaashOnline (Local Backend)",
-            "request": "launch",
-            "type": "dart",
-            "program": "lib/main.dart",
-            "toolArgs": [
-                "--dart-define=TAASH_API_URL=http://127.0.0.1:8080",
-                "--dart-define=ALLOW_INSECURE_API=true",
-                "--dart-define=MOCK_BACKEND=false"
-            ]
-        },
-        {
-            "name": "TaashOnline (Mock Mode)",
-            "request": "launch",
-            "type": "dart",
-            "program": "lib/main.dart",
-            "toolArgs": [
-                "--dart-define=MOCK_BACKEND=true"
-            ]
-        }
-    ]
+  "version": "0.2.0",
+  "configurations": [
+    {
+      "name": "TaashOnline (Local Backend)",
+      "request": "launch",
+      "type": "dart",
+      "program": "lib/main.dart",
+      "toolArgs": ["--dart-define-from-file=config/local.json"]
+    },
+    {
+      "name": "TaashOnline (Mock Mode)",
+      "request": "launch",
+      "type": "dart",
+      "program": "lib/main.dart",
+      "toolArgs": [
+        "--dart-define=MOCK_BACKEND=true"
+      ]
+    }
+  ]
 }

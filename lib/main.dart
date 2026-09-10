@@ -69,9 +69,11 @@ class _TaashAppState extends State<TaashApp> {
   late final api = widget.auth?.api ?? ApiClient(config: widget.config);
   late final auth = widget.auth ?? AuthController(api: api);
   late final preferences = widget.preferences ?? Preferences();
-  late final adService = widget.config.adMobRewardedAdUnitId.isNotEmpty
+  late final adService = widget.config.adMobRewardedAdUnitId.isNotEmpty ||
+          widget.config.adMobInterstitialAdUnitId.isNotEmpty
       ? AdService(
           adUnitId: widget.config.adMobRewardedAdUnitId,
+          interstitialAdUnitId: widget.config.adMobInterstitialAdUnitId,
           initialization: widget.admobInitialization ??
               // If a test harness provided no init future, fall back to a
               // completed future so loading starts immediately.
@@ -471,16 +473,39 @@ class _LobbyShellState extends State<LobbyShell> {
   Future<void> exitRoom() async {
     final session = room;
     if (session == null) return;
-    // GameScreen obtains the explicit leave confirmation and sends room.leave.
     session.dispose();
     audio.playSfx('leave_room');
     if (widget.preferences.music) audio.playBgm();
     if (mounted) setState(() => room = null);
+    _tryShowInterstitial();
     try {
       await widget.auth.refreshProfile();
     } on AppFailure catch (e) {
       if (mounted) showNotice(context, e.message);
     }
+  }
+
+  /// Attempts to show an interstitial ad. If the ad hasn't loaded yet, waits
+  /// up to 3 seconds for it to become ready before giving up.
+  void _tryShowInterstitial() {
+    final adService = widget.adService;
+    if (adService == null) return;
+    if (adService.isInterstitialReady) {
+      adService.showInterstitialAd();
+      return;
+    }
+    // Ad still loading — wait for it with a short timeout.
+    late final void Function() listener;
+    listener = () {
+      if (adService.isInterstitialReady) {
+        adService.removeListener(listener);
+        adService.showInterstitialAd();
+      }
+    };
+    adService.addListener(listener);
+    Future.delayed(const Duration(seconds: 3), () {
+      adService.removeListener(listener);
+    });
   }
 
   @override

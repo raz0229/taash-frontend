@@ -5,6 +5,7 @@ class AppConfig {
     this.allowInsecure = false,
     this.adMobAppId = '',
     this.adMobRewardedAdUnitId = '',
+    this.adMobInterstitialAdUnitId = '',
     this.devRewardGrant = false,
   });
 
@@ -14,6 +15,9 @@ class AppConfig {
     allowInsecure: bool.fromEnvironment('ALLOW_INSECURE_API'),
     adMobAppId: String.fromEnvironment('ADMOB_APP_ID'),
     adMobRewardedAdUnitId: String.fromEnvironment('ADMOB_REWARDED_AD_UNIT_ID'),
+    adMobInterstitialAdUnitId: String.fromEnvironment(
+      'ADMOB_INTERSTITIAL_AD_UNIT_ID',
+    ),
     devRewardGrant: bool.fromEnvironment('ADMOB_DEV_REWARD_GRANT'),
   );
 
@@ -22,6 +26,7 @@ class AppConfig {
   final bool allowInsecure;
   final String adMobAppId;
   final String adMobRewardedAdUnitId;
+  final String adMobInterstitialAdUnitId;
   final bool devRewardGrant;
 
   bool get mock =>
