@@ -4,12 +4,14 @@ class AppFailure implements Exception {
     this.message, {
     this.statusCode,
     this.uncertain = false,
+    this.details,
   });
 
   final String code;
   final String message;
   final int? statusCode;
   final bool uncertain;
+  final Map<String, dynamic>? details;
 
   bool get isOffline => code == 'offline' || code == 'timeout';
   bool get isMaintenance => code == 'server_under_maintenance';
@@ -20,13 +22,14 @@ class AppFailure implements Exception {
     String code, {
     String? serverMessage,
     int? statusCode,
+    Map<String, dynamic>? details,
   }) {
     final lower = (serverMessage ?? '').toLowerCase();
     final String message;
     if (lower.contains('insufficient coins') ||
         code == 'not_enough_coins' ||
         code == 'insufficient_coins') {
-      message = 'You need more virtual coins for this action.';
+      message = 'You need more coins for this action.';
     } else if (lower.contains('trick is resolving')) {
       message = 'The trick is settling. Give it a moment.';
     } else if (lower.contains('cannot discard the card just taken')) {
@@ -71,7 +74,7 @@ class AppFailure implements Exception {
         _ => 'Something went wrong on the server. Please try again shortly.',
       };
     }
-    return AppFailure(code, message, statusCode: statusCode);
+    return AppFailure(code, message, statusCode: statusCode, details: details);
   }
 
   // Never include an upstream response, private card state or credentials.

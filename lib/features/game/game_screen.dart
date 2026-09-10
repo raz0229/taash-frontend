@@ -78,7 +78,9 @@ class _GameScreenState extends State<GameScreen>
       AnimationController(vsync: this, duration: const Duration(seconds: 60))
         ..addListener(() {
           if (!mounted || !(session.snapshot?.isYourTurn ?? false)) return;
-          final remaining = (_turnTimer.duration!.inMilliseconds * (1 - _turnTimer.value)).round();
+          final remaining =
+              (_turnTimer.duration!.inMilliseconds * (1 - _turnTimer.value))
+                  .round();
           if (remaining <= 10000 && remaining > 9000 && !_played10sSound) {
             _played10sSound = true;
             audio.playSfx('10_seconds_remaining_until_your_turn_expires');
@@ -118,15 +120,19 @@ class _GameScreenState extends State<GameScreen>
     final s = session.snapshot;
     if (s == null) return;
     hand.reconcile(s.you.hand);
-    
-    final currentPlayer = s.players.where((p) => p.id == s.currentPlayerId).firstOrNull;
+
+    final currentPlayer = s.players
+        .where((p) => p.id == s.currentPlayerId)
+        .firstOrNull;
     final handCount = currentPlayer?.handCount ?? 0;
 
     if (lastTurn != s.currentPlayerId) {
       lastTurn = s.currentPlayerId;
       takenDiscard = null;
       _lastHandCount = handCount;
-      _lastPlayAreaLength = s.gameState is DaketiState ? (s.gameState as DaketiState).playArea.length : -1;
+      _lastPlayAreaLength = s.gameState is DaketiState
+          ? (s.gameState as DaketiState).playArea.length
+          : -1;
       _resetTurnTimer();
     } else if (_lastHandCount != handCount) {
       _lastHandCount = handCount;
@@ -142,7 +148,9 @@ class _GameScreenState extends State<GameScreen>
     if (s.you.hand.length == 10) takenDiscard = null;
 
     final lastChat = session.chat.lastOrNull;
-    if (lastChat != null && lastChat.text == 'Bluff Caught!' && lastChat.id != _lastCelebratedChatId) {
+    if (lastChat != null &&
+        lastChat.text == 'Bluff Caught!' &&
+        lastChat.id != _lastCelebratedChatId) {
       _lastCelebratedChatId = lastChat.id;
       if (lastChat.playerId != session.playerId) {
         _triggerCelebration('BLUFF CAUGHT!', T.coral);
@@ -185,6 +193,13 @@ class _GameScreenState extends State<GameScreen>
     noticeTimer = Timer(const Duration(seconds: 4), () {
       if (mounted) setState(() => notice = '');
     });
+  }
+
+  @override
+  void dismissBanner() {
+    noticeTimer?.cancel();
+    session.clearError();
+    if (mounted && notice.isNotEmpty) setState(() => notice = '');
   }
 
   void _triggerCelebration(String text, Color color) {
@@ -418,10 +433,14 @@ class _GameScreenState extends State<GameScreen>
         onCardDrop: (card) => play(card),
         canDrop: ready && mine,
         onInspectCollection: (p) => inspectCollection(context, p),
-        onDrawStock: ready && mine ? () {
-          if (s.room.game == GameType.daketi) send('daketi.draw');
-          else if (s.room.game == GameType.tc) send('tc.draw_stock');
-        } : null,
+        onDrawStock: ready && mine
+            ? () {
+                if (s.room.game == GameType.daketi)
+                  send('daketi.draw');
+                else if (s.room.game == GameType.tc)
+                  send('tc.draw_stock');
+              }
+            : null,
         onTakeDiscard: ready && mine ? () => send('tc.take_discard') : null,
       ),
     ],

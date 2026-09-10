@@ -5,6 +5,7 @@ mixin _GameStatus on State<GameScreen> {
   String get notice;
   bool get leaving;
   void announce(String text);
+  void dismissBanner();
   Future<void> leave({bool expired = false});
   Widget _banner(bool terminal) => Container(
     width: double.infinity,
@@ -19,15 +20,30 @@ mixin _GameStatus on State<GameScreen> {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Text(
-            notice.isNotEmpty
-                ? notice
-                : session.error?.message ?? _connectionText(),
-            style: const TextStyle(
-              color: T.ink,
-              fontSize: 12,
-              fontWeight: FontWeight.w700,
-            ),
+          Row(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Expanded(
+                child: Text(
+                  notice.isNotEmpty
+                      ? notice
+                      : session.error?.message ?? _connectionText(),
+                  style: const TextStyle(
+                    color: T.ink,
+                    fontSize: 12,
+                    fontWeight: FontWeight.w700,
+                  ),
+                ),
+              ),
+              IconButton(
+                onPressed: dismissBanner,
+                tooltip: 'Dismiss',
+                icon: const Icon(Icons.close, size: 18),
+                color: T.ink,
+                padding: EdgeInsets.zero,
+                constraints: const BoxConstraints(minWidth: 32, minHeight: 32),
+              ),
+            ],
           ),
           if (!session.connected && !terminal)
             TextButton(

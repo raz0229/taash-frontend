@@ -117,6 +117,7 @@ class ApiClient {
         code,
         serverMessage: jsonString(detail['message']),
         statusCode: response.statusCode,
+        details: detail,
       );
     }
     if (json == null) {
@@ -291,7 +292,14 @@ class ApiClient {
       return (response['coins'] as num).toInt();
     } on AppFailure catch (e) {
       if (e.statusCode == 409) {
-        throw const AppFailure('reward_not_ready', 'Reward not ready yet');
+        final minutes = (e.details?['time_remaining_in_minutes'] as num?)
+            ?.toInt();
+        throw AppFailure(
+          'reward_not_ready',
+          minutes == null
+              ? 'Check back later.'
+              : 'Check back in $minutes minutes',
+        );
       } else if (e.statusCode == 429) {
         throw const AppFailure('rate_limited', 'Too many requests');
       }

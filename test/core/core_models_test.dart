@@ -222,5 +222,12 @@ void main() {
     );
     expect(failure.message, contains('virtual coins'));
     expect(failure.toString(), isNot(contains('insufficient coins')));
+
+    final rewardFailure = AppFailure.fromServer(
+      'reward_not_ready',
+      serverMessage: 'reward already claimed',
+      details: {'time_remaining_in_minutes': 179},
+    );
+    expect(rewardFailure.details?['time_remaining_in_minutes'], 179);
   });
 }

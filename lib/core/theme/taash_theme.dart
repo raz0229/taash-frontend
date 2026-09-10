@@ -132,6 +132,7 @@ abstract final class T {
       ),
       snackBarTheme: SnackBarThemeData(
         backgroundColor: surface,
+        contentTextStyle: const TextStyle(color: Colors.white),
         behavior: SnackBarBehavior.floating,
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
       ),
