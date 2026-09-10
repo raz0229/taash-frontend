@@ -79,7 +79,7 @@ class AboutScreen extends StatelessWidget {
       const SizedBox(height: 28),
       Center(
         child: Image.asset(
-          'assets/brand/splash-screen.png',
+          'assets/brand/splash-screen-inverted.png',
           width: 90,
           height: 90,
           cacheWidth: 270,
