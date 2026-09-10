@@ -7,6 +7,8 @@ import 'package:flutter/foundation.dart'
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_localizations/flutter_localizations.dart';
+import 'package:google_mobile_ads/google_mobile_ads.dart';
+import 'core/ads/ad_service.dart';
 import 'core/auth/auth_controller.dart';
 import 'core/config/app_config.dart';
 import 'core/errors/app_failure.dart';
@@ -38,17 +40,25 @@ Future<void> main() async {
   await SystemChrome.setPreferredOrientations([DeviceOrientation.portraitUp]);
   await SystemChrome.setEnabledSystemUIMode(SystemUiMode.edgeToEdge);
   await audio.init();
-  runApp(TaashApp(config: AppConfig.fromEnvironment()));
+  final admobInit = MobileAds.instance.initialize();
+  runApp(TaashApp(
+    config: AppConfig.fromEnvironment(),
+    admobInitialization: admobInit,
+  ));
 }
+
+Future<void> _noopAdmobInit() async {}
 
 class TaashApp extends StatefulWidget {
   const TaashApp({
     super.key,
     required this.config,
+    this.admobInitialization,
     this.auth,
     this.preferences,
   });
   final AppConfig config;
+  final Future<void>? admobInitialization;
   final AuthController? auth;
   final Preferences? preferences;
   @override
@@ -59,6 +69,15 @@ class _TaashAppState extends State<TaashApp> {
   late final api = widget.auth?.api ?? ApiClient(config: widget.config);
   late final auth = widget.auth ?? AuthController(api: api);
   late final preferences = widget.preferences ?? Preferences();
+  late final adService = widget.config.adMobRewardedAdUnitId.isNotEmpty
+      ? AdService(
+          adUnitId: widget.config.adMobRewardedAdUnitId,
+          initialization: widget.admobInitialization ??
+              // If a test harness provided no init future, fall back to a
+              // completed future so loading starts immediately.
+              _noopAdmobInit(),
+        )
+      : null;
   bool ready = false;
   @override
   void initState() {
@@ -87,6 +106,7 @@ class _TaashAppState extends State<TaashApp> {
       api.close();
     }
     if (widget.preferences == null) preferences.dispose();
+    adService?.dispose();
     super.dispose();
   }
 
@@ -114,7 +134,7 @@ class _TaashAppState extends State<TaashApp> {
       ),
       home: !ready
           ? const BootScreen()
-          : _AppGate(auth: auth, api: api, preferences: preferences),
+          : _AppGate(auth: auth, api: api, preferences: preferences, adService: adService),
     ),
   );
 }
@@ -290,10 +310,12 @@ class _AppGate extends StatelessWidget {
     required this.auth,
     required this.api,
     required this.preferences,
+    this.adService,
   });
   final AuthController auth;
   final ApiClient api;
   final Preferences preferences;
+  final AdService? adService;
   void learn(BuildContext context) => Navigator.push(
     context,
     MaterialPageRoute(
@@ -333,7 +355,7 @@ class _AppGate extends StatelessWidget {
         );
       }
       if (auth.isSignedIn) {
-        return LobbyShell(auth: auth, api: api, preferences: preferences);
+        return LobbyShell(auth: auth, api: api, preferences: preferences, adService: adService);
       }
       if (auth.status == AuthStatus.maintenance ||
           auth.status == AuthStatus.offline) {
@@ -363,10 +385,12 @@ class LobbyShell extends StatefulWidget {
     required this.auth,
     required this.api,
     required this.preferences,
+    this.adService,
   });
   final AuthController auth;
   final ApiClient api;
   final Preferences preferences;
+  final AdService? adService;
   @override
   State<LobbyShell> createState() => _LobbyShellState();
 }
@@ -483,6 +507,7 @@ class _LobbyShellState extends State<LobbyShell> {
       4 => const AboutScreen(),
       _ => HomeScreen(
         auth: widget.auth,
+        adService: widget.adService,
         onProfile: () => profile(widget.auth.profile!.id),
         onSettings: () => panel<void>(
           (_) => SettingsScreen(

@@ -24,6 +24,11 @@ android {
         targetSdk = 36
         versionCode = flutter.versionCode
         versionName = flutter.versionName
+        // Google test app ID used as fallback so builds run without env vars.
+        // Override with ADMOB_APP_ID (e.g. "ca-app-pub-XXXX~YYYY") for production.
+        val admobAppId = System.getenv("ADMOB_APP_ID")
+            ?: "ca-app-pub-3940256099942544~3347511713"
+        manifestPlaceholders["adMobAppId"] = admobAppId
     }
     signingConfigs {
         if (signingFile.exists()) create("upload") {

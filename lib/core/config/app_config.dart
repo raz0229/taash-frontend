@@ -3,17 +3,26 @@ class AppConfig {
     required this.backendUrl,
     this.firebaseApiKey = '',
     this.allowInsecure = false,
+    this.adMobAppId = '',
+    this.adMobRewardedAdUnitId = '',
+    this.devRewardGrant = false,
   });
 
   factory AppConfig.fromEnvironment() => const AppConfig(
     backendUrl: String.fromEnvironment('TAASH_API_URL'),
     firebaseApiKey: String.fromEnvironment('FIREBASE_API_KEY'),
     allowInsecure: bool.fromEnvironment('ALLOW_INSECURE_API'),
+    adMobAppId: String.fromEnvironment('ADMOB_APP_ID'),
+    adMobRewardedAdUnitId: String.fromEnvironment('ADMOB_REWARDED_AD_UNIT_ID'),
+    devRewardGrant: bool.fromEnvironment('ADMOB_DEV_REWARD_GRANT'),
   );
 
   final String backendUrl;
   final String firebaseApiKey;
   final bool allowInsecure;
+  final String adMobAppId;
+  final String adMobRewardedAdUnitId;
+  final bool devRewardGrant;
 
   bool get mock =>
       const bool.fromEnvironment('MOCK_BACKEND', defaultValue: false);

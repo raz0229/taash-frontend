@@ -1,6 +1,8 @@
 import '../../core/audio/audio_system.dart';
 
+import 'dart:async';
 import 'package:flutter/material.dart';
+import '../../core/ads/ad_service.dart';
 import '../../core/auth/auth_controller.dart';
 import '../../core/errors/app_failure.dart';
 import '../../core/models/models.dart';
@@ -20,10 +22,12 @@ class HomeScreen extends StatefulWidget {
     required this.onQuickMatch,
     required this.onCreate,
     required this.onJoin,
+    this.adService,
   });
   final AuthController auth;
   final VoidCallback onProfile, onSettings, onJoin;
   final ValueChanged<GameType> onQuickMatch, onCreate;
+  final AdService? adService;
   @override
   State<HomeScreen> createState() => _HomeScreenState();
 }
@@ -81,6 +85,23 @@ class _HomeScreenState extends State<HomeScreen> with SingleTickerProviderStateM
         SnackBar(content: Text(e.message)),
       );
     }
+  }
+
+  void _showRewardModal() {
+    final adService = widget.adService;
+    final profile = widget.auth.profile;
+    if (adService == null || profile == null) return;
+
+    showModalBottomSheet(
+      context: context,
+      isScrollControlled: true,
+      useSafeArea: true,
+      showDragHandle: true,
+      builder: (ctx) => _RewardSheet(
+        adService: adService,
+        auth: widget.auth,
+      ),
+    );
   }
 
   @override
@@ -175,7 +196,30 @@ class _HomeScreenState extends State<HomeScreen> with SingleTickerProviderStateM
                 spacing: 6,
                 runSpacing: 5,
                 children: [
-                  TaashCurrencyChip(value: profile.coins),
+                  GestureDetector(
+                    onTap: _showRewardModal,
+                    child: Row(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        TaashCurrencyChip(value: profile.coins),
+                        const SizedBox(width: 4),
+                        Container(
+                          width: 22,
+                          height: 22,
+                          decoration: BoxDecoration(
+                            color: T.ochre.withValues(alpha: 0.2),
+                            shape: BoxShape.circle,
+                            border: Border.all(color: T.ochre, width: 1.5),
+                          ),
+                          child: const Icon(
+                            Icons.add,
+                            size: 16,
+                            color: T.ochre,
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
                   TaashCurrencyChip(value: profile.xp, xp: true),
                 ],
               ),
@@ -332,6 +376,194 @@ class _HomeScreenState extends State<HomeScreen> with SingleTickerProviderStateM
                 actions,
               ],
             ),
+    );
+  }
+}
+
+class _RewardSheet extends StatefulWidget {
+  const _RewardSheet({required this.adService, required this.auth});
+  final AdService adService;
+  final AuthController auth;
+
+  @override
+  State<_RewardSheet> createState() => _RewardSheetState();
+}
+
+class _RewardSheetState extends State<_RewardSheet> {
+  bool _loading = false;
+  bool _processing = false;
+  String? _error;
+
+  Future<void> _watchAd() async {
+    if (_loading || _processing) return;
+    setState(() {
+      _loading = true;
+      _error = null;
+    });
+
+    try {
+      final sessionId = await widget.auth.api.startRewardSession();
+      final playerId = widget.auth.profile?.id ?? '';
+
+      if (!mounted) return;
+      setState(() => _loading = false);
+
+      final shown = await widget.adService.showRewardedAd(
+        customData: sessionId,
+        userId: playerId,
+        onUserEarnedReward: (amount) {
+          // The reward itself arrives via the AdMob SSV callback. In local
+          // development (no AdMob account / SSV callback URL yet) the callback
+          // never fires, so a dev-only grant endpoint mimics it. It must be
+          // disabled in production: it trusts the client.
+          if (widget.auth.api.needsDevRewardGrant) {
+            widget.auth.api.devGrantReward(sessionId).catchError((Object e) {});
+          }
+        },
+      );
+
+      if (!shown) {
+        if (!mounted) return;
+        setState(() => _error = 'Ad could not be shown. Please try again.');
+        return;
+      }
+
+      if (!mounted) return;
+      setState(() => _processing = true);
+
+      // Poll for balance update from SSV callback
+      for (var i = 0; i < 10; i++) {
+        await Future<void>.delayed(const Duration(seconds: 1));
+        if (!mounted) return;
+        try {
+          await widget.auth.refreshProfile();
+        } catch (_) {}
+        if (!mounted) return;
+        if (!mounted) break;
+      }
+
+      if (!mounted) return;
+      setState(() => _processing = false);
+
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(
+            content: Text(
+              'Your reward is being processed. Please check your balance shortly.',
+            ),
+          ),
+        );
+        Navigator.of(context).pop();
+      }
+    } on AppFailure catch (e) {
+      if (!mounted) return;
+      setState(() {
+        _loading = false;
+        _error = e.message;
+      });
+    } catch (_) {
+      if (!mounted) return;
+      setState(() {
+        _loading = false;
+        _error = 'Something went wrong. Please try again.';
+      });
+    }
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final coins = widget.auth.profile?.coins ?? 0;
+    return Padding(
+      padding: const EdgeInsets.fromLTRB(24, 0, 24, 32),
+      child: Column(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          Container(
+            width: 48,
+            height: 4,
+            decoration: BoxDecoration(
+              color: T.outline,
+              borderRadius: BorderRadius.circular(2),
+            ),
+          ),
+          const SizedBox(height: 24),
+          Icon(
+            Icons.toll_rounded,
+            size: 48,
+            color: T.ochre,
+          ),
+          const SizedBox(height: 16),
+          Text(
+            'Need more coins?',
+            style: Theme.of(context).textTheme.headlineSmall?.copyWith(
+              fontWeight: FontWeight.w800,
+            ),
+          ),
+          const SizedBox(height: 8),
+          Text(
+            'Watch a short ad to earn 100 coins',
+            style: TextStyle(color: T.muted),
+          ),
+          const SizedBox(height: 8),
+          Text(
+            'Current balance: $coins coins',
+            style: TextStyle(
+              color: T.ochre,
+              fontWeight: FontWeight.w700,
+            ),
+          ),
+          const SizedBox(height: 24),
+          if (_processing) ...[
+            const CircularProgressIndicator(),
+            const SizedBox(height: 12),
+            Text(
+              'Processing your reward...',
+              style: TextStyle(color: T.muted),
+            ),
+          ] else ...[
+            SizedBox(
+              width: double.infinity,
+              child: FilledButton.icon(
+                style: FilledButton.styleFrom(
+                  backgroundColor: T.ochre,
+                  foregroundColor: const Color(0xff2B1B35),
+                  padding: const EdgeInsets.symmetric(vertical: 16),
+                ),
+                onPressed: (widget.adService.isReady && !_loading)
+                    ? _watchAd
+                    : null,
+                icon: _loading
+                    ? const SizedBox(
+                        width: 20,
+                        height: 20,
+                        child: CircularProgressIndicator(strokeWidth: 2),
+                      )
+                    : const Icon(Icons.play_circle_outline),
+                label: Text(
+                  _loading ? 'Preparing...' : 'Watch Ad +100 Coins',
+                ),
+              ),
+            ),
+            if (_error != null) ...[
+              const SizedBox(height: 12),
+              Text(
+                _error!,
+                style: const TextStyle(color: Colors.redAccent, fontSize: 13),
+                textAlign: TextAlign.center,
+              ),
+            ],
+            if (!widget.adService.isReady && !_loading) ...[
+              const SizedBox(height: 12),
+              Text(
+                'No ad available right now. Try again shortly.',
+                style: TextStyle(color: T.muted, fontSize: 13),
+                textAlign: TextAlign.center,
+              ),
+            ],
+          ],
+          const SizedBox(height: 16),
+        ],
+      ),
     );
   }
 }

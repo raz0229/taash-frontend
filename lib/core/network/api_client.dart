@@ -399,5 +399,25 @@ class ApiClient {
     );
   }
 
+  Future<String> startRewardSession() async {
+    final json = await request('POST', '/v1/rewards/ad/start');
+    return json['reward_session_id'] as String;
+  }
+
+  /// Dev/test-only reward grant for local testing without an AdMob account.
+  /// The SSV callback relies on a configured AdMob account + callback URL,
+  /// so if [config.devRewardGrant] is enabled the client asks the backend to
+  /// grant coins directly. This trusts the client and MUST stay disabled in
+  /// production.
+  bool get needsDevRewardGrant => config.devRewardGrant;
+
+  Future<void> devGrantReward(String sessionId) async {
+    await request(
+      'POST',
+      '/v1/rewards/ad/devgrant',
+      body: {'reward_session_id': sessionId},
+    );
+  }
+
   void close() => _client.close();
 }

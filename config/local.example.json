@@ -6,5 +6,8 @@
   "PRIVACY_URL": "",
   "TERMS_URL": "",
   "ACCOUNT_DELETION_URL": "",
-  "SUPPORT_EMAIL": ""
+  "SUPPORT_EMAIL": "",
+  "ADMOB_APP_ID": "",
+  "ADMOB_REWARDED_AD_UNIT_ID": "",
+  "ADMOB_DEV_REWARD_GRANT": "true"
 }
