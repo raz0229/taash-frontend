@@ -1,4 +1,3 @@
-
 import 'package:audioplayers/audioplayers.dart';
 
 class AudioSystem {
@@ -7,6 +6,7 @@ class AudioSystem {
   AudioSystem._internal();
 
   late final AudioPlayer _bgmPlayer;
+  final Set<AudioPlayer> _sfxPlayers = <AudioPlayer>{};
 
   bool _bgmPlaying = false;
   bool sfxEnabled = true;
@@ -63,12 +63,19 @@ class AudioSystem {
   Future<void> playSfx(String name) async {
     if (_isTest) return;
     if (!sfxEnabled) return;
+    final player = AudioPlayer();
+    _sfxPlayers.add(player);
     try {
-      final player = AudioPlayer();
       await player.setAudioContext(_sfxContext);
+      player.onPlayerComplete.listen((_) {
+        _sfxPlayers.remove(player);
+        player.dispose();
+      });
       await player.play(AssetSource('audio/$name.ogg'));
-      player.onPlayerComplete.listen((_) => player.dispose());
-    } catch (_) {}
+    } catch (_) {
+      _sfxPlayers.remove(player);
+      await player.dispose();
+    }
   }
 }
 

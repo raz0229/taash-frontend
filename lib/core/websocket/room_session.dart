@@ -265,7 +265,14 @@ class RoomSession extends ChangeNotifier with WidgetsBindingObserver {
         'Your previous action is still being checked.',
       );
     }
-    if (type == 'game.play') audio.playSfx('play_card');
+    if (const {
+      'bhabhi.play_card',
+      'daketi.play_card',
+      'tc.discard',
+      'bluff.play_cards',
+    }.contains(type)) {
+      audio.playSfx('play_card');
+    }
     if (type == 'game.drawStock') audio.playSfx('draw_stock');
     return _sendCommand(type, payload);
   }
@@ -384,11 +391,12 @@ class RoomSession extends ChangeNotifier with WidgetsBindingObserver {
           }
         case 'room.snapshot':
           final next = RoomSnapshot.fromJson(payload);
+          final previous = snapshot;
           final oldTurn = snapshot?.currentPlayerId;
           final oldPlayers = snapshot?.players.length ?? 0;
-          
+
           final accepted = _reducer.apply(next, roomId: _room!.id);
-          
+
           if (accepted && snapshot != null) {
             final newTurn = snapshot!.currentPlayerId;
             if (newTurn != oldTurn && newTurn.isNotEmpty) {
@@ -402,7 +410,7 @@ class RoomSession extends ChangeNotifier with WidgetsBindingObserver {
               audio.playSfx('new_player_joined_room');
             }
           }
-          
+
           final pending = _pending[id];
           if (pending != null && pending.type == 'room.snapshot') {
             _pending.remove(id);
@@ -421,6 +429,7 @@ class RoomSession extends ChangeNotifier with WidgetsBindingObserver {
             }
           }
           if (!accepted) return;
+          if (previous != null) _playSnapshotSounds(previous, snapshot!);
           _uncertain = false;
           if (_joinReady?.isCompleted == false) {
             _joinReady!.complete();
@@ -483,6 +492,26 @@ class RoomSession extends ChangeNotifier with WidgetsBindingObserver {
         }),
       );
     }
+  }
+
+  void _playSnapshotSounds(RoomSnapshot previous, RoomSnapshot next) {
+    final previousState = previous.gameState;
+    final nextState = next.gameState;
+    final cardAdded = switch ((previousState, nextState)) {
+      (BhabhiState previous, BhabhiState next) =>
+        next.trick.length > previous.trick.length ||
+            (next.trick.isNotEmpty &&
+                previous.trick.isNotEmpty &&
+                next.trick.length < previous.trick.length),
+      (DaketiState previous, DaketiState next) =>
+        next.playArea.length > previous.playArea.length,
+      (TcState previous, TcState next) =>
+        next.discardCount > previous.discardCount,
+      (BluffState previous, BluffState next) =>
+        next.pileCount > previous.pileCount,
+      _ => false,
+    };
+    if (cardAdded) audio.playSfx('new_card_added_in_play_area');
   }
 
   void _transportLost(int generation) {

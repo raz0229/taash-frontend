@@ -81,7 +81,7 @@ class _GameScreenState extends State<GameScreen>
           final remaining =
               (_turnTimer.duration!.inMilliseconds * (1 - _turnTimer.value))
                   .round();
-          if (remaining <= 10000 && remaining > 9000 && !_played10sSound) {
+          if (remaining <= 10000 && remaining > 0 && !_played10sSound) {
             _played10sSound = true;
             audio.playSfx('10_seconds_remaining_until_your_turn_expires');
           }
@@ -153,7 +153,7 @@ class _GameScreenState extends State<GameScreen>
         lastChat.id != _lastCelebratedChatId) {
       _lastCelebratedChatId = lastChat.id;
       if (lastChat.playerId != session.playerId) {
-        _triggerCelebration('BLUFF CAUGHT!', T.coral);
+        _triggerCelebration('BLUFF', T.coral);
       }
     }
     // A6: Detect Thullu in Bhabhi.
@@ -205,7 +205,7 @@ class _GameScreenState extends State<GameScreen>
   void _triggerCelebration(String text, Color color) {
     if (!mounted) return;
     if (text == 'THULLU!') audio.playSfx('thullu_caught');
-    if (text == 'BLUFF CAUGHT!') audio.playSfx('bluff_caught');
+    if (text == 'BLUFF') audio.playSfx('bluff_caught');
     setState(() {
       showCelebration = true;
       celebrationText = text;
@@ -272,7 +272,7 @@ class _GameScreenState extends State<GameScreen>
           );
           // A5: Trigger bluff caught animation.
           if (caught) {
-            _triggerCelebration('BLUFF CAUGHT!', T.coral);
+            _triggerCelebration('BLUFF', T.coral);
             session.command('chat.send', payload: {'text': 'Bluff Caught!'});
           }
         }
