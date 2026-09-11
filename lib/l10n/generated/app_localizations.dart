@@ -2941,6 +2941,60 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Learn the four games'**
   String get learnTheFourGames;
+
+  /// No description provided for @anUpdateIsAvailable.
+  ///
+  /// In en, this message translates to:
+  /// **'A fresh version of TaashOnline is available.'**
+  String get anUpdateIsAvailable;
+
+  /// No description provided for @downloadItInTheBackgroundAndKeep.
+  ///
+  /// In en, this message translates to:
+  /// **'Download it in the background and keep playing.'**
+  String get downloadItInTheBackgroundAndKeep;
+
+  /// No description provided for @update.
+  ///
+  /// In en, this message translates to:
+  /// **'Update'**
+  String get update;
+
+  /// No description provided for @notNow.
+  ///
+  /// In en, this message translates to:
+  /// **'Not now'**
+  String get notNow;
+
+  /// No description provided for @downloadingTheUpdate.
+  ///
+  /// In en, this message translates to:
+  /// **'Downloading the update…'**
+  String get downloadingTheUpdate;
+
+  /// No description provided for @yourUpdateIsReady.
+  ///
+  /// In en, this message translates to:
+  /// **'Your update is ready.'**
+  String get yourUpdateIsReady;
+
+  /// No description provided for @restartToFinishInstalling.
+  ///
+  /// In en, this message translates to:
+  /// **'Restart to finish installing.'**
+  String get restartToFinishInstalling;
+
+  /// No description provided for @restart.
+  ///
+  /// In en, this message translates to:
+  /// **'Restart'**
+  String get restart;
+
+  /// No description provided for @later.
+  ///
+  /// In en, this message translates to:
+  /// **'Later'**
+  String get later;
 }
 
 class _AppLocalizationsDelegate

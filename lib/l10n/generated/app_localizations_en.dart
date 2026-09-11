@@ -1650,4 +1650,33 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get learnTheFourGames => 'Learn the four games';
+
+  @override
+  String get anUpdateIsAvailable =>
+      'A fresh version of TaashOnline is available.';
+
+  @override
+  String get downloadItInTheBackgroundAndKeep =>
+      'Download it in the background and keep playing.';
+
+  @override
+  String get update => 'Update';
+
+  @override
+  String get notNow => 'Not now';
+
+  @override
+  String get downloadingTheUpdate => 'Downloading the update…';
+
+  @override
+  String get yourUpdateIsReady => 'Your update is ready.';
+
+  @override
+  String get restartToFinishInstalling => 'Restart to finish installing.';
+
+  @override
+  String get restart => 'Restart';
+
+  @override
+  String get later => 'Later';
 }

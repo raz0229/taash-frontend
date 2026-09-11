@@ -54,6 +54,15 @@ class S {
   static const invalidName = Copy.use125LettersNumbersOrSpaces;
   static const noServerTitle = Copy.yourRoomIsNearlyReady;
   static const noServerBody = Copy.thisBuildNeedsItsTaashOnlineServerConnection;
+  static const updateAvailable = Copy.anUpdateIsAvailable;
+  static const updateAvailableBody = Copy.downloadItInTheBackgroundAndKeep;
+  static const update = Copy.update;
+  static const notNow = Copy.notNow;
+  static const downloadingUpdate = Copy.downloadingTheUpdate;
+  static const updateReady = Copy.yourUpdateIsReady;
+  static const updateReadyBody = Copy.restartToFinishInstalling;
+  static const restart = Copy.restart;
+  static const later = Copy.later;
 }
 
 class _StringsDelegate extends LocalizationsDelegate<S> {

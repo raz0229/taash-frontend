@@ -635,4 +635,14 @@ abstract final class Copy {
       'We could not connect to the room. Your room code is $value0.';
   static const letSGetYouConnected = 'Let’s get you connected';
   static const learnTheFourGames = 'Learn the four games';
+  static const anUpdateIsAvailable = 'A fresh version of TaashOnline is available.';
+  static const downloadItInTheBackgroundAndKeep =
+      'Download it in the background and keep playing.';
+  static const update = 'Update';
+  static const notNow = 'Not now';
+  static const downloadingTheUpdate = 'Downloading the update…';
+  static const yourUpdateIsReady = 'Your update is ready.';
+  static const restartToFinishInstalling = 'Restart to finish installing.';
+  static const restart = 'Restart';
+  static const later = 'Later';
 }

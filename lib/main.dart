@@ -20,6 +20,8 @@ import 'core/preferences/preferences.dart';
 import 'core/theme/taash_theme.dart';
 import 'core/websocket/room_session.dart';
 import 'core/widgets/taash_widgets.dart';
+import 'core/update/app_update_service.dart';
+import 'core/widgets/app_update_banner.dart';
 import 'features/about/about_screen.dart';
 import 'features/auth/auth_screen.dart';
 import 'features/game/game_screen.dart';
@@ -84,6 +86,7 @@ class _TaashAppState extends State<TaashApp> {
   late final auth =
       widget.auth ?? AuthController(api: api, googleAuth: googleAuth);
   late final preferences = widget.preferences ?? Preferences();
+  late final updateService = InAppUpdateService();
   late final adService = widget.config.adMobRewardedAdUnitId.isNotEmpty ||
           widget.config.adMobInterstitialAdUnitId.isNotEmpty
       ? AdService(
@@ -109,6 +112,7 @@ class _TaashAppState extends State<TaashApp> {
       /* Preferences remain usable in memory if storage is unavailable. */
     }
     audio.sfxEnabled = preferences.sfx;
+    unawaited(updateService.checkForUpdate());
     await Future.wait([
       auth.restore(),
       Future<void>.delayed(const Duration(milliseconds: 650)),
@@ -124,6 +128,7 @@ class _TaashAppState extends State<TaashApp> {
     }
     if (widget.preferences == null) preferences.dispose();
     adService?.dispose();
+    updateService.dispose();
     super.dispose();
   }
 
@@ -141,13 +146,16 @@ class _TaashAppState extends State<TaashApp> {
         GlobalCupertinoLocalizations.delegate,
       ],
       supportedLocales: const [Locale('en')],
-      builder: (context, child) => MediaQuery(
-        data: MediaQuery.of(context).copyWith(
-          disableAnimations:
-              MediaQuery.disableAnimationsOf(context) ||
-              preferences.reducedMotion,
+      builder: (context, child) => AppUpdateCoordinator(
+        service: updateService,
+        child: MediaQuery(
+          data: MediaQuery.of(context).copyWith(
+            disableAnimations:
+                MediaQuery.disableAnimationsOf(context) ||
+                preferences.reducedMotion,
+          ),
+          child: child!,
         ),
-        child: child!,
       ),
       home: !ready
           ? const BootScreen()

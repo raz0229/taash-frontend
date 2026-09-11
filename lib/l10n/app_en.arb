@@ -834,5 +834,14 @@
     }
   },
   "letSGetYouConnected": "Let’s get you connected",
-  "learnTheFourGames": "Learn the four games"
+  "learnTheFourGames": "Learn the four games",
+  "anUpdateIsAvailable": "A fresh version of TaashOnline is available.",
+  "downloadItInTheBackgroundAndKeep": "Download it in the background and keep playing.",
+  "update": "Update",
+  "notNow": "Not now",
+  "downloadingTheUpdate": "Downloading the update…",
+  "yourUpdateIsReady": "Your update is ready.",
+  "restartToFinishInstalling": "Restart to finish installing.",
+  "restart": "Restart",
+  "later": "Later"
 }
