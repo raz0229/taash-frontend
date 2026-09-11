@@ -12,6 +12,7 @@ import 'core/ads/ad_service.dart';
 import 'core/auth/auth_controller.dart';
 import 'core/config/app_config.dart';
 import 'core/errors/app_failure.dart';
+import 'core/firebase/firebase_bootstrap.dart';
 import 'core/models/models.dart';
 import 'core/network/api_client.dart';
 import 'core/preferences/preferences.dart';
@@ -40,9 +41,11 @@ Future<void> main() async {
   await SystemChrome.setPreferredOrientations([DeviceOrientation.portraitUp]);
   await SystemChrome.setEnabledSystemUIMode(SystemUiMode.edgeToEdge);
   await audio.init();
+  final config = AppConfig.fromEnvironment();
+  await bootstrapFirebase(config);
   final admobInit = MobileAds.instance.initialize();
   runApp(TaashApp(
-    config: AppConfig.fromEnvironment(),
+    config: config,
     admobInitialization: admobInit,
   ));
 }
@@ -66,7 +69,13 @@ class TaashApp extends StatefulWidget {
 }
 
 class _TaashAppState extends State<TaashApp> {
-  late final api = widget.auth?.api ?? ApiClient(config: widget.config);
+  late final api = () {
+    final client = widget.auth?.api ?? ApiClient(config: widget.config);
+    if (widget.config.enableAppCheck && !widget.config.mock) {
+      client.appCheckTokenProvider = appCheckTokenProvider;
+    }
+    return client;
+  }();
   late final auth = widget.auth ?? AuthController(api: api);
   late final preferences = widget.preferences ?? Preferences();
   late final adService = widget.config.adMobRewardedAdUnitId.isNotEmpty ||
@@ -451,6 +460,7 @@ class _LobbyShellState extends State<LobbyShell> {
     final session = RoomSession(
       config: widget.api.config,
       tokenProvider: widget.auth.freshToken,
+      appCheckTokenProvider: widget.api.appCheckTokenProvider,
       playerId: widget.auth.profile!.id,
       onEconomyChanged: widget.auth.refreshProfile,
     );

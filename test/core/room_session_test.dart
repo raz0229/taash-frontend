@@ -43,7 +43,7 @@ RoomSession sessionFor(
   config: const AppConfig(backendUrl: 'https://api.example.test'),
   tokenProvider: () async => 'test-token',
   playerId: 'player-a',
-  connector: connector ?? (_, _) async => socket,
+  connector: connector ?? (_, _, _) async => socket,
   commandTimeout: timeout,
   reconnectBase: const Duration(milliseconds: 5),
   reconnectJitter: Duration.zero,
@@ -179,7 +179,7 @@ void main() {
       var connections = 0;
       final session = sessionFor(
         socket,
-        connector: (_, _) async {
+        connector: (_, _, _) async {
           connections++;
           return socket;
         },
@@ -202,7 +202,7 @@ void main() {
       var connections = 0;
       final session = sessionFor(
         first,
-        connector: (_, _) async => ++connections == 1 ? first : second,
+        connector: (_, _, _) async => ++connections == 1 ? first : second,
       );
       await enter(session, first);
       await first.close();

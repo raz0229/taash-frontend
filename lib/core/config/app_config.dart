@@ -7,6 +7,12 @@ class AppConfig {
     this.adMobRewardedAdUnitId = '',
     this.adMobInterstitialAdUnitId = '',
     this.devRewardGrant = false,
+    this.firebaseAppId = '',
+    this.firebaseMessagingSenderId = '',
+    this.firebaseProjectId = '',
+    this.firebaseStorageBucket = '',
+    this.enableAppCheck = false,
+    this.appCheckDebugToken = '',
   });
 
   factory AppConfig.fromEnvironment() => const AppConfig(
@@ -19,6 +25,14 @@ class AppConfig {
       'ADMOB_INTERSTITIAL_AD_UNIT_ID',
     ),
     devRewardGrant: bool.fromEnvironment('ADMOB_DEV_REWARD_GRANT'),
+    firebaseAppId: String.fromEnvironment('FIREBASE_APP_ID'),
+    firebaseMessagingSenderId: String.fromEnvironment(
+      'FIREBASE_MESSAGING_SENDER_ID',
+    ),
+    firebaseProjectId: String.fromEnvironment('FIREBASE_PROJECT_ID'),
+    firebaseStorageBucket: String.fromEnvironment('FIREBASE_STORAGE_BUCKET'),
+    enableAppCheck: bool.fromEnvironment('ENABLE_APP_CHECK'),
+    appCheckDebugToken: String.fromEnvironment('APP_CHECK_DEBUG_TOKEN'),
   );
 
   final String backendUrl;
@@ -28,6 +42,12 @@ class AppConfig {
   final String adMobRewardedAdUnitId;
   final String adMobInterstitialAdUnitId;
   final bool devRewardGrant;
+  final String firebaseAppId;
+  final String firebaseMessagingSenderId;
+  final String firebaseProjectId;
+  final String firebaseStorageBucket;
+  final bool enableAppCheck;
+  final String appCheckDebugToken;
 
   bool get mock =>
       const bool.fromEnvironment('MOCK_BACKEND', defaultValue: false);

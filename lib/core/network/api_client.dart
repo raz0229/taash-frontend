@@ -18,6 +18,7 @@ class ApiClient {
   final Duration timeout;
   Future<String?> Function()? tokenProvider;
   Future<void> Function()? onUnauthorized;
+  Future<String?> Function()? appCheckTokenProvider;
 
   Future<Map<String, dynamic>> request(
     String method,
@@ -45,6 +46,10 @@ class ApiClient {
       req.headers['Accept'] = 'application/json';
       if (token != null && token.isNotEmpty) {
         req.headers['Authorization'] = 'Bearer $token';
+      }
+      final appCheckToken = await appCheckTokenProvider?.call();
+      if (appCheckToken != null && appCheckToken.isNotEmpty) {
+        req.headers['X-Firebase-AppCheck'] = appCheckToken;
       }
       if (body != null) {
         req.headers['Content-Type'] = 'application/json';

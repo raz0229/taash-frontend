@@ -7,16 +7,24 @@ abstract interface class RoomSocket {
   Future<void> close();
 }
 
-typedef RoomSocketConnector =
-    Future<RoomSocket> Function(Uri uri, String token);
+typedef RoomSocketConnector = Future<RoomSocket> Function(
+  Uri uri,
+  String token,
+  String? appCheckToken,
+);
 
-Future<RoomSocket> connectRoomSocket(Uri uri, String token) async {
+Future<RoomSocket> connectRoomSocket(
+  Uri uri,
+  String token,
+  String? appCheckToken,
+) async {
   try {
+    final headers = {HttpHeaders.authorizationHeader: 'Bearer $token'};
+    if (appCheckToken != null && appCheckToken.isNotEmpty) {
+      headers['X-Firebase-AppCheck'] = appCheckToken;
+    }
     return NativeRoomSocket(
-      await WebSocket.connect(
-        uri.toString(),
-        headers: {HttpHeaders.authorizationHeader: 'Bearer $token'},
-      ),
+      await WebSocket.connect(uri.toString(), headers: headers),
     );
   } on WebSocketException catch (failure) {
     // Dart exposes upgrade status only in this exception's text. Do not surface

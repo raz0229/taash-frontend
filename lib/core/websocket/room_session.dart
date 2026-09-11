@@ -38,6 +38,7 @@ class RoomSession extends ChangeNotifier with WidgetsBindingObserver {
     required this.tokenProvider,
     required this.playerId,
     this.onEconomyChanged,
+    this.appCheckTokenProvider,
     RoomSocketConnector? connector,
     this.commandTimeout = const Duration(seconds: 12),
     this.connectTimeout = const Duration(seconds: 15),
@@ -55,6 +56,7 @@ class RoomSession extends ChangeNotifier with WidgetsBindingObserver {
   final Future<String?> Function() tokenProvider;
   final String playerId;
   final Future<void> Function()? onEconomyChanged;
+  final Future<String?> Function()? appCheckTokenProvider;
   final RoomSocketConnector _connector;
   final SnapshotReducer _reducer;
   final Duration commandTimeout, connectTimeout, reconnectBase, reconnectJitter;
@@ -136,7 +138,15 @@ class RoomSession extends ChangeNotifier with WidgetsBindingObserver {
         );
       }
       var connectExpired = false;
-      final connection = _connector(config.websocketUrl, token).then((socket) {
+      final appCheckToken = appCheckTokenProvider == null
+          ? null
+          : await appCheckTokenProvider!();
+      if (generation != _generation || _disposed || _closing) return;
+      final connection = _connector(
+        config.websocketUrl,
+        token,
+        appCheckToken,
+      ).then((socket) {
         if (connectExpired ||
             generation != _generation ||
             _disposed ||

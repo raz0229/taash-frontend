@@ -19,7 +19,7 @@ android {
         targetCompatibility = JavaVersion.VERSION_17
     }
     defaultConfig {
-        applicationId = "com.sheraztech.taash"
+        applicationId = "com.sheraztech.taashonline"
         minSdk = 24
         targetSdk = 36
         versionCode = flutter.versionCode
