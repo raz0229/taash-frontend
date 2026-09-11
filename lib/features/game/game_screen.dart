@@ -19,6 +19,7 @@ import 'shared/hand_order.dart';
 import 'shared/hand_view.dart';
 import 'shared/local_turn_timer.dart';
 import 'shared/player_strip.dart';
+import 'shared/playing_card.dart';
 import 'shared/room_backdrop.dart';
 import 'shared/celebration_overlay.dart';
 
@@ -96,6 +97,7 @@ class _GameScreenState extends State<GameScreen>
   @override
   void initState() {
     super.initState();
+    session.onStockDecreased = _onStockDecreased;
     session.addListener(changed);
     _reconcile();
   }
@@ -179,10 +181,33 @@ class _GameScreenState extends State<GameScreen>
 
   @override
   void dispose() {
+    session.onStockDecreased = null;
+    _stockDrawOverlay?.remove();
     session.removeListener(changed);
     noticeTimer?.cancel();
     _turnTimer.dispose();
     super.dispose();
+  }
+
+  void _onStockDecreased() {
+    if (!mounted) return;
+    _showStockDrawAnimation();
+  }
+
+  OverlayEntry? _stockDrawOverlay;
+  void _showStockDrawAnimation() {
+    if (MediaQuery.disableAnimationsOf(context)) return;
+    final overlay = Overlay.of(context);
+    _stockDrawOverlay?.remove();
+    final entry = OverlayEntry(builder: (_) => const _StockDrawAnimation());
+    _stockDrawOverlay = entry;
+    overlay.insert(entry);
+    Future.delayed(const Duration(milliseconds: 700), () {
+      if (_stockDrawOverlay == entry) {
+        _stockDrawOverlay = null;
+        entry.remove();
+      }
+    });
   }
 
   @override
@@ -712,6 +737,60 @@ class _GameScreenState extends State<GameScreen>
             ],
           ),
         ),
+      ),
+    );
+  }
+}
+
+/// Shows a face-down card flying up from the stock pile to the current
+/// player's seat (the strip at the top) when the stock decreases.
+class _StockDrawAnimation extends StatefulWidget {
+  const _StockDrawAnimation();
+
+  @override
+  State<_StockDrawAnimation> createState() => _StockDrawAnimationState();
+}
+
+class _StockDrawAnimationState extends State<_StockDrawAnimation>
+    with SingleTickerProviderStateMixin {
+  late final AnimationController _controller = AnimationController(
+    vsync: this,
+    duration: const Duration(milliseconds: 500),
+  )..forward();
+
+  @override
+  void dispose() {
+    _controller.dispose();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final size = MediaQuery.sizeOf(context);
+    const cardWidth = 52.0;
+    return IgnorePointer(
+      child: Stack(
+        children: [
+          AnimatedBuilder(
+            animation: _controller,
+            builder: (context, child) {
+              final t = Curves.easeIn.transform(_controller.value);
+              return Positioned(
+                left: size.width / 2 - cardWidth / 2,
+                top: size.height * .58 - t * size.height * .52,
+                child: Opacity(
+                  opacity: (1 - t).clamp(0.0, 1.0),
+                  child: child,
+                ),
+              );
+            },
+            child: const SizedBox(
+              width: cardWidth,
+              height: cardWidth * 1.4,
+              child: PlayingCard(faceDown: true),
+            ),
+          ),
+        ],
       ),
     );
   }

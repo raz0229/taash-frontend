@@ -57,6 +57,7 @@ class RoomSession extends ChangeNotifier with WidgetsBindingObserver {
   final String playerId;
   final Future<void> Function()? onEconomyChanged;
   final Future<String?> Function()? appCheckTokenProvider;
+  VoidCallback? onStockDecreased;
   final RoomSocketConnector _connector;
   final SnapshotReducer _reducer;
   final Duration commandTimeout, connectTimeout, reconnectBase, reconnectJitter;
@@ -522,6 +523,24 @@ class RoomSession extends ChangeNotifier with WidgetsBindingObserver {
       _ => false,
     };
     if (cardAdded) audio.playSfx('new_card_added_in_play_area');
+
+    final stockDecreased = switch ((previousState, nextState)) {
+      (DaketiState prev, DaketiState next) =>
+        next.stockCount < prev.stockCount,
+      (TcState prev, TcState next) => next.stockCount < prev.stockCount,
+      _ => false,
+    };
+    if (stockDecreased) {
+      audio.playSfx('draw_stock');
+      onStockDecreased?.call();
+    }
+
+    final playAreaDecreased = switch ((previousState, nextState)) {
+      (DaketiState prev, DaketiState next) =>
+        next.playArea.length < prev.playArea.length,
+      _ => false,
+    };
+    if (playAreaDecreased) audio.playSfx('new_card_added_in_play_area');
   }
 
   void _transportLost(int generation) {
