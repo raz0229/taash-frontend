@@ -5,6 +5,7 @@ import '../errors/app_failure.dart';
 import '../models/models.dart';
 import '../network/api_client.dart';
 import '../storage/session_store.dart';
+import 'google_auth.dart';
 
 enum AuthStatus {
   booting,
@@ -16,14 +17,28 @@ enum AuthStatus {
   error,
 }
 
+/// Returned by [AuthController.signInWithGoogle] when the Google account is
+/// new to TaashOnline and the server still needs a display name and country
+/// before the player record can be created.
+class GoogleProfilePrompt {
+  const GoogleProfilePrompt({
+    required this.email,
+    required this.displayName,
+  });
+  final String email;
+  final String displayName;
+}
+
 class AuthController extends ChangeNotifier {
-  AuthController({required this.api, SessionStore? store})
-    : _store = store ?? SecureSessionStore() {
+  AuthController({required this.api, SessionStore? store, GoogleAuth? googleAuth})
+    : _store = store ?? SecureSessionStore(),
+      _google = googleAuth ?? GoogleAuth() {
     api.tokenProvider = freshToken;
     api.onUnauthorized = forceRefresh;
   }
   final ApiClient api;
   final SessionStore _store;
+  final GoogleAuth _google;
   AuthStatus status = AuthStatus.booting;
   PlayerProfile? profile;
   AppFailure? error;
@@ -128,10 +143,47 @@ class AuthController extends ChangeNotifier {
     password: password,
   );
 
+  /// Signs in with Google. The Google ID token is exchanged for a Firebase
+  /// session on the server, which creates or finds the player record in the
+  /// same way register does.
+  ///
+  /// Returns a [GoogleProfilePrompt] when the Google account is brand new and
+  /// the server needs a display name and country before it can create the
+  /// player; the UI collects them and calls this again with the completed
+  /// profile. Returns null once the user is authenticated, or when the user
+  /// cancels the Google account chooser.
+  Future<GoogleProfilePrompt?> signInWithGoogle({
+    String? displayName,
+    String? country,
+  }) async {
+    if (api.config.mock) {
+      throw const AppFailure(
+        'authentication',
+        Copy.weCouldNotCompleteSignInPlease,
+      );
+    }
+    if (busy) throw const AppFailure('busy', Copy.signInIsAlreadyInProgress);
+    final account = await _google.signIn();
+    if (account == null) return null;
+    final session = await api.signInWithGoogle(
+      idToken: account.idToken,
+      displayName: displayName,
+      country: country,
+    );
+    if (session == null) {
+      return GoogleProfilePrompt(
+        email: account.email,
+        displayName: account.displayName ?? '',
+      );
+    }
+    await _authenticate(() async => session, email: account.email);
+    return null;
+  }
+
   Future<void> _authenticate(
     Future<AuthSession> Function() action, {
-    required String email,
-    required String password,
+    String? email,
+    String? password,
   }) async {
     if (busy) throw const AppFailure('busy', Copy.signInIsAlreadyInProgress);
     final generation = ++_generation;
@@ -248,6 +300,31 @@ class AuthController extends ChangeNotifier {
             } catch (_) {
               // Ignore silent sign-in error and fall through to logout
             }
+          } else if (session.email != null) {
+            // Google sessions have no password. Renew silently through the
+            // remembered Google account before giving up.
+            try {
+              final googleAccount = await _google.silent();
+              if (googleAccount != null) {
+                final renewed = await api.signInWithGoogle(
+                  idToken: googleAccount.idToken,
+                );
+                if (renewed != null &&
+                    generation == _generation &&
+                    !_disposed) {
+                  final next = renewed.copyWith(
+                    email: session.email,
+                    password: null,
+                  );
+                  _session = next;
+                  await _persist(generation, next);
+                  await refreshProfile();
+                  return next.idToken;
+                }
+              }
+            } catch (_) {
+              // Fall through to a clean logout when silent Google renewal fails.
+            }
           }
           _session = null;
           profile = null;
@@ -296,6 +373,8 @@ class AuthController extends ChangeNotifier {
     _notify();
     await _persist(generation, null);
     if (token != null) unawaited(api.logout(token).catchError((Object _) {}));
+    // The next Google sign-in should show the account chooser again.
+    unawaited(_google.signOut());
   }
 
   Future<void> deleteAccount() async {

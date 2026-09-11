@@ -19,6 +19,7 @@ dependencies:
   google_mobile_ads: ^9.1.0
   firebase_core: ^4.14.0
   firebase_app_check: ^0.4.7
+  google_sign_in: ^6.2.2
 dev_dependencies:
   flutter_test:
     sdk: flutter

@@ -13,6 +13,7 @@ class AppConfig {
     this.firebaseStorageBucket = '',
     this.enableAppCheck = false,
     this.appCheckDebugToken = '',
+    this.firebaseWebClientId = '',
   });
 
   factory AppConfig.fromEnvironment() => const AppConfig(
@@ -33,6 +34,7 @@ class AppConfig {
     firebaseStorageBucket: String.fromEnvironment('FIREBASE_STORAGE_BUCKET'),
     enableAppCheck: bool.fromEnvironment('ENABLE_APP_CHECK'),
     appCheckDebugToken: String.fromEnvironment('APP_CHECK_DEBUG_TOKEN'),
+    firebaseWebClientId: String.fromEnvironment('FIREBASE_WEB_CLIENT_ID'),
   );
 
   final String backendUrl;
@@ -48,6 +50,7 @@ class AppConfig {
   final String firebaseStorageBucket;
   final bool enableAppCheck;
   final String appCheckDebugToken;
+  final String firebaseWebClientId;
 
   bool get mock =>
       const bool.fromEnvironment('MOCK_BACKEND', defaultValue: false);

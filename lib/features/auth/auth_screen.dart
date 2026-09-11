@@ -2,11 +2,13 @@ import 'package:taash/l10n/copy.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import '../../core/auth/auth_controller.dart';
+import '../../core/auth/google_auth.dart';
 import '../../core/errors/app_failure.dart';
 import '../../core/theme/taash_theme.dart';
 import '../../core/widgets/taash_widgets.dart';
 import '../../l10n/strings.dart';
 import 'country_selector.dart';
+import 'google_logo.dart';
 
 class AuthScreen extends StatefulWidget {
   const AuthScreen({super.key, required this.auth, required this.onLearn});
@@ -65,6 +67,76 @@ class _AuthScreenState extends State<AuthScreen> {
     } finally {
       if (mounted) setState(() => busy = false);
     }
+  }
+
+  Future<void> googleSignIn() async {
+    if (busy) return;
+    setState(() {
+      busy = true;
+      message = null;
+    });
+    try {
+      GoogleProfilePrompt? prompt;
+      if (register) {
+        if (country == null) {
+          setState(() => message = Copy.chooseYourCountryToContinue);
+          return;
+        }
+        final nameValue = name.text.trim();
+        if (nameValue.isEmpty ||
+            nameValue.length > 25 ||
+            !RegExp(r'^[A-Za-z0-9 ]+$').hasMatch(nameValue)) {
+          setState(() => message = S.invalidName);
+          return;
+        }
+        prompt = await widget.auth.signInWithGoogle(
+          displayName: nameValue,
+          country: country!['code'],
+        );
+      } else {
+        prompt = await widget.auth.signInWithGoogle();
+      }
+      if (prompt != null) {
+        final profile = await _promptGoogleProfile(prompt);
+        if (profile != null) {
+          await widget.auth.signInWithGoogle(
+            displayName: profile.name,
+            country: profile.country,
+          );
+        }
+      }
+    } on AppFailure catch (e) {
+      if (mounted) setState(() => message = e.message);
+    } on GoogleAuthFailure catch (e) {
+      if (mounted) {
+        setState(() => message = e.message);
+      }
+    } catch (_) {
+      if (mounted) {
+        setState(() => message = Copy.weCouldNotConnectPleaseTryAgain);
+      }
+    } finally {
+      if (mounted) setState(() => busy = false);
+    }
+  }
+
+  /// Collects the display name and country a brand-new Google player still
+  /// needs. Returns null when the user backs out.
+  Future<({String name, String country})?> _promptGoogleProfile(
+    GoogleProfilePrompt prompt,
+  ) async {
+    final result = await showModalBottomSheet<({String name, String country})>(
+      context: context,
+      isScrollControlled: true,
+      useSafeArea: true,
+      showDragHandle: true,
+      clipBehavior: Clip.antiAlias,
+      builder: (_) => _GoogleProfileSheet(
+        email: prompt.email,
+        displayName: prompt.displayName,
+      ),
+    );
+    return result;
   }
 
   @override
@@ -288,6 +360,36 @@ class _AuthScreenState extends State<AuthScreen> {
                       ),
                       const SizedBox(height: 16),
                     ],
+                    if (!reset) ...[
+                      const SizedBox(height: 10),
+                      const Row(
+                        children: [
+                          Expanded(child: Divider(color: T.outline)),
+                          Padding(
+                            padding: EdgeInsets.symmetric(horizontal: 12),
+                            child: Text(
+                              Copy.or,
+                              style: TextStyle(
+                                color: T.muted,
+                                fontSize: 13,
+                                fontWeight: FontWeight.w700,
+                              ),
+                            ),
+                          ),
+                          Expanded(child: Divider(color: T.outline)),
+                        ],
+                      ),
+                      const SizedBox(height: 16),
+                      SizedBox(
+                        width: double.infinity,
+                        child: OutlinedButton.icon(
+                          onPressed: busy ? null : googleSignIn,
+                          icon: const GoogleLogo(),
+                          label: const Text(Copy.continueWithGoogle),
+                        ),
+                      ),
+                      const SizedBox(height: 8),
+                    ],
                     if (message != null)
                       Padding(
                         padding: const EdgeInsets.only(bottom: 18),
@@ -348,6 +450,110 @@ class _AuthScreenState extends State<AuthScreen> {
             ),
           ),
         ),
+      ),
+    ),
+  );
+}
+
+class _GoogleProfileSheet extends StatefulWidget {
+  const _GoogleProfileSheet({required this.email, required this.displayName});
+  final String email;
+  final String displayName;
+  @override
+  State<_GoogleProfileSheet> createState() => _GoogleProfileSheetState();
+}
+
+class _GoogleProfileSheetState extends State<_GoogleProfileSheet> {
+  final formKey = GlobalKey<FormState>();
+  late final nameCtrl = TextEditingController(text: widget.displayName);
+  String? selectedCountryCode;
+
+  @override
+  void dispose() {
+    nameCtrl.dispose();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) => Padding(
+    padding: EdgeInsets.fromLTRB(
+      24,
+      0,
+      24,
+      MediaQuery.of(context).viewInsets.bottom + 24,
+    ),
+    child: Form(
+      key: formKey,
+      child: Column(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          Text(Copy.almostThere, style: const TextStyle(color: T.muted)),
+          const SizedBox(height: 8),
+          Text(Copy.finishYourSeat, style: const TextStyle(fontSize: 14)),
+          const SizedBox(height: 24),
+          TextFormField(
+            controller: nameCtrl,
+            textInputAction: TextInputAction.next,
+            textCapitalization: TextCapitalization.words,
+            inputFormatters: [
+              FilteringTextInputFormatter.allow(RegExp(r'[A-Za-z0-9 ]')),
+              LengthLimitingTextInputFormatter(25),
+            ],
+            decoration: const InputDecoration(hintText: Copy.nameHint),
+            validator: (v) => v == null || v.trim().isEmpty
+                ? Copy.enterYourName
+                : v.trim().length > 25
+                ? Copy.max25Chars
+                : null,
+          ),
+          const SizedBox(height: 12),
+          OutlinedButton(
+            onPressed: () async {
+              final result =
+                  await Navigator.push<Map<String, dynamic>>(
+                    context,
+                    MaterialPageRoute(
+                      builder: (_) => const CountrySelector(),
+                    ),
+                  );
+              if (result != null && mounted) {
+                setState(() => selectedCountryCode = result['code']);
+              }
+            },
+            child: Row(
+              children: [
+                selectedCountryCode == null
+                    ? const Icon(Icons.public, size: 20)
+                    : TaashFlag(code: selectedCountryCode!),
+                const SizedBox(width: 12),
+                Expanded(
+                  child: Text(
+                    selectedCountryCode == null
+                        ? Copy.chooseYourCountry
+                        : selectedCountryCode!,
+                  ),
+                ),
+                const Icon(Icons.expand_more),
+              ],
+            ),
+          ),
+          const SizedBox(height: 24),
+          SizedBox(
+            width: double.infinity,
+            child: TaashButton(
+              label: S.register,
+              busy: false,
+              onPressed: () {
+                if (!(formKey.currentState?.validate() ?? false)) return;
+                if (selectedCountryCode == null) return;
+                Navigator.of(context).pop((
+                  name: nameCtrl.text.trim(),
+                  country: selectedCountryCode!,
+                ));
+              },
+            ),
+          ),
+        ],
       ),
     ),
   );

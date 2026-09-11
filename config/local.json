@@ -6,6 +6,7 @@
   "FIREBASE_PROJECT_ID": "river-bruin-423311-v3",
   "FIREBASE_MESSAGING_SENDER_ID": "425933145706",
   "FIREBASE_STORAGE_BUCKET": "river-bruin-423311-v3.firebasestorage.app",
+  "FIREBASE_WEB_CLIENT_ID": "425933145706-kkt8o2fu2l186mo3fsn7k5vrbtpalb49.apps.googleusercontent.com",
   "ENABLE_APP_CHECK": "true",
   "APP_CHECK_DEBUG_TOKEN": "92749272-9E36-44BF-B2AB-441EFE8FD7AE",
   "ALLOW_INSECURE_API": "true",

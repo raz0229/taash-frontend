@@ -190,6 +190,40 @@ class ApiClient {
     );
   }
 
+  /// Exchanges a Google OAuth ID token for an authenticated session exactly
+  /// like [signIn]/[register]. Returns null when the Google account is new to
+  /// TaashOnline and the server still needs a display name and country before
+  /// the player can be created (HTTP 409 profile_required).
+  Future<AuthSession?> signInWithGoogle({
+    required String idToken,
+    String? displayName,
+    String? country,
+  }) async {
+    try {
+      final json = await request(
+        'POST',
+        '/v1/auth/google',
+        authenticated: false,
+        body: {
+          'id_token': idToken,
+          if (displayName != null && displayName.trim().isNotEmpty)
+            'display_name': displayName.trim(),
+          if (country != null && country.trim().isNotEmpty)
+            'country': country.trim().toUpperCase(),
+        },
+      );
+      return AuthSession.fromFirebase(json);
+    } on AppFailure catch (e) {
+      if (e.code == 'profile_required') return null;
+      rethrow;
+    } on FormatException {
+      throw const AppFailure(
+        'malformed_response',
+        'Google sign-in returned an incomplete session. Please try again.',
+      );
+    }
+  }
+
   Future<AuthSession> refreshSession(AuthSession session) async {
     if (config.firebaseApiKey.isEmpty) {
       throw const AppFailure(

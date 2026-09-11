@@ -160,6 +160,9 @@ abstract final class Copy {
       'Keep your message to 150 characters.';
   static const searchNameOrCountryCode = 'Search name or country code';
   static const chooseYourCountry = 'Choose your country';
+  static const nameHint = 'Display name';
+  static const enterYourName = 'Enter your name';
+  static const max25Chars = 'Max 25 characters';
   static const backToSignIn = 'Back to sign in';
   static const hidePassword = 'Hide password';
   static const showPassword = 'Show password';
@@ -174,6 +177,11 @@ abstract final class Copy {
   static const weCouldNotConnectPleaseTryAgain =
       'We could not connect. Please try again.';
   static const chooseYourCountryToContinue = 'Choose your country to continue.';
+  static const continueWithGoogle = 'Continue with Google';
+  static const or = 'or';
+  static const almostThere = 'Almost there';
+  static const finishYourSeat =
+      'Pick your name and country to finish your seat.';
   static const duplicateAvatarIDs = 'Duplicate avatar IDs';
   static const ustaad = 'Ustaad';
   static const raahi = 'Raahi';

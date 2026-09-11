@@ -10,6 +10,7 @@ import 'package:flutter_localizations/flutter_localizations.dart';
 import 'package:google_mobile_ads/google_mobile_ads.dart';
 import 'core/ads/ad_service.dart';
 import 'core/auth/auth_controller.dart';
+import 'core/auth/google_auth.dart';
 import 'core/config/app_config.dart';
 import 'core/errors/app_failure.dart';
 import 'core/firebase/firebase_bootstrap.dart';
@@ -58,11 +59,13 @@ class TaashApp extends StatefulWidget {
     required this.config,
     this.admobInitialization,
     this.auth,
+    this.googleAuth,
     this.preferences,
   });
   final AppConfig config;
   final Future<void>? admobInitialization;
   final AuthController? auth;
+  final GoogleAuth? googleAuth;
   final Preferences? preferences;
   @override
   State<TaashApp> createState() => _TaashAppState();
@@ -76,7 +79,10 @@ class _TaashAppState extends State<TaashApp> {
     }
     return client;
   }();
-  late final auth = widget.auth ?? AuthController(api: api);
+  late final googleAuth = widget.googleAuth ??
+      GoogleAuth(webClientId: widget.config.firebaseWebClientId);
+  late final auth =
+      widget.auth ?? AuthController(api: api, googleAuth: googleAuth);
   late final preferences = widget.preferences ?? Preferences();
   late final adService = widget.config.adMobRewardedAdUnitId.isNotEmpty ||
           widget.config.adMobInterstitialAdUnitId.isNotEmpty
