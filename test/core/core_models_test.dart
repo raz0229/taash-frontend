@@ -220,7 +220,7 @@ void main() {
       'invalid_request',
       serverMessage: 'invalid move: insufficient coins to join',
     );
-    expect(failure.message, contains('virtual coins'));
+    expect(failure.message, contains('more coins'));
     expect(failure.toString(), isNot(contains('insufficient coins')));
 
     final rewardFailure = AppFailure.fromServer(
@@ -229,5 +229,9 @@ void main() {
       details: {'time_remaining_in_minutes': 179},
     );
     expect(rewardFailure.details?['time_remaining_in_minutes'], 179);
+
+    final emailExists = AppFailure.fromServer('email_exists');
+    expect(emailExists.message, contains('already exists'));
+    expect(emailExists.message, contains('Try signing in'));
   });
 }

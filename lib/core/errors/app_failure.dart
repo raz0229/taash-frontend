@@ -45,6 +45,8 @@ class AppFailure implements Exception {
         'session_expired' => 'Please sign in again to continue.',
         'invalid_credentials' =>
           'Check your email and password, then try again.',
+        'email_exists' =>
+          'An account with this email already exists. Try signing in.',
         'server_under_maintenance' =>
           'TaashOnline is taking a short maintenance break.',
         'room_conflict' =>
