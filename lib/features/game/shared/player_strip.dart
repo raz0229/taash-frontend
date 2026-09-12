@@ -14,11 +14,16 @@ class PlayerStrip extends StatefulWidget {
     required this.onPlayerTap,
     this.onEmojiTap,
     this.turnTimer,
+    this.stripKey,
   });
   final RoomSnapshot snapshot;
   final ValueChanged<PublicPlayer> onPlayerTap;
   final ValueChanged<PublicPlayer>? onEmojiTap;
   final Animation<double>? turnTimer;
+
+  /// Anchors the seat row so challenge animations can land the pile on the
+  /// exact seat that receives it.
+  final GlobalKey? stripKey;
   @override
   State<PlayerStrip> createState() => _PlayerStripState();
 }
@@ -87,6 +92,7 @@ class _PlayerStripState extends State<PlayerStrip>
     final compact = MediaQuery.sizeOf(context).height < 720;
     final large = MediaQuery.textScalerOf(context).scale(1) > 1.4;
     return SizedBox(
+      key: widget.stripKey,
       height: large
           ? 156
           : compact

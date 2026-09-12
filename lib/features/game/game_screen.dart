@@ -22,6 +22,7 @@ import 'shared/player_strip.dart';
 import 'shared/playing_card.dart';
 import 'shared/room_backdrop.dart';
 import 'shared/celebration_overlay.dart';
+import 'shared/bluff_challenge_animation.dart';
 
 part 'game_menus.dart';
 part 'game_status.dart';
@@ -62,7 +63,6 @@ class _GameScreenState extends State<GameScreen>
   String lastTurn = '';
   int _lastHandCount = -1;
   int _lastPlayAreaLength = -1;
-  String? _lastCelebratedChatId;
   @override
   String notice = '';
   String? takenDiscard;
@@ -72,6 +72,12 @@ class _GameScreenState extends State<GameScreen>
   String? celebrationText;
   Color celebrationColor = T.ochre;
   bool _lastThullu = false;
+  // A13: Bluff challenge reveal, driven by the server broadcast to every seat.
+  bool _bluffAnimationActive = false;
+  String _lastBluffKey = '';
+  OverlayEntry? _bluffOverlay;
+  final GlobalKey _bluffPileKey = GlobalKey();
+  final GlobalKey _playerStripKey = GlobalKey();
   @override
   RoomSession get session => widget.session;
   bool _played10sSound = false;
@@ -98,6 +104,7 @@ class _GameScreenState extends State<GameScreen>
   void initState() {
     super.initState();
     session.onStockDecreased = _onStockDecreased;
+    session.onBluffChallenge = _onBluffChallenge;
     session.addListener(changed);
     _reconcile();
   }
@@ -111,7 +118,14 @@ class _GameScreenState extends State<GameScreen>
     );
     _played10sSound = false;
     if (s.room.isActive && s.currentPlayerId.isNotEmpty) {
-      _turnTimer.forward(from: 0);
+      if (_bluffAnimationActive) {
+        // The challenge reveal freezes every seat's clock; resume afterwards.
+        _turnTimer
+          ..stop()
+          ..value = 0;
+      } else {
+        _turnTimer.forward(from: 0);
+      }
     } else {
       _turnTimer.stop();
       _turnTimer.value = 0;
@@ -149,15 +163,6 @@ class _GameScreenState extends State<GameScreen>
 
     if (s.you.hand.length == 10) takenDiscard = null;
 
-    final lastChat = session.chat.lastOrNull;
-    if (lastChat != null &&
-        lastChat.text == 'Bluff Caught!' &&
-        lastChat.id != _lastCelebratedChatId) {
-      _lastCelebratedChatId = lastChat.id;
-      if (lastChat.playerId != session.playerId) {
-        _triggerCelebration('BLUFF', T.coral);
-      }
-    }
     // A6: Detect Thullu in Bhabhi.
     if (s.gameState is BhabhiState) {
       final bhabhi = s.gameState as BhabhiState;
@@ -182,7 +187,9 @@ class _GameScreenState extends State<GameScreen>
   @override
   void dispose() {
     session.onStockDecreased = null;
+    session.onBluffChallenge = null;
     _stockDrawOverlay?.remove();
+    _bluffOverlay?.remove();
     session.removeListener(changed);
     noticeTimer?.cancel();
     _turnTimer.dispose();
@@ -236,6 +243,84 @@ class _GameScreenState extends State<GameScreen>
       celebrationText = text;
       celebrationColor = color;
     });
+  }
+
+  // A13: Bluff challenge reveal. The same event reaches the challenger through
+  // its command ack and every other seat through the server broadcast, so the
+  // identity key deduplicates the two arrivals.
+  void _onBluffChallenge(BluffChallengeEvent event) {
+    if (!mounted || _bluffAnimationActive) return;
+    if (event.dedupKey == _lastBluffKey) return;
+    _lastBluffKey = event.dedupKey;
+    _showBluffChallengeAnimation(event);
+  }
+
+  void _showBluffChallengeAnimation(BluffChallengeEvent event) {
+    final s = session.snapshot;
+    if (s == null) return;
+    setState(() => _bluffAnimationActive = true);
+    audio.playSfx('bluff_caught');
+    _turnTimer.stop();
+
+    final players = s.players;
+    PublicPlayer? playerOf(String id) =>
+        players.where((p) => p.id == id).firstOrNull;
+    String nameOf(String id) {
+      if (id == s.you.id) return Copy.you;
+      return playerOf(id)?.displayName ?? id;
+    }
+
+    final challenger = playerOf(event.challenger);
+    final challenged = playerOf(event.challenged);
+    final sorted = [...players]..sort((a, b) => a.seat.compareTo(b.seat));
+    final winnerIndex = sorted.indexWhere((p) => p.id == event.pileGoesTo);
+
+    final sachaName = event.bluffCaught
+        ? nameOf(event.challenger)
+        : nameOf(event.challenged);
+    final jhutaName = event.bluffCaught
+        ? nameOf(event.challenged)
+        : nameOf(event.challenger);
+
+    final pileCount = switch (s.gameState) {
+      final BluffState state => state.pileCount,
+      _ => event.lastPlayCards.length,
+    };
+
+    _bluffOverlay?.remove();
+    final entry = OverlayEntry(
+      builder: (_) => BluffChallengeAnimation(
+        challengerName: nameOf(event.challenger),
+        challengerPfp: challenger?.selectedPfp ?? 0,
+        challengedName: nameOf(event.challenged),
+        challengedPfp: challenged?.selectedPfp ?? 0,
+        declaredRank: event.declaredRank,
+        lastPlayCards: event.lastPlayCards,
+        pileCount: pileCount,
+        sachaName: sachaName,
+        jhutaName: jhutaName,
+        pileStackKey: _bluffPileKey,
+        playerStripKey: _playerStripKey,
+        winnerSeatIndex: winnerIndex < 0 ? 0 : winnerIndex,
+        onComplete: _onBluffAnimationComplete,
+      ),
+    );
+    _bluffOverlay = entry;
+    Overlay.of(context, rootOverlay: true).insert(entry);
+  }
+
+  void _onBluffAnimationComplete() {
+    if (!mounted) return;
+    _bluffOverlay?.remove();
+    _bluffOverlay = null;
+    setState(() => _bluffAnimationActive = false);
+    final s = session.snapshot;
+    if (s != null &&
+        s.room.isActive &&
+        s.currentPlayerId.isNotEmpty &&
+        !_turnTimer.isAnimating) {
+      _turnTimer.forward();
+    }
   }
 
   @override
@@ -295,9 +380,11 @@ class _GameScreenState extends State<GameScreen>
                 ? Copy.bluffCaughtThePreviousPlayerTakesThe
                 : Copy.anHonestPlayYouTakeThePile,
           );
-          // A5: Trigger bluff caught animation.
+          // A5: The challenger also learns the outcome through this ack; the
+          // full reveal is shared with everyone through the broadcast event.
+          final event = BluffChallengeEvent.tryParse(result);
+          if (event != null) _onBluffChallenge(event);
           if (caught) {
-            _triggerCelebration('BLUFF', T.coral);
             session.command('chat.send', payload: {'text': 'Bluff Caught!'});
           }
         }
@@ -455,14 +542,15 @@ class _GameScreenState extends State<GameScreen>
         compact:
             MediaQuery.sizeOf(context).height < 720 &&
             MediaQuery.textScalerOf(context).scale(1) <= 1.4,
+        pileKey: s.room.game == GameType.bluff ? _bluffPileKey : null,
         onCardDrop: (card) => play(card),
         canDrop: ready && mine,
         onInspectCollection: (p) => inspectCollection(context, p),
         onDrawStock: ready && mine
             ? () {
-                if (s.room.game == GameType.daketi)
+                if (s.room.game == GameType.daketi) {
                   send('daketi.draw');
-                else if (s.room.game == GameType.tc)
+                } else if (s.room.game == GameType.tc)
                   send('tc.draw_stock');
               }
             : null,
@@ -529,6 +617,7 @@ class _GameScreenState extends State<GameScreen>
                             turnKey: '$lastTurn:$turnSerial',
                             active: session.connected && !terminal,
                             mine: mine,
+                            paused: _bluffAnimationActive,
                             seconds: s!.room.game == GameType.tc ? 120 : 60,
                             onExpired: () => leave(expired: true),
                           ),
@@ -606,6 +695,7 @@ class _GameScreenState extends State<GameScreen>
                                 onPlayerTap: playerMenu,
                                 onEmojiTap: reactionPicker,
                                 turnTimer: _turnTimer,
+                                stripKey: _playerStripKey,
                               ),
                               if (s.room.isWaiting)
                                 Expanded(child: _waiting(s))
@@ -778,10 +868,7 @@ class _StockDrawAnimationState extends State<_StockDrawAnimation>
               return Positioned(
                 left: size.width / 2 - cardWidth / 2,
                 top: size.height * .58 - t * size.height * .52,
-                child: Opacity(
-                  opacity: (1 - t).clamp(0.0, 1.0),
-                  child: child,
-                ),
+                child: Opacity(opacity: (1 - t).clamp(0.0, 1.0), child: child),
               );
             },
             child: const SizedBox(

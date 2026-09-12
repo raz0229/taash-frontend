@@ -16,6 +16,7 @@ class GameSurface extends StatelessWidget {
     required this.onInspectCollection,
     this.onDrawStock,
     this.onTakeDiscard,
+    this.pileKey,
     this.compact = false,
   });
   final RoomSnapshot snapshot;
@@ -25,6 +26,10 @@ class GameSurface extends StatelessWidget {
   final ValueChanged<PublicPlayer> onInspectCollection;
   final VoidCallback? onDrawStock;
   final VoidCallback? onTakeDiscard;
+
+  /// Anchors the Bluff pile so challenge animations can launch cards from the
+  /// real pile location on the table.
+  final Key? pileKey;
   String name(String id) => id == snapshot.you.id
       ? Copy.you
       : snapshot.players.where((p) => p.id == id).firstOrNull?.displayName ??
@@ -176,6 +181,7 @@ class GameSurface extends StatelessWidget {
       SizedBox(height: compact ? 6 : 10),
       Semantics(
         label: Copy.hiddenPileCards(state.pileCount),
+        key: pileKey,
         child: SizedBox(
           width: 110,
           height: compact ? 76 : 104,
@@ -184,7 +190,7 @@ class GameSurface extends StatelessWidget {
             children: [
               for (
                 var i = 0;
-                i < (state.pileCount == 0 ? 1 : state.pileCount.clamp(1, 4));
+                i < state.pileCount.clamp(0, 4);
                 i++
               )
                 Transform.rotate(

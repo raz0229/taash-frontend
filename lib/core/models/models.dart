@@ -353,6 +353,60 @@ class ChatMessage {
   final DateTime sentAt;
 }
 
+/// A resolved Bluff challenge broadcast to every seat. The server announces
+/// these whenever a player challenges the previous play; the challenger also
+/// receives the same payload as the ack of its own `bluff.challenge` command.
+class BluffChallengeEvent {
+  BluffChallengeEvent({
+    required this.bluffCaught,
+    required this.challenger,
+    required this.challenged,
+    required this.pileGoesTo,
+    required this.declaredRank,
+    required List<String> lastPlayCards,
+  }) : lastPlayCards = List.unmodifiable(lastPlayCards);
+
+  /// Accepts the full ack envelope (`{"command": ...,
+  /// "result": {"type": ..., "data": {...}}}`), the result object on its own,
+  /// or the data map directly.
+  static BluffChallengeEvent? tryParse(Object? value) {
+    if (value is! Map) return null;
+    var fields = Map<String, dynamic>.from(value);
+    final result = fields['result'];
+    if (result is Map) fields = Map<String, dynamic>.from(result);
+    final data = fields['data'];
+    if (data is Map) fields = Map<String, dynamic>.from(data);
+    final bluffCaught = fields['bluff_caught'] == true;
+    final challenger = jsonString(fields['challenger']);
+    final challenged = jsonString(fields['challenged']);
+    final pileGoesTo = jsonString(fields['pile_goes_to']);
+    final declaredRank = jsonString(fields['declared_rank']);
+    final lastPlayCards = jsonList(fields['last_play_cards'], (v) => v is String ? v : '').toList();
+    if (challenger.isEmpty ||
+        challenged.isEmpty ||
+        pileGoesTo.isEmpty ||
+        declaredRank.isEmpty ||
+        lastPlayCards.isEmpty) {
+      return null;
+    }
+    return BluffChallengeEvent(
+      bluffCaught: bluffCaught,
+      challenger: challenger,
+      challenged: challenged,
+      pileGoesTo: pileGoesTo,
+      declaredRank: declaredRank,
+      lastPlayCards: lastPlayCards,
+    );
+  }
+
+  final bool bluffCaught;
+  final String challenger, challenged, pileGoesTo, declaredRank;
+  final List<String> lastPlayCards;
+
+  String get dedupKey =>
+      '$bluffCaught|$challenger|$challenged|$declaredRank|${lastPlayCards.join(',')}';
+}
+
 class ChatAnimation {
   const ChatAnimation({
     required this.animId,

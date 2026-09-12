@@ -279,7 +279,7 @@ Future<V?> showTaashSheet<V>(BuildContext context, Widget child) =>
       useSafeArea: true,
       builder: (context) => Padding(
         padding: EdgeInsets.only(
-          bottom: MediaQuery.viewInsetsOf(context).bottom,
+          bottom: MediaQuery.viewInsetsOf(context).bottom + 24,
         ),
         child: ConstrainedBox(
           constraints: BoxConstraints(

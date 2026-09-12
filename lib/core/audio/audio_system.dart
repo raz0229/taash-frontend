@@ -1,6 +1,7 @@
 import 'package:audioplayers/audioplayers.dart';
+import 'package:flutter/widgets.dart';
 
-class AudioSystem {
+class AudioSystem with WidgetsBindingObserver {
   static final AudioSystem _instance = AudioSystem._internal();
   factory AudioSystem() => _instance;
   AudioSystem._internal();
@@ -9,6 +10,7 @@ class AudioSystem {
   final Set<AudioPlayer> _sfxPlayers = <AudioPlayer>{};
 
   bool _bgmPlaying = false;
+  bool _bgmPausedByLifecycle = false;
   bool sfxEnabled = true;
 
   bool isTestMode = false;
@@ -40,16 +42,35 @@ class AudioSystem {
   );
 
   Future<void> init() async {
+    WidgetsBinding.instance.addObserver(this);
     if (_isTest) return;
     _bgmPlayer = AudioPlayer();
     await _bgmPlayer.setReleaseMode(ReleaseMode.loop);
     await _bgmPlayer.setAudioContext(_bgmContext);
   }
 
+  @override
+  void didChangeAppLifecycleState(AppLifecycleState state) {
+    if (state == AppLifecycleState.resumed) {
+      if (_bgmPausedByLifecycle) {
+        _bgmPausedByLifecycle = false;
+        _resumeBgm();
+      }
+    } else if (state == AppLifecycleState.paused ||
+        state == AppLifecycleState.hidden ||
+        state == AppLifecycleState.detached) {
+      if (_bgmPlaying && !_bgmPausedByLifecycle) {
+        _bgmPausedByLifecycle = true;
+        _pauseBgm();
+      }
+    }
+  }
+
   Future<void> playBgm() async {
     if (_isTest) return;
     if (_bgmPlaying) return;
     _bgmPlaying = true;
+    _bgmPausedByLifecycle = false;
     await _bgmPlayer.play(AssetSource('audio/background_music.ogg'));
   }
 
@@ -57,7 +78,18 @@ class AudioSystem {
     if (_isTest) return;
     if (!_bgmPlaying) return;
     _bgmPlaying = false;
+    _bgmPausedByLifecycle = false;
     await _bgmPlayer.stop();
+  }
+
+  Future<void> _pauseBgm() async {
+    if (_isTest) return;
+    await _bgmPlayer.pause();
+  }
+
+  Future<void> _resumeBgm() async {
+    if (_isTest) return;
+    await _bgmPlayer.resume();
   }
 
   Future<void> playSfx(String name) async {

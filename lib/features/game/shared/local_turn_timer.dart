@@ -13,10 +13,12 @@ class LocalTurnTimer extends StatefulWidget {
     required this.mine,
     required this.seconds,
     required this.onExpired,
+    this.paused = false,
   });
   final String turnKey;
   final bool active, mine;
   final int seconds;
+  final bool paused;
   final VoidCallback onExpired;
   @override
   State<LocalTurnTimer> createState() => _LocalTurnTimerState();
@@ -41,6 +43,12 @@ class _LocalTurnTimerState extends State<LocalTurnTimer>
     if (oldWidget.turnKey != widget.turnKey ||
         oldWidget.active != widget.active) {
       _start();
+    } else if (oldWidget.paused != widget.paused) {
+      if (widget.paused) {
+        _pause();
+      } else {
+        _resume();
+      }
     }
   }
 
@@ -51,24 +59,53 @@ class _LocalTurnTimerState extends State<LocalTurnTimer>
       ..stop();
     _remaining = widget.seconds;
     _fired = false;
-    if (!widget.active) return;
+    if (!widget.active || widget.paused) return;
+    _run();
+  }
+
+  void _run() {
+    if (_watch.isRunning) return;
     _watch.start();
+    _tick();
     _timer = Timer.periodic(const Duration(seconds: 1), (_) {
-      if (!mounted) return;
-      setState(
-        () => _remaining = (widget.seconds - _watch.elapsed.inSeconds).clamp(
-          0,
-          widget.seconds,
-        ),
-      );
-      if (_remaining == 0) {
-        _timer?.cancel();
-        if (!_fired && widget.mine && widget.active) {
-          _fired = true;
-          widget.onExpired();
-        }
-      }
+      if (mounted) _tick();
     });
+  }
+
+  void _pause() {
+    _timer?.cancel();
+    _watch.stop();
+  }
+
+  void _resume() {
+    if (!widget.active) return;
+    _timer?.cancel();
+    _remaining = (widget.seconds - _watch.elapsed.inSeconds).clamp(
+      0,
+      widget.seconds,
+    );
+    if (_remaining == 0) {
+      _fired = true;
+      if (widget.mine && widget.active) widget.onExpired();
+      return;
+    }
+    _run();
+  }
+
+  void _tick() {
+    setState(
+      () => _remaining = (widget.seconds - _watch.elapsed.inSeconds).clamp(
+        0,
+        widget.seconds,
+      ),
+    );
+    if (_remaining == 0) {
+      _timer?.cancel();
+      if (!_fired && widget.mine && widget.active) {
+        _fired = true;
+        widget.onExpired();
+      }
+    }
   }
 
   @override
@@ -76,8 +113,7 @@ class _LocalTurnTimerState extends State<LocalTurnTimer>
     if (state == AppLifecycleState.resumed) {
       setState(_start);
     } else {
-      _timer?.cancel();
-      _watch.stop();
+      _pause();
     }
   }
 

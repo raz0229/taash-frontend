@@ -254,4 +254,80 @@ void main() {
       await flush();
     },
   );
+
+  Map<String, dynamic> bluffChallengeResult() => {
+        'bluff_caught': true,
+        'challenger': 'player-a',
+        'challenged': 'player-b',
+        'pile_goes_to': 'player-b',
+        'declared_rank': '2',
+        'last_play_cards': ['h-2', 'c-4'],
+      };
+
+  test('bluff challenge broadcast surfaces a BluffChallengeEvent', () async {
+    final socket = TestRoomSocket();
+    final session = sessionFor(socket);
+    await enter(session, socket);
+    BluffChallengeEvent? received;
+    session.onBluffChallenge = (event) => received = event;
+    socket.receive('bluff.challenge_result', {
+      'command': 'bluff.challenge',
+      'result': {
+        'type': 'bluff.challenge_result',
+        'data': bluffChallengeResult(),
+      },
+    });
+    await flush();
+    expect(received, isNotNull);
+    expect(received!.bluffCaught, true);
+    expect(received!.challenged, 'player-b');
+    expect(received!.lastPlayCards, ['h-2', 'c-4']);
+    session.dispose();
+    await flush();
+  });
+
+  test('challenge ack also fires the BluffChallengeEvent callback', () async {
+    final socket = TestRoomSocket();
+    final session = sessionFor(socket);
+    await enter(session, socket);
+    BluffChallengeEvent? received;
+    session.onBluffChallenge = (event) => received = event;
+    final command = session.command('bluff.challenge');
+    final requestId = socket.sent.last['request_id'] as String;
+    socket.receive('ack', {
+      'command': 'bluff.challenge',
+      'result': {
+        'type': 'bluff.challenge_result',
+        'data': {...bluffChallengeResult(), 'bluff_caught': false},
+      },
+    }, requestId: requestId);
+    await command;
+    await flush();
+    expect(received, isNotNull);
+    expect(received!.bluffCaught, false);
+    expect(received!.pileGoesTo, 'player-b');
+    session.dispose();
+    await flush();
+  });
+
+  test('bluff challenge with an unknown event type is still recognized via '
+      'payload shape', () async {
+    final socket = TestRoomSocket();
+    final session = sessionFor(socket);
+    await enter(session, socket);
+    BluffChallengeEvent? received;
+    session.onBluffChallenge = (event) => received = event;
+    socket.receive('challenge.resolved', {
+      'command': 'bluff.challenge',
+      'result': {
+        'type': 'bluff.challenge_result',
+        'data': bluffChallengeResult(),
+      },
+    });
+    await flush();
+    expect(received, isNotNull);
+    expect(received!.declaredRank, '2');
+    session.dispose();
+    await flush();
+  });
 }

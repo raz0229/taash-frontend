@@ -58,6 +58,7 @@ class RoomSession extends ChangeNotifier with WidgetsBindingObserver {
   final Future<void> Function()? onEconomyChanged;
   final Future<String?> Function()? appCheckTokenProvider;
   VoidCallback? onStockDecreased;
+  void Function(BluffChallengeEvent)? onBluffChallenge;
   final RoomSocketConnector _connector;
   final SnapshotReducer _reducer;
   final Duration commandTimeout, connectTimeout, reconnectBase, reconnectJitter;
@@ -377,6 +378,7 @@ class RoomSession extends ChangeNotifier with WidgetsBindingObserver {
           pending.timer.cancel();
           pending.completer.complete(payload);
           if (pending.type == 'chat.anim') _refreshEconomy();
+          if (pending.type == 'bluff.challenge') _handleBluffChallenge(payload);
         case 'error':
           final failure = AppFailure.fromServer(
             jsonString(payload['code']),
@@ -466,6 +468,10 @@ class RoomSession extends ChangeNotifier with WidgetsBindingObserver {
             if (_chat.length > 150) _chat.removeRange(0, _chat.length - 150);
             if (item.playerId != playerId) audio.playSfx('chat_new_message');
           }
+        case 'bluff.challenge':
+        case 'bluff.challenge_result':
+          // Broadcast the server sends to every seat when a challenge resolves.
+          _handleBluffChallenge(payload);
         case 'chat.anim':
           final item = ChatAnimation.fromJson(payload);
           if (!_animations.any(
@@ -476,7 +482,9 @@ class RoomSession extends ChangeNotifier with WidgetsBindingObserver {
           }
           if (item.fromPlayer == playerId) _refreshEconomy();
         default:
-          // Forward-compatible unknown event types never change game state.
+          // Forward-compatible: some servers use a different event name for the
+          // same payload body, so sniff the bluff challenge shape.
+          _handleBluffChallenge(payload);
           return;
       }
       _notify();
@@ -503,6 +511,12 @@ class RoomSession extends ChangeNotifier with WidgetsBindingObserver {
         }),
       );
     }
+  }
+
+  void _handleBluffChallenge(Object? payload) {
+    if (onBluffChallenge == null) return;
+    final event = BluffChallengeEvent.tryParse(payload);
+    if (event != null) onBluffChallenge!(event);
   }
 
   void _playSnapshotSounds(RoomSnapshot previous, RoomSnapshot next) {

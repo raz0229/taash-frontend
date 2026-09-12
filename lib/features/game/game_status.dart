@@ -233,7 +233,7 @@ mixin _GameStatus on State<GameScreen> {
         TweenAnimationBuilder<double>(
           key: const ValueKey('waiting_timer'),
           tween: Tween(begin: 60.0, end: 0.0),
-          duration: const Duration(seconds: 60),
+          duration: const Duration(seconds: 80),
           builder: (context, value, _) {
             return Column(
               mainAxisSize: MainAxisSize.min,
@@ -243,7 +243,7 @@ mixin _GameStatus on State<GameScreen> {
                     width: 24,
                     height: 24,
                     child: CircularProgressIndicator(
-                      value: value / 60.0,
+                      value: value / 80.0,
                       strokeWidth: 2.5,
                       color: T.ochre,
                     ),
