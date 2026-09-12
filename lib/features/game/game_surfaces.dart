@@ -17,19 +17,21 @@ class GameSurface extends StatelessWidget {
     this.onDrawStock,
     this.onTakeDiscard,
     this.pileKey,
+    this.trickKey,
     this.compact = false,
   });
   final RoomSnapshot snapshot;
   final ValueChanged<String> onCardDrop;
   final bool canDrop;
-  final bool compact;
   final ValueChanged<PublicPlayer> onInspectCollection;
   final VoidCallback? onDrawStock;
   final VoidCallback? onTakeDiscard;
-
-  /// Anchors the Bluff pile so challenge animations can launch cards from the
-  /// real pile location on the table.
   final Key? pileKey;
+
+  /// Anchors the Bhabhi trick cards so Thullu animations can launch the pile
+  /// from the real trick location on the table.
+  final Key? trickKey;
+  final bool compact;
   String name(String id) => id == snapshot.you.id
       ? Copy.you
       : snapshot.players.where((p) => p.id == id).firstOrNull?.displayName ??
@@ -129,35 +131,38 @@ class GameSurface extends StatelessWidget {
             ? '${name(state.lastPickupPlayerId)} picks up'
             : '${state.trick.length} cards on the room',
       ),
-      _cards(
-        state.trick.isEmpty
-            ? [PlayingCard(faceDown: true, width: compact ? 46 : 66)]
-            : [
-                for (final play in state.trick)
-                  Column(
-                    mainAxisSize: MainAxisSize.min,
-                    children: [
-                      _AnimatedCard(
-                        key: ValueKey('${play.playerId}:${play.card}'),
-                        child: PlayingCard(
-                          card: play.card,
-                          width: compact ? 46 : 66,
+      KeyedSubtree(
+        key: trickKey,
+        child: _cards(
+          state.trick.isEmpty
+              ? [PlayingCard(faceDown: true, width: compact ? 46 : 66)]
+              : [
+                  for (final play in state.trick)
+                    Column(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        _AnimatedCard(
+                          key: ValueKey('${play.playerId}:${play.card}'),
+                          child: PlayingCard(
+                            card: play.card,
+                            width: compact ? 46 : 66,
+                          ),
                         ),
-                      ),
-                      const SizedBox(height: 5),
-                      SizedBox(
-                        width: compact ? 50 : 70,
-                        child: Text(
-                          name(play.playerId),
-                          maxLines: 1,
-                          overflow: TextOverflow.ellipsis,
-                          textAlign: TextAlign.center,
-                          style: const TextStyle(color: T.mint, fontSize: 10),
+                        const SizedBox(height: 5),
+                        SizedBox(
+                          width: compact ? 50 : 70,
+                          child: Text(
+                            name(play.playerId),
+                            maxLines: 1,
+                            overflow: TextOverflow.ellipsis,
+                            textAlign: TextAlign.center,
+                            style: const TextStyle(color: T.mint, fontSize: 10),
+                          ),
                         ),
-                      ),
-                    ],
-                  ),
-              ],
+                      ],
+                    ),
+                ],
+        ),
       ),
       Text(
         state.firstTrick
@@ -173,7 +178,7 @@ class GameSurface extends StatelessWidget {
       _label(
         state.declaredRank.isEmpty
             ? 'Make your opening play'
-            : '${CardIdentity.rankNameFor(state.declaredRank)} declared',
+            : 'Declared Rank: ${CardIdentity.rankNameFor(state.declaredRank)}',
         detail: state.lastPlayCount > 0
             ? '${name(state.lastPlayerId)} played ${state.lastPlayCount} cards'
             : 'Choose 2–4 cards to open',
@@ -188,21 +193,8 @@ class GameSurface extends StatelessWidget {
           child: Stack(
             alignment: Alignment.center,
             children: [
-              for (
-                var i = 0;
-                i < state.pileCount.clamp(0, 4);
-                i++
-              )
-                Transform.rotate(
-                  angle: (i - 1.5) * .09,
-                  child: Transform.translate(
-                    offset: Offset(i * 5 - 7, -i * 1.5),
-                    child: PlayingCard(
-                      faceDown: true,
-                      width: compact ? 46 : 65,
-                    ),
-                  ),
-                ),
+              for (var i = 0; i < state.pileCount; i++)
+                _pileCard(state.pileCount, i),
             ],
           ),
         ),
@@ -228,6 +220,42 @@ class GameSurface extends StatelessWidget {
         ),
     ],
   );
+
+  // A face-down fan that grows with the real pile count: cards shrink, bunch
+  // closer and flatten as the pile gets taller so the number drawn always
+  // matches `state.pileCount`.
+  Widget _pileCard(int total, int index) {
+    final center = (total - 1) / 2;
+    final step = total <= 4
+        ? 5.0
+        : total <= 10
+        ? 4.0
+        : 3.0;
+    final rotate = total <= 4
+        ? .09
+        : total <= 10
+        ? .05
+        : total <= 20
+        ? .032
+        : .02;
+    final rise = total <= 4
+        ? 1.5
+        : total <= 10
+        ? 1.2
+        : .8;
+    final width = (110 - (total - 1) * step).clamp(
+      compact ? 24.0 : 28.0,
+      compact ? 46.0 : 65.0,
+    );
+    return Transform.rotate(
+      angle: (index - center) * rotate,
+      child: Transform.translate(
+        offset: Offset((index - center) * step, (index - center) * rise),
+        child: PlayingCard(faceDown: true, width: width),
+      ),
+    );
+  }
+
   void _inspectOwnCollection() {
     final me = snapshot.players
         .where((p) => p.id == snapshot.you.id)
@@ -259,15 +287,28 @@ class GameSurface extends StatelessWidget {
             ),
             _cards([
               Container(
-                decoration: snapshot.isYourTurn && HandGuidance.daketiMayDraw(snapshot.you.hand.length, state.stockCount)
+                decoration:
+                    snapshot.isYourTurn &&
+                        HandGuidance.daketiMayDraw(
+                          snapshot.you.hand.length,
+                          state.stockCount,
+                        )
                     ? BoxDecoration(
                         boxShadow: const [
-                          BoxShadow(color: T.ochre, blurRadius: 12, spreadRadius: 2),
+                          BoxShadow(
+                            color: T.ochre,
+                            blurRadius: 12,
+                            spreadRadius: 2,
+                          ),
                         ],
                         borderRadius: BorderRadius.circular(5),
                       )
                     : null,
-                child: PlayingCard(faceDown: true, width: 44, onTap: onDrawStock),
+                child: PlayingCard(
+                  faceDown: true,
+                  width: 44,
+                  onTap: onDrawStock,
+                ),
               ),
               for (final card in state.playArea)
                 _AnimatedCard(
@@ -295,7 +336,12 @@ class GameSurface extends StatelessWidget {
                 '${state.stockCount}',
                 null,
                 back: true,
-                glow: snapshot.isYourTurn && HandGuidance.daketiMayDraw(snapshot.you.hand.length, state.stockCount),
+                glow:
+                    snapshot.isYourTurn &&
+                    HandGuidance.daketiMayDraw(
+                      snapshot.you.hand.length,
+                      state.stockCount,
+                    ),
                 onTap: onDrawStock,
               ),
               for (final card in state.playArea)
@@ -381,7 +427,7 @@ class GameSurface extends StatelessWidget {
                       color: T.ochre.withValues(alpha: .5),
                       blurRadius: 10,
                       spreadRadius: 2,
-                    )
+                    ),
                   ],
                   borderRadius: BorderRadius.circular(7),
                 )
@@ -397,7 +443,11 @@ class GameSurface extends StatelessWidget {
                   ),
                   child: const Text(Copy.empty, style: TextStyle(fontSize: 10)),
                 )
-              : PlayingCard(card: card, faceDown: back, width: compact ? 44 : 60),
+              : PlayingCard(
+                  card: card,
+                  faceDown: back,
+                  width: compact ? 44 : 60,
+                ),
         ),
         const SizedBox(height: 5),
         Text(
@@ -422,7 +472,9 @@ Future<void> inspectCollection(BuildContext context, PublicPlayer player) =>
                 style: Theme.of(context).textTheme.headlineMedium,
               ),
               const SizedBox(height: 8),
-              Text(Copy.collectedCardsTheLastCardIsOn(player.collection.length)),
+              Text(
+                Copy.collectedCardsTheLastCardIsOn(player.collection.length),
+              ),
               const SizedBox(height: 20),
               if (player.collection.isEmpty)
                 const Text(Copy.noCardsCollectedYet)

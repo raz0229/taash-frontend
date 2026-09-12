@@ -18,8 +18,9 @@ import 'playing_card.dart';
 /// 4. The face-down pile lifts off the table and flies up to the winner's seat
 ///    in the player strip, ending with a soft burst and a "+N" card count.
 ///
-/// The entire show runs until [onComplete], which the host uses to release the
-/// overlay and resume the paused turn timer.
+/// The entire show runs until the player taps the dismiss button (shown once
+/// the sequence completes), which the host uses to release the overlay and
+/// resume the paused turn timer.
 class BluffChallengeAnimation extends StatefulWidget {
   const BluffChallengeAnimation({
     super.key,
@@ -60,13 +61,18 @@ class _BluffChallengeAnimationState extends State<BluffChallengeAnimation>
   Offset _winnerEnd = Offset.zero;
   bool _positionsReady = false;
   bool _started = false;
+  bool _completed = false;
 
   @override
   void initState() {
     super.initState();
     _controller = AnimationController(vsync: this)
       ..addStatusListener((status) {
-        if (status == AnimationStatus.completed) widget.onComplete();
+        if (status == AnimationStatus.completed && mounted) {
+          // Hold the final frame with a dismiss button instead of closing
+          // automatically, so each player can read the verdict at their pace.
+          setState(() => _completed = true);
+        }
       });
   }
 
@@ -96,7 +102,8 @@ class _BluffChallengeAnimationState extends State<BluffChallengeAnimation>
         start = Offset(size.width / 2, size.height * .56);
       }
       final stripBox =
-          widget.playerStripKey.currentContext?.findRenderObject() as RenderBox?;
+          widget.playerStripKey.currentContext?.findRenderObject()
+              as RenderBox?;
       if (stripBox != null && stripBox.hasSize && stripBox.attached) {
         final origin = stripBox.localToGlobal(Offset.zero);
         final slotWidth = (size.width - 24) / 3;
@@ -132,12 +139,7 @@ class _BluffChallengeAnimationState extends State<BluffChallengeAnimation>
     return ((t - start) / (end - start)).clamp(0.0, 1.0);
   }
 
-  static Offset _quadBezier(
-    Offset a,
-    Offset control,
-    Offset b,
-    double t,
-  ) {
+  static Offset _quadBezier(Offset a, Offset control, Offset b, double t) {
     final u = 1 - t;
     return Offset(
       u * u * a.dx + 2 * u * t * control.dx + t * t * b.dx,
@@ -151,25 +153,45 @@ class _BluffChallengeAnimationState extends State<BluffChallengeAnimation>
       container: true,
       label:
           'Bluff caught! ${widget.challengerName} challenged ${widget.challengedName}, who declared ${widget.declaredRank}. ${widget.sachaName} is Sacha, ${widget.jhutaName} is Jhuta. The pile goes to ${widget.winnerSeatIndex + 1}.',
+      onTap: _completed ? widget.onComplete : null,
       child: ExcludeSemantics(
-        child: IgnorePointer(
-          child: AnimatedBuilder(
-            animation: _controller,
-            builder: (context, _) {
-              final t = _controller.value;
-              return Stack(
-                fit: StackFit.expand,
-                children: [
-                  Positioned.fill(child: _scrim(t)),
-                  Positioned.fill(child: _title(t)),
-                  Positioned.fill(child: _revealCard(t)),
-                  Positioned.fill(child: _verdict(t)),
-                  Positioned.fill(child: _pileFlight(t)),
-                  Positioned.fill(child: _winnerBurst(t)),
-                ],
-              );
-            },
-          ),
+        child: Stack(
+          fit: StackFit.expand,
+          children: [
+            IgnorePointer(
+              child: AnimatedBuilder(
+                animation: _controller,
+                builder: (context, _) {
+                  final t = _controller.value;
+                  return Stack(
+                    fit: StackFit.expand,
+                    children: [
+                      Positioned.fill(child: _scrim(t)),
+                      Positioned.fill(child: _title(t)),
+                      Positioned.fill(child: _revealCard(t)),
+                      Positioned.fill(child: _verdict(t)),
+                      Positioned.fill(child: _pileFlight(t)),
+                      Positioned.fill(child: _winnerBurst(t)),
+                    ],
+                  );
+                },
+              ),
+            ),
+            if (_completed)
+              Positioned(
+                left: 0,
+                right: 0,
+                bottom: MediaQuery.viewPaddingOf(context).bottom + 30,
+                child: Center(
+                  child: TaashButton(
+                    label: 'GOT IT',
+                    icon: Icons.check_rounded,
+                    onDark: true,
+                    onPressed: widget.onComplete,
+                  ),
+                ),
+              ),
+          ],
         ),
       ),
     );
@@ -177,7 +199,7 @@ class _BluffChallengeAnimationState extends State<BluffChallengeAnimation>
 
   Widget _scrim(double t) {
     final fadeIn = _smooth(t, 0, .07);
-    final fadeOut = 1 - _smooth(t, .9, 1);
+    final fadeOut = _completed ? 1.0 : 1 - _smooth(t, .9, 1);
     final opacity = (fadeIn * fadeOut).clamp(0.0, 1.0) * .84;
     return DecoratedBox(
       decoration: BoxDecoration(
@@ -197,7 +219,7 @@ class _BluffChallengeAnimationState extends State<BluffChallengeAnimation>
     final enter = Curves.elasticOut.transform(
       ((t - .03) / .16).clamp(0.0, 1.0),
     );
-    final leave = 1 - _smooth(t, .58, .72);
+    final leave = _completed ? 1.0 : 1 - _smooth(t, .58, .72);
     final opacity = (enter * leave).clamp(0.0, 1.0);
     final rack = math.sin(t * 46) * 4 * enter.clamp(0.0, 1.0);
     return Align(
@@ -240,20 +262,22 @@ class _BluffChallengeAnimationState extends State<BluffChallengeAnimation>
 
   Widget _revealCard(double t) {
     final width = math.min(370.0, MediaQuery.sizeOf(context).width * .92);
-    final panel = Curves.easeOutBack.transform(((t - .08) / .2).clamp(0.0, 1.0));
+    final panel = Curves.easeOutBack.transform(
+      ((t - .08) / .2).clamp(0.0, 1.0),
+    );
     final verdictDim = _smooth(t, .54, .68);
     final flightDim = _smooth(t, .76, .86) * .45;
-    final leave = 1 - _smooth(t, .9, 1);
-    final opacity =
-        (panel * (1 - verdictDim * .4) * (1 - flightDim) * leave).clamp(
-          0.0,
-          1.0,
-        );
+    final leave = _completed ? 1.0 : 1 - _smooth(t, .9, 1);
+    final opacity = (panel * (1 - verdictDim * .4) * (1 - flightDim) * leave)
+        .clamp(0.0, 1.0);
     return Center(
       child: Opacity(
         opacity: opacity,
         child: Transform.translate(
-          offset: Offset(0, Curves.easeOut.transform(panel.clamp(0.0, 1.0)) * 28),
+          offset: Offset(
+            0,
+            Curves.easeOut.transform(panel.clamp(0.0, 1.0)) * 28,
+          ),
           child: Transform.scale(
             scale: panel,
             child: Container(
@@ -498,14 +522,19 @@ class _BluffChallengeAnimationState extends State<BluffChallengeAnimation>
   }
 
   Widget _verdict(double t) {
-    final enter = Curves.easeOutBack.transform(((t - .56) / .14).clamp(0.0, 1.0));
-    final leave = 1 - _smooth(t, .82, .92);
+    final enter = Curves.easeOutBack.transform(
+      ((t - .56) / .14).clamp(0.0, 1.0),
+    );
+    final leave = _completed ? 1.0 : 1 - _smooth(t, .82, .92);
     final width = math.min(350.0, MediaQuery.sizeOf(context).width * .88);
     return Center(
       child: Opacity(
         opacity: (enter * leave).clamp(0.0, 1.0),
         child: Transform.translate(
-          offset: Offset(0, (1 - Curves.easeOut.transform(enter.clamp(0.0, 1.0))) * 70),
+          offset: Offset(
+            0,
+            (1 - Curves.easeOut.transform(enter.clamp(0.0, 1.0))) * 70,
+          ),
           child: Transform.scale(
             scale: enter,
             child: Container(
@@ -606,8 +635,12 @@ class _BluffChallengeAnimationState extends State<BluffChallengeAnimation>
 
   Widget _pileFlight(double t) {
     final size = MediaQuery.sizeOf(context);
-    final start = _positionsReady ? _pileStart : Offset(size.width / 2, size.height * .56);
-    final end = _positionsReady ? _winnerEnd : Offset(size.width / 2, size.height * .16);
+    final start = _positionsReady
+        ? _pileStart
+        : Offset(size.width / 2, size.height * .56);
+    final end = _positionsReady
+        ? _winnerEnd
+        : Offset(size.width / 2, size.height * .16);
     final control = Offset(
       (start.dx + end.dx) / 2,
       math.min(start.dy, end.dy) - (size.height * .12).clamp(90, 190),
@@ -646,10 +679,13 @@ class _BluffChallengeAnimationState extends State<BluffChallengeAnimation>
 
   Widget _winnerBurst(double t) {
     final size = MediaQuery.sizeOf(context);
-    final end = _positionsReady ? _winnerEnd : Offset(size.width / 2, size.height * .16);
+    final end = _positionsReady
+        ? _winnerEnd
+        : Offset(size.width / 2, size.height * .16);
     final burst = _smooth(t, .82, .92);
     final chip = Curves.elasticOut.transform(((t - .87) / .1).clamp(0.0, 1.0));
-    final opacity = (1 - _smooth(t, .93, 1)) * chip.clamp(0.0, 1.0);
+    final opacity =
+        (_completed ? 1.0 : 1 - _smooth(t, .93, 1)) * chip.clamp(0.0, 1.0);
     if (burst <= 0) return const SizedBox.shrink();
     return Stack(
       children: [
@@ -699,7 +735,10 @@ class _BluffChallengeAnimationState extends State<BluffChallengeAnimation>
             child: Transform.scale(
               scale: chip.clamp(0.0, 1.2),
               child: Container(
-                padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
+                padding: const EdgeInsets.symmetric(
+                  horizontal: 10,
+                  vertical: 6,
+                ),
                 decoration: BoxDecoration(
                   color: T.ochre,
                   borderRadius: BorderRadius.circular(12),

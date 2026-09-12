@@ -21,8 +21,8 @@ import 'shared/local_turn_timer.dart';
 import 'shared/player_strip.dart';
 import 'shared/playing_card.dart';
 import 'shared/room_backdrop.dart';
-import 'shared/celebration_overlay.dart';
 import 'shared/bluff_challenge_animation.dart';
+import 'shared/bhabhi_thullu_animation.dart';
 
 part 'game_menus.dart';
 part 'game_status.dart';
@@ -67,10 +67,8 @@ class _GameScreenState extends State<GameScreen>
   String notice = '';
   String? takenDiscard;
   Timer? noticeTimer;
-  // A5/A6: Celebration state for Thullu and bluff caught events.
-  bool showCelebration = false;
-  String? celebrationText;
-  Color celebrationColor = T.ochre;
+  // A6: Detect Thullu in Bhabhi and Bluff caught via broadcast. Bluff uses the
+  // cinematic [BluffChallengeAnimation]; Bhabhi uses [BhabhiThulluAnimation].
   bool _lastThullu = false;
   // A13: Bluff challenge reveal, driven by the server broadcast to every seat.
   bool _bluffAnimationActive = false;
@@ -78,6 +76,10 @@ class _GameScreenState extends State<GameScreen>
   OverlayEntry? _bluffOverlay;
   final GlobalKey _bluffPileKey = GlobalKey();
   final GlobalKey _playerStripKey = GlobalKey();
+  // A6: Cinematic Thullu reveal in Bhabhi, shown in every seat.
+  bool _thulluAnimationActive = false;
+  OverlayEntry? _thulluOverlay;
+  final GlobalKey _bhabhiTrickKey = GlobalKey();
   @override
   RoomSession get session => widget.session;
   bool _played10sSound = false;
@@ -118,8 +120,8 @@ class _GameScreenState extends State<GameScreen>
     );
     _played10sSound = false;
     if (s.room.isActive && s.currentPlayerId.isNotEmpty) {
-      if (_bluffAnimationActive) {
-        // The challenge reveal freezes every seat's clock; resume afterwards.
+      if (_bluffAnimationActive || _thulluAnimationActive) {
+        // Cinematic reveals freeze every seat's clock; resume afterwards.
         _turnTimer
           ..stop()
           ..value = 0;
@@ -167,7 +169,7 @@ class _GameScreenState extends State<GameScreen>
     if (s.gameState is BhabhiState) {
       final bhabhi = s.gameState as BhabhiState;
       if (bhabhi.lastThullu && !_lastThullu) {
-        _triggerCelebration('THULLU!', T.ochre);
+        _showBhabhiThulluAnimation(s, bhabhi);
         if (s.you.id == bhabhi.lastPickupPlayerId) {
           session.command('chat.send', payload: {'text': 'Thullu!'});
         }
@@ -190,6 +192,7 @@ class _GameScreenState extends State<GameScreen>
     session.onBluffChallenge = null;
     _stockDrawOverlay?.remove();
     _bluffOverlay?.remove();
+    _thulluOverlay?.remove();
     session.removeListener(changed);
     noticeTimer?.cancel();
     _turnTimer.dispose();
@@ -232,17 +235,6 @@ class _GameScreenState extends State<GameScreen>
     noticeTimer?.cancel();
     session.clearError();
     if (mounted && notice.isNotEmpty) setState(() => notice = '');
-  }
-
-  void _triggerCelebration(String text, Color color) {
-    if (!mounted) return;
-    if (text == 'THULLU!') audio.playSfx('thullu_caught');
-    if (text == 'BLUFF') audio.playSfx('bluff_caught');
-    setState(() {
-      showCelebration = true;
-      celebrationText = text;
-      celebrationColor = color;
-    });
   }
 
   // A13: Bluff challenge reveal. The same event reaches the challenger through
@@ -314,6 +306,72 @@ class _GameScreenState extends State<GameScreen>
     _bluffOverlay?.remove();
     _bluffOverlay = null;
     setState(() => _bluffAnimationActive = false);
+    final s = session.snapshot;
+    if (s != null &&
+        s.room.isActive &&
+        s.currentPlayerId.isNotEmpty &&
+        !_turnTimer.isAnimating) {
+      _turnTimer.forward();
+    }
+  }
+
+  // A6: Bhabhi Thullu reveal. The giver is the player who played the off-suit
+  // card; the taker (`lastPickupPlayerId`) picks up the whole trick.
+  void _showBhabhiThulluAnimation(RoomSnapshot s, BhabhiState bhabhi) {
+    String giverId = '';
+    for (final played in bhabhi.trick) {
+      final identity = CardIdentity.parse(played.card);
+      if (identity.valid && identity.suit != bhabhi.leadSuit) {
+        giverId = played.playerId;
+      }
+    }
+    final receiverId = bhabhi.lastPickupPlayerId;
+    if (giverId.isEmpty || receiverId.isEmpty || bhabhi.trick.isEmpty) {
+      announce(Copy.thullu);
+      audio.playSfx('thullu_caught');
+      return;
+    }
+
+    if (_thulluAnimationActive) return;
+    setState(() => _thulluAnimationActive = true);
+    audio.playSfx('thullu_caught');
+    _turnTimer.stop();
+
+    final players = s.players;
+    String nameOf(String id) {
+      if (id == s.you.id) return Copy.you;
+      return players.where((p) => p.id == id).firstOrNull?.displayName ?? id;
+    }
+
+    final giver = players.where((p) => p.id == giverId).firstOrNull;
+    final receiver = players.where((p) => p.id == receiverId).firstOrNull;
+    final sorted = [...players]..sort((a, b) => a.seat.compareTo(b.seat));
+    final receiverIndex = sorted.indexWhere((p) => p.id == receiverId);
+
+    _thulluOverlay?.remove();
+    final entry = OverlayEntry(
+      builder: (_) => BhabhiThulluAnimation(
+        giverName: nameOf(giverId),
+        giverPfp: giver?.selectedPfp ?? 0,
+        receiverName: nameOf(receiverId),
+        receiverPfp: receiver?.selectedPfp ?? 0,
+        trickCards: [for (final played in bhabhi.trick) played.card],
+        pileCount: bhabhi.trick.length,
+        trickKey: _bhabhiTrickKey,
+        playerStripKey: _playerStripKey,
+        winnerSeatIndex: receiverIndex < 0 ? 0 : receiverIndex,
+        onComplete: _onThulluAnimationComplete,
+      ),
+    );
+    _thulluOverlay = entry;
+    Overlay.of(context, rootOverlay: true).insert(entry);
+  }
+
+  void _onThulluAnimationComplete() {
+    if (!mounted) return;
+    _thulluOverlay?.remove();
+    _thulluOverlay = null;
+    setState(() => _thulluAnimationActive = false);
     final s = session.snapshot;
     if (s != null &&
         s.room.isActive &&
@@ -543,6 +601,7 @@ class _GameScreenState extends State<GameScreen>
             MediaQuery.sizeOf(context).height < 720 &&
             MediaQuery.textScalerOf(context).scale(1) <= 1.4,
         pileKey: s.room.game == GameType.bluff ? _bluffPileKey : null,
+        trickKey: s.room.game == GameType.bhabhi ? _bhabhiTrickKey : null,
         onCardDrop: (card) => play(card),
         canDrop: ready && mine,
         onInspectCollection: (p) => inspectCollection(context, p),
@@ -617,7 +676,8 @@ class _GameScreenState extends State<GameScreen>
                             turnKey: '$lastTurn:$turnSerial',
                             active: session.connected && !terminal,
                             mine: mine,
-                            paused: _bluffAnimationActive,
+                            paused:
+                                _bluffAnimationActive || _thulluAnimationActive,
                             seconds: s!.room.game == GameType.tc ? 120 : 60,
                             onExpired: () => leave(expired: true),
                           ),
@@ -813,17 +873,6 @@ class _GameScreenState extends State<GameScreen>
                     muted: muted,
                   ),
                 ),
-              // A5/A6: Celebration overlay for Thullu and bluff caught.
-              Positioned.fill(
-                child: CelebrationOverlay(
-                  active: showCelebration,
-                  text: celebrationText,
-                  textColor: celebrationColor,
-                  onComplete: () {
-                    if (mounted) setState(() => showCelebration = false);
-                  },
-                ),
-              ),
             ],
           ),
         ),

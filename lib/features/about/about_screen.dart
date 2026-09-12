@@ -2,7 +2,7 @@ import 'package:taash/l10n/copy.dart';
 import 'package:flutter/material.dart';
 import '../../core/theme/taash_theme.dart';
 import '../../core/widgets/taash_widgets.dart';
-import '../settings/settings_screen.dart';
+import '../settings/legal_docs.dart';
 
 class AboutScreen extends StatelessWidget {
   const AboutScreen({super.key});
@@ -61,11 +61,11 @@ class AboutScreen extends StatelessWidget {
       ),
       const SizedBox(height: 20),
       TextButton(
-        onPressed: () => openPolicy(context, privacyUrl),
+        onPressed: () => showLegalDoc(context, privacyDoc),
         child: const Text(Copy.privacyPolicy),
       ),
       TextButton(
-        onPressed: () => openPolicy(context, termsUrl),
+        onPressed: () => showLegalDoc(context, termsDoc),
         child: const Text(Copy.termsCommunityRules),
       ),
       TextButton(

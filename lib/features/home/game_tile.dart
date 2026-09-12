@@ -61,7 +61,12 @@ class GameTile extends StatelessWidget {
         ),
         Container(
           padding: const EdgeInsets.fromLTRB(16, 12, 16, 15),
-          color: const Color(0xff211A36),
+          decoration: const BoxDecoration(
+            color: Color(0xff211A36),
+            // Follow the tile's rounded contour so the footer's corners aren't
+            // sliced off by the parent's bottom clip.
+            borderRadius: BorderRadius.vertical(bottom: Radius.circular(24)),
+          ),
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [

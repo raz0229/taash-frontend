@@ -231,7 +231,7 @@ class _ShopScreenState extends State<ShopScreen> {
                       ),
                       const SizedBox(height: 22),
                       const Text(
-                        'A familiar face at every room. Unlock a look with virtual coins, then make it yours.',
+                        'Koi bhi DP Pasand karo. Unlock a look with coins, then make it yours.',
                         style: TextStyle(color: T.muted),
                       ),
                       if (_loading) ...[

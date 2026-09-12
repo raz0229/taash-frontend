@@ -1,4 +1,3 @@
-
 import 'package:flutter/material.dart';
 import '../../../core/models/models.dart';
 import '../../../core/theme/taash_theme.dart';
@@ -30,6 +29,9 @@ class PlayerStrip extends StatefulWidget {
 
 class _PlayerStripState extends State<PlayerStrip>
     with SingleTickerProviderStateMixin {
+  static const _passGreen = Color(0xff16A34A);
+  static const _playBlue = Color(0xff2E6BE6);
+
   final _scroll = ScrollController();
   bool userScrolling = false;
   late final _pulse = AnimationController(
@@ -91,6 +93,10 @@ class _PlayerStripState extends State<PlayerStrip>
     final players = [...s.players]..sort((a, b) => a.seat.compareTo(b.seat));
     final compact = MediaQuery.sizeOf(context).height < 720;
     final large = MediaQuery.textScalerOf(context).scale(1) > 1.4;
+    // Bluff round badges: "PASS" on everyone who passed, "+N" on the last
+    // player to play. Both remain until the pile empties / a new rank is
+    // declared (the server clears the round state).
+    final bluff = s.gameState is BluffState ? s.gameState as BluffState : null;
     return SizedBox(
       key: widget.stripKey,
       height: large
@@ -116,11 +122,21 @@ class _PlayerStripState extends State<PlayerStrip>
             final turn = s.room.isActive && p.id == s.currentPlayerId;
             final collection =
                 s.room.game == GameType.daketi && p.collection.isNotEmpty;
+            final passed = bluff?.passedPlayerIds.contains(p.id) ?? false;
+            final playedCount =
+                (bluff != null && !passed && p.id == bluff.lastPlayerId)
+                ? bluff.lastPlayCount
+                : 0;
+            final avatarSize = compact ? 38.0 : 52.0;
             return SizedBox(
               width: (MediaQuery.sizeOf(context).width - 24) / 3,
               child: Semantics(
                 label:
-                    '${p.displayName}${me ? ', you' : ''}${p.isBot ? ', bot' : ''}, ${p.handCount} cards${turn ? ', current turn' : ''}',
+                    '${p.displayName}${me ? ', you' : ''}${p.isBot ? ', bot' : ''}, '
+                    '${p.handCount} cards'
+                    '${passed ? ', passed' : ''}'
+                    '${playedCount > 0 ? ', played $playedCount cards' : ''}'
+                    '${turn ? ', current turn' : ''}',
                 child: Column(
                   children: [
                     SizedBox(
@@ -179,13 +195,53 @@ class _PlayerStripState extends State<PlayerStrip>
                                 ),
                               ),
                             ),
+                          if (passed || playedCount > 0)
+                            IgnorePointer(
+                              child: Container(
+                                width: avatarSize,
+                                height: avatarSize,
+                                alignment: Alignment.center,
+                                decoration: BoxDecoration(
+                                  shape: BoxShape.circle,
+                                  color: (passed ? _passGreen : _playBlue)
+                                      .withValues(alpha: .78),
+                                  border: Border.all(
+                                    color: Colors.white.withValues(alpha: .6),
+                                    width: 1.5,
+                                  ),
+                                ),
+                                child: Text(
+                                  passed ? 'PASS' : '+$playedCount',
+                                  textScaler: TextScaler.noScaling,
+                                  style: TextStyle(
+                                    color: Colors.white,
+                                    fontSize: passed
+                                        ? avatarSize * .3
+                                        : avatarSize * .34,
+                                    fontWeight: FontWeight.w900,
+                                    letterSpacing: passed ? .5 : 0,
+                                    shadows: const [
+                                      Shadow(
+                                        color: Colors.black45,
+                                        blurRadius: 2,
+                                      ),
+                                    ],
+                                  ),
+                                ),
+                              ),
+                            ),
                           Positioned(
                             right: 5,
                             bottom: 7,
                             child: GestureDetector(
-                              onTap: collection ? () {
-                                import_game_surfaces.inspectCollection(context, p);
-                              } : null,
+                              onTap: collection
+                                  ? () {
+                                      import_game_surfaces.inspectCollection(
+                                        context,
+                                        p,
+                                      );
+                                    }
+                                  : null,
                               child: Container(
                                 padding: const EdgeInsets.symmetric(
                                   horizontal: 4,
@@ -202,7 +258,9 @@ class _PlayerStripState extends State<PlayerStrip>
                                   mainAxisSize: MainAxisSize.min,
                                   children: [
                                     PlayingCard(
-                                      card: collection ? p.collection.last : null,
+                                      card: collection
+                                          ? p.collection.last
+                                          : null,
                                       faceDown: !collection,
                                       width: 11,
                                     ),

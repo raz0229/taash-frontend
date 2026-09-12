@@ -9,22 +9,9 @@ import '../../core/preferences/preferences.dart';
 import '../../core/theme/taash_theme.dart';
 import '../../core/widgets/taash_widgets.dart';
 import '../../l10n/strings.dart';
+import 'legal_docs.dart';
 
-const privacyUrl = String.fromEnvironment(Copy.privacyURL);
-const termsUrl = String.fromEnvironment(Copy.termsURL);
-const deletionUrl = String.fromEnvironment(Copy.accountDELETIONURL);
 const supportEmail = String.fromEnvironment(Copy.supportEMAIL);
-Future<void> openPolicy(BuildContext context, String url) async {
-  final uri = Uri.tryParse(url);
-  if (uri == null || uri.scheme != 'https' || !uri.hasAuthority) {
-    showNotice(context, Copy.thisLinkHasNotBeenConfiguredFor);
-    return;
-  }
-  if (!await launchUrl(uri, mode: LaunchMode.externalApplication) &&
-      context.mounted) {
-    showNotice(context, Copy.weCouldNotOpenTheLinkPlease);
-  }
-}
 
 class SettingsScreen extends StatefulWidget {
   const SettingsScreen({
@@ -169,21 +156,22 @@ class _SettingsScreenState extends State<SettingsScreen> {
             contentPadding: EdgeInsets.zero,
             leading: const Icon(Icons.privacy_tip_outlined),
             title: const Text(Copy.privacyPolicy),
-            trailing: const Icon(Icons.open_in_new, size: 18),
-            onTap: () => openPolicy(context, privacyUrl),
+            trailing: const Icon(Icons.chevron_right, size: 18),
+            onTap: () => showLegalDoc(context, privacyDoc),
           ),
           ListTile(
             contentPadding: EdgeInsets.zero,
             leading: const Icon(Icons.description_outlined),
             title: const Text(Copy.termsCommunityRules),
-            trailing: const Icon(Icons.open_in_new, size: 18),
-            onTap: () => openPolicy(context, termsUrl),
+            trailing: const Icon(Icons.chevron_right, size: 18),
+            onTap: () => showLegalDoc(context, termsDoc),
           ),
           ListTile(
             contentPadding: EdgeInsets.zero,
             leading: const Icon(Icons.person_remove_outlined),
             title: const Text(Copy.accountDeletionInformation),
-            onTap: () => openPolicy(context, deletionUrl),
+            trailing: const Icon(Icons.chevron_right, size: 18),
+            onTap: () => showLegalDoc(context, deletionDoc),
           ),
           if (supportEmail.isNotEmpty)
             ListTile(

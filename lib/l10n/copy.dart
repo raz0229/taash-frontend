@@ -191,14 +191,14 @@ abstract final class Copy {
   static const unlockFree = 'Unlock free';
   static const select = 'Select';
   static const selected = 'Selected';
-  static String virtualCoins(Object? value0) => '$value0 virtual coins';
+  static String virtualCoins(Object? value0) => '$value0 coins';
   static const inYourCollection = 'In your collection';
   static const yourCurrentLook = 'Your current look';
   static const noAvatarsInThisCollectionYet =
       'No avatars in this collection yet.';
   static const checkCollection = 'Check collection';
   static const refreshingCollection = 'Refreshing collection';
-  static String virtualCoins2(Object? value0) => '$value0 virtual coins';
+  static String virtualCoins2(Object? value0) => '$value0 coins';
   static const makeAnEntrance = 'Make an entrance.';
   static const yourCollectionIsSavedWithYourAccount =
       'Your collection is saved with your account.';
@@ -218,7 +218,7 @@ abstract final class Copy {
     Object? value0,
     Object? value1,
   ) =>
-      '$value0 virtual coins\nYour balance: $value1 coins\n\nThis unlocks the avatar. You can select it afterward.';
+      '$value0 coins\nYour balance: $value1 coins\n\nThis unlocks the avatar. You can select it afterward.';
   static String unlock2(Object? value0) => 'Unlock $value0?';
   static const weCouldNotLoadTheAvatarCollection =
       'We could not load the avatar collection. Please try again.';
@@ -246,9 +246,10 @@ abstract final class Copy {
       'We could not load the leaderboard. Please try again.';
   static const openSourceLicenses = 'Open-source licenses';
   static const taashonline10012 = 'TaashOnline 1.0.0 (1)';
-  static const virtualCoinsRealCompany = 'Virtual coins. Real company.';
+  static const virtualCoinsRealCompany =
+      'Company choti si ha, pr Dil bohot bara ha!';
   static const bhabhiDaketiBluffAndTissarChausarFamiliar =
-      'Bhabhi, Daketi, Bluff and Tissar Chausar. Familiar games, new faces, and the shared joy of a good card night.';
+      'Bhabhi, Daketi, Bluff and Tissar Chausar. Your Favorite Desi Taash games, All in one place!.';
   static const madeForOneMoreRound = 'Made for\none more round.';
   static const backToTheLobby = 'Back to the lobby';
   static String place(Object? value0) => 'Place $value0';
@@ -396,17 +397,17 @@ abstract final class Copy {
   static const yourRoom = 'Your room';
   static String sendCoins(Object? value0) => 'Send · $value0 coins';
   static String spendVirtualCoins(Object? value0, Object? value1) =>
-      'Spend $value0 virtual coins $value1.';
+      'Spend $value0 coins $value1.';
   static String send(Object? value0) => 'Send $value0?';
   static String youNeedVirtualCoinsForThisReaction(Object? value0) =>
-      'You need $value0 virtual coins for this reaction.';
+      'You need $value0 coins for this reaction.';
   static String coins2(Object? value0) => '$value0 coins';
   static String balanceCoins(Object? value0) => 'Balance: $value0 coins';
   static const expressYourself = 'Express yourself';
   static const theReactionCatalogCouldNotBeLoaded =
       'The reaction catalog could not be loaded.';
   static const costsVirtualCoinsReviewBeforeSending =
-      'Costs virtual coins · review before sending';
+      'Costs coins · review before sending';
   static const sendAReaction = 'Send a reaction';
   static const exploreCollection = 'Explore collection';
   static const botsPlayByTheSameGameRules = 'Bots play by the same game rules.';
@@ -526,10 +527,10 @@ abstract final class Copy {
     Object? value0,
     Object? value1,
     Object? value2,
-  ) => 'Entry fee: $value0 virtual coins.\nBalance: $value1 coins.\n\n$value2';
+  ) => 'Entry fee: $value0 coins.\nBalance: $value1 coins.\n\n$value2';
   static String createAndEnter(Object? value0) => 'Create and enter $value0?';
   static String youNeedVirtualCoinsToEnterThis(Object? value0) =>
-      'You need $value0 virtual coins to enter this room.';
+      'You need $value0 coins to enter this room.';
   static const weCouldNotReadThisRoomPlease =
       'We could not read this room. Please try again.';
   static const thisIsALearningExerciseItDoes =
@@ -635,7 +636,8 @@ abstract final class Copy {
       'We could not connect to the room. Your room code is $value0.';
   static const letSGetYouConnected = 'Let’s get you connected';
   static const learnTheFourGames = 'Learn the four games';
-  static const anUpdateIsAvailable = 'A fresh version of TaashOnline is available.';
+  static const anUpdateIsAvailable =
+      'A fresh version of TaashOnline is available.';
   static const downloadItInTheBackgroundAndKeep =
       'Download it in the background and keep playing.';
   static const update = 'Update';
