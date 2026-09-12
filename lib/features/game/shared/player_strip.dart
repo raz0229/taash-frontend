@@ -13,16 +13,11 @@ class PlayerStrip extends StatefulWidget {
     required this.onPlayerTap,
     this.onEmojiTap,
     this.turnTimer,
-    this.stripKey,
   });
   final RoomSnapshot snapshot;
   final ValueChanged<PublicPlayer> onPlayerTap;
   final ValueChanged<PublicPlayer>? onEmojiTap;
   final Animation<double>? turnTimer;
-
-  /// Anchors the seat row so challenge animations can land the pile on the
-  /// exact seat that receives it.
-  final GlobalKey? stripKey;
   @override
   State<PlayerStrip> createState() => _PlayerStripState();
 }
@@ -80,6 +75,24 @@ class _PlayerStripState extends State<PlayerStrip>
       curve: Curves.easeOutCubic,
     );
   });
+
+  /// Exact on-screen centre of the avatar for the player at [seatIndex] (the
+  /// players sorted by seat), including the strip's own horizontal scroll so
+  /// animations leave from and land on the true seat. Null while the strip
+  /// isn't laid out yet.
+  Offset? seatGlobalCenter(int seatIndex) {
+    final box = context.findRenderObject();
+    if (box is! RenderBox || !box.hasSize || !box.attached) return null;
+    final origin = box.localToGlobal(Offset.zero);
+    final size = MediaQuery.sizeOf(context);
+    final compact = size.height < 720;
+    final slotWidth = (size.width - 24) / 3;
+    final offset = _scroll.hasClients ? _scroll.offset : 0;
+    final x = origin.dx + 12 + seatIndex * slotWidth - offset + slotWidth / 2;
+    final y = origin.dy + (compact ? 27 : 37);
+    return Offset(x, y);
+  }
+
   @override
   void dispose() {
     _scroll.dispose();
@@ -98,7 +111,6 @@ class _PlayerStripState extends State<PlayerStrip>
     // declared (the server clears the round state).
     final bluff = s.gameState is BluffState ? s.gameState as BluffState : null;
     return SizedBox(
-      key: widget.stripKey,
       height: large
           ? 156
           : compact
@@ -363,4 +375,12 @@ class _PlayerStripState extends State<PlayerStrip>
       ),
     );
   }
+}
+
+/// Looks up the exact on-screen centre of a player seat from the strip's own
+/// layout, so overlays can fly to the true avatar position even while the strip
+/// is scrolled horizontally.
+Offset? stripSeatGlobalCenter(GlobalKey stripKey, int seatIndex) {
+  final state = stripKey.currentState;
+  return state is _PlayerStripState ? state.seatGlobalCenter(seatIndex) : null;
 }

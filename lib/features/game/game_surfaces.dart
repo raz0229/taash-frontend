@@ -18,6 +18,8 @@ class GameSurface extends StatelessWidget {
     this.onTakeDiscard,
     this.pileKey,
     this.trickKey,
+    this.playAreaKey,
+    this.stockKey,
     this.compact = false,
   });
   final RoomSnapshot snapshot;
@@ -31,6 +33,13 @@ class GameSurface extends StatelessWidget {
   /// Anchors the Bhabhi trick cards so Thullu animations can launch the pile
   /// from the real trick location on the table.
   final Key? trickKey;
+
+  /// Anchors the Daketi play area so steal animations can launch from the real
+  /// table location. Kept mounted (as a faint placeholder) even when empty.
+  final Key? playAreaKey;
+
+  /// Anchors the draw pile so the stock-draw hand can grab from the real deck.
+  final Key? stockKey;
   final bool compact;
   String name(String id) => id == snapshot.you.id
       ? Copy.you
@@ -263,6 +272,27 @@ class GameSurface extends StatelessWidget {
     if (me != null) onInspectCollection(me);
   }
 
+  /// The Daketi play area, anchored so steal animations can target it. When the
+  /// area is empty the anchor stays mounted as an invisible placeholder card.
+  Widget _daketiArea(DaketiState state) => KeyedSubtree(
+    key: playAreaKey,
+    child: state.playArea.isEmpty
+        ? Opacity(
+            opacity: 0,
+            child: PlayingCard(faceDown: true, width: compact ? 44 : 60),
+          )
+        : Row(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              for (final card in state.playArea)
+                _AnimatedCard(
+                  key: ValueKey(card),
+                  child: PlayingCard(card: card, width: compact ? 44 : 60),
+                ),
+            ],
+          ),
+  );
+
   Widget _daketi(DaketiState state) => compact
       ? Column(
           mainAxisSize: MainAxisSize.min,
@@ -286,35 +316,34 @@ class GameSurface extends StatelessWidget {
               ],
             ),
             _cards([
-              Container(
-                decoration:
-                    snapshot.isYourTurn &&
-                        HandGuidance.daketiMayDraw(
-                          snapshot.you.hand.length,
-                          state.stockCount,
+              KeyedSubtree(
+                key: stockKey,
+                child: Container(
+                  decoration:
+                      snapshot.isYourTurn &&
+                          HandGuidance.daketiMayDraw(
+                            snapshot.you.hand.length,
+                            state.stockCount,
+                          )
+                      ? BoxDecoration(
+                          boxShadow: const [
+                            BoxShadow(
+                              color: T.ochre,
+                              blurRadius: 12,
+                              spreadRadius: 2,
+                            ),
+                          ],
+                          borderRadius: BorderRadius.circular(5),
                         )
-                    ? BoxDecoration(
-                        boxShadow: const [
-                          BoxShadow(
-                            color: T.ochre,
-                            blurRadius: 12,
-                            spreadRadius: 2,
-                          ),
-                        ],
-                        borderRadius: BorderRadius.circular(5),
-                      )
-                    : null,
-                child: PlayingCard(
-                  faceDown: true,
-                  width: 44,
-                  onTap: onDrawStock,
+                      : null,
+                  child: PlayingCard(
+                    faceDown: true,
+                    width: 44,
+                    onTap: onDrawStock,
+                  ),
                 ),
               ),
-              for (final card in state.playArea)
-                _AnimatedCard(
-                  key: ValueKey(card),
-                  child: PlayingCard(card: card, width: 44),
-                ),
+              _daketiArea(state),
             ]),
             if (state.playArea.isEmpty)
               const Text(
@@ -331,24 +360,23 @@ class GameSurface extends StatelessWidget {
               detail: '${state.stockCount} in stock',
             ),
             _cards([
-              _pile(
-                'Stock',
-                '${state.stockCount}',
-                null,
-                back: true,
-                glow:
-                    snapshot.isYourTurn &&
-                    HandGuidance.daketiMayDraw(
-                      snapshot.you.hand.length,
-                      state.stockCount,
-                    ),
-                onTap: onDrawStock,
-              ),
-              for (final card in state.playArea)
-                _AnimatedCard(
-                  key: ValueKey(card),
-                  child: PlayingCard(card: card, width: compact ? 44 : 60),
+              KeyedSubtree(
+                key: stockKey,
+                child: _pile(
+                  'Stock',
+                  '${state.stockCount}',
+                  null,
+                  back: true,
+                  glow:
+                      snapshot.isYourTurn &&
+                      HandGuidance.daketiMayDraw(
+                        snapshot.you.hand.length,
+                        state.stockCount,
+                      ),
+                  onTap: onDrawStock,
                 ),
+              ),
+              _daketiArea(state),
             ]),
             if (state.playArea.isEmpty)
               const Text(
@@ -378,13 +406,16 @@ class GameSurface extends StatelessWidget {
         detail: '${CardIdentity.rankNameFor(state.yarakRank)} cards are Yarak',
       ),
       _cards([
-        _pile(
-          Copy.stock,
-          '${state.stockCount} left',
-          null,
-          back: true,
-          glow: snapshot.isYourTurn && state.stockCount > 0,
-          onTap: onDrawStock,
+        KeyedSubtree(
+          key: stockKey,
+          child: _pile(
+            Copy.stock,
+            '${state.stockCount} left',
+            null,
+            back: true,
+            glow: snapshot.isYourTurn && state.stockCount > 0,
+            onTap: onDrawStock,
+          ),
         ),
         _pile(
           Copy.discard,

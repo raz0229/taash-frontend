@@ -19,10 +19,11 @@ import 'shared/hand_order.dart';
 import 'shared/hand_view.dart';
 import 'shared/local_turn_timer.dart';
 import 'shared/player_strip.dart';
-import 'shared/playing_card.dart';
 import 'shared/room_backdrop.dart';
 import 'shared/bluff_challenge_animation.dart';
 import 'shared/bhabhi_thullu_animation.dart';
+import 'shared/daketi_steal_animation.dart';
+import 'shared/stock_draw_animation.dart';
 
 part 'game_menus.dart';
 part 'game_status.dart';
@@ -80,6 +81,14 @@ class _GameScreenState extends State<GameScreen>
   bool _thulluAnimationActive = false;
   OverlayEntry? _thulluOverlay;
   final GlobalKey _bhabhiTrickKey = GlobalKey();
+  // Daketi steal: baseline card counts per player + play-area size, diffed on
+  // every snapshot to detect a rake of cards off a collection or the table.
+  Map<String, int>? _lastDaketiLengths;
+  int? _lastDaketiPlayArea;
+  bool _daketiStealActive = false;
+  OverlayEntry? _daketiStealOverlay;
+  final GlobalKey _daketiPlayAreaKey = GlobalKey();
+  final GlobalKey _stockKey = GlobalKey();
   @override
   RoomSession get session => widget.session;
   bool _played10sSound = false;
@@ -178,6 +187,98 @@ class _GameScreenState extends State<GameScreen>
     } else {
       _lastThullu = false;
     }
+
+    if (s.gameState is DaketiState) {
+      _detectDaketiSteal(s);
+    } else {
+      _lastDaketiLengths = null;
+      _lastDaketiPlayArea = null;
+    }
+  }
+
+  /// Compares the previous Daketi snapshot against [s] and, when cards were
+  /// raked off another player's collection or off the play area, plays the
+  /// quick hand-grab animation. Baselines are kept up to date every snapshot.
+  void _detectDaketiSteal(RoomSnapshot s) {
+    final state = s.gameState as DaketiState;
+    final oldLengths = _lastDaketiLengths;
+    final oldArea = _lastDaketiPlayArea;
+
+    String stealerId = '';
+    final victims = <String>[];
+    for (final p in s.players) {
+      final previous = oldLengths?[p.id];
+      final now = p.collection.length;
+      if (previous == null) continue;
+      if (now < previous) victims.add(p.id);
+      if (now > previous && stealerId.isEmpty) stealerId = p.id;
+    }
+    final areaCapture = oldArea != null && state.playArea.length < oldArea;
+
+    _lastDaketiLengths = {for (final p in s.players) p.id: p.collection.length};
+    _lastDaketiPlayArea = state.playArea.length;
+
+    final hasSteal =
+        stealerId.isNotEmpty && (victims.isNotEmpty || areaCapture);
+    if (!hasSteal || !s.room.isActive) return;
+    if (_daketiStealActive || MediaQuery.disableAnimationsOf(context)) return;
+
+    final sorted = [...s.players]..sort((a, b) => a.seat.compareTo(b.seat));
+    final stealerSeat = sorted.indexWhere((p) => p.id == stealerId);
+    final victimId = victims.isEmpty ? '' : victims.first;
+    final victimInfo = victims.isEmpty
+        ? null
+        : s.players.where((p) => p.id == victimId).firstOrNull;
+    final oldVictimCount = victimId.isEmpty ? 0 : oldLengths![victimId]!;
+
+    _showDaketiStealAnimation(
+      stealerSeat: stealerSeat < 0 ? 0 : stealerSeat,
+      victimSeat: victimId.isEmpty
+          ? -1
+          : sorted.indexWhere((p) => p.id == victimId),
+      areaCapture: areaCapture,
+      areaCardCount: areaCapture
+          ? (oldArea - state.playArea.length).clamp(1, 4)
+          : 0,
+      victimCardCount: victimInfo == null
+          ? 0
+          : (oldVictimCount - victimInfo.collection.length).clamp(1, 4),
+    );
+  }
+
+  /// A12/Daketi: a non-blocking overlay that sweeps a hand from the stealer's
+  /// seat toward whoever (or whatever) was robbed, then returns clutching the
+  /// cards. It never pauses the turn clock and auto-removes itself.
+  void _showDaketiStealAnimation({
+    required int stealerSeat,
+    required int victimSeat,
+    required bool areaCapture,
+    required int areaCardCount,
+    required int victimCardCount,
+  }) {
+    setState(() => _daketiStealActive = true);
+    _daketiStealOverlay?.remove();
+    final entry = OverlayEntry(
+      builder: (_) => DaketiStealAnimation(
+        playerStripKey: _playerStripKey,
+        playAreaKey: _daketiPlayAreaKey,
+        stealerSeat: stealerSeat,
+        victimSeat: victimSeat,
+        areaCapture: areaCapture,
+        areaCardCount: areaCardCount,
+        victimCardCount: victimCardCount,
+        onComplete: _onDaketiStealComplete,
+      ),
+    );
+    _daketiStealOverlay = entry;
+    Overlay.of(context, rootOverlay: true).insert(entry);
+  }
+
+  void _onDaketiStealComplete() {
+    if (!mounted) return;
+    _daketiStealOverlay?.remove();
+    _daketiStealOverlay = null;
+    setState(() => _daketiStealActive = false);
   }
 
   void changed() {
@@ -193,6 +294,7 @@ class _GameScreenState extends State<GameScreen>
     _stockDrawOverlay?.remove();
     _bluffOverlay?.remove();
     _thulluOverlay?.remove();
+    _daketiStealOverlay?.remove();
     session.removeListener(changed);
     noticeTimer?.cancel();
     _turnTimer.dispose();
@@ -207,17 +309,28 @@ class _GameScreenState extends State<GameScreen>
   OverlayEntry? _stockDrawOverlay;
   void _showStockDrawAnimation() {
     if (MediaQuery.disableAnimationsOf(context)) return;
+    final s = session.snapshot;
+    if (s == null) return;
+    final sorted = [...s.players]..sort((a, b) => a.seat.compareTo(b.seat));
+    final drawerSeat = sorted.indexWhere((p) => p.id == s.currentPlayerId);
     final overlay = Overlay.of(context);
     _stockDrawOverlay?.remove();
-    final entry = OverlayEntry(builder: (_) => const _StockDrawAnimation());
+    final entry = OverlayEntry(
+      builder: (_) => StockDrawAnimation(
+        playerStripKey: _playerStripKey,
+        stockKey: _stockKey,
+        drawerSeat: drawerSeat < 0 ? 0 : drawerSeat,
+        onComplete: _onStockDrawComplete,
+      ),
+    );
     _stockDrawOverlay = entry;
     overlay.insert(entry);
-    Future.delayed(const Duration(milliseconds: 700), () {
-      if (_stockDrawOverlay == entry) {
-        _stockDrawOverlay = null;
-        entry.remove();
-      }
-    });
+  }
+
+  void _onStockDrawComplete() {
+    if (!mounted) return;
+    _stockDrawOverlay?.remove();
+    _stockDrawOverlay = null;
   }
 
   @override
@@ -602,6 +715,10 @@ class _GameScreenState extends State<GameScreen>
             MediaQuery.textScalerOf(context).scale(1) <= 1.4,
         pileKey: s.room.game == GameType.bluff ? _bluffPileKey : null,
         trickKey: s.room.game == GameType.bhabhi ? _bhabhiTrickKey : null,
+        playAreaKey: s.room.game == GameType.daketi ? _daketiPlayAreaKey : null,
+        stockKey: s.room.game == GameType.daketi || s.room.game == GameType.tc
+            ? _stockKey
+            : null,
         onCardDrop: (card) => play(card),
         canDrop: ready && mine,
         onInspectCollection: (p) => inspectCollection(context, p),
@@ -637,11 +754,15 @@ class _GameScreenState extends State<GameScreen>
         if (!didPop) leave();
       },
       child: Scaffold(
-        backgroundColor: const Color(0xff16112F),
+        backgroundColor: s == null
+            ? const Color(0xff16112F)
+            : roomBaseColor(s.room.game),
         body: SafeArea(
           child: Stack(
             children: [
-              const Positioned.fill(child: RoomBackdrop()),
+              Positioned.fill(
+                child: RoomBackdrop(game: s?.room.game ?? GameType.bhabhi),
+              ),
               Column(
                 children: [
                   Padding(
@@ -751,11 +872,11 @@ class _GameScreenState extends State<GameScreen>
                           final content = Column(
                             children: [
                               PlayerStrip(
+                                key: _playerStripKey,
                                 snapshot: s,
                                 onPlayerTap: playerMenu,
                                 onEmojiTap: reactionPicker,
                                 turnTimer: _turnTimer,
-                                stripKey: _playerStripKey,
                               ),
                               if (s.room.isWaiting)
                                 Expanded(child: _waiting(s))
@@ -881,53 +1002,6 @@ class _GameScreenState extends State<GameScreen>
   }
 }
 
-/// Shows a face-down card flying up from the stock pile to the current
-/// player's seat (the strip at the top) when the stock decreases.
-class _StockDrawAnimation extends StatefulWidget {
-  const _StockDrawAnimation();
-
-  @override
-  State<_StockDrawAnimation> createState() => _StockDrawAnimationState();
-}
-
-class _StockDrawAnimationState extends State<_StockDrawAnimation>
-    with SingleTickerProviderStateMixin {
-  late final AnimationController _controller = AnimationController(
-    vsync: this,
-    duration: const Duration(milliseconds: 500),
-  )..forward();
-
-  @override
-  void dispose() {
-    _controller.dispose();
-    super.dispose();
-  }
-
-  @override
-  Widget build(BuildContext context) {
-    final size = MediaQuery.sizeOf(context);
-    const cardWidth = 52.0;
-    return IgnorePointer(
-      child: Stack(
-        children: [
-          AnimatedBuilder(
-            animation: _controller,
-            builder: (context, child) {
-              final t = Curves.easeIn.transform(_controller.value);
-              return Positioned(
-                left: size.width / 2 - cardWidth / 2,
-                top: size.height * .58 - t * size.height * .52,
-                child: Opacity(opacity: (1 - t).clamp(0.0, 1.0), child: child),
-              );
-            },
-            child: const SizedBox(
-              width: cardWidth,
-              height: cardWidth * 1.4,
-              child: PlayingCard(faceDown: true),
-            ),
-          ),
-        ],
-      ),
-    );
-  }
-}
+// Stock-draw, Daketi-steal and Thullu reveals all live in their own shared
+// widgets (stock_draw_animation.dart, daketi_steal_animation.dart,
+// bhabhi_thullu_animation.dart) and are driven by the overlays above.

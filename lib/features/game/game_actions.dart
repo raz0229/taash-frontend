@@ -28,7 +28,6 @@ mixin _GameActions on State<GameScreen> {
       ),
     );
     if (state is BhabhiState || state is DaketiState) {
-
       button(
         Copy.playCard,
         () => play(),

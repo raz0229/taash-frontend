@@ -168,7 +168,10 @@ class _HandViewState extends State<HandView> {
                             widget.hand.selected.isEmpty
                                 ? Copy.tapToSelectHoldToDragArrange
                                 : '${widget.hand.selected.length} selected · tap the action below or drag to the room',
-                            style: const TextStyle(fontSize: 11, color: Color(0xffCBBFE3)),
+                            style: const TextStyle(
+                              fontSize: 11,
+                              color: Color(0xffCBBFE3),
+                            ),
                           ),
                         ),
                       ],
@@ -187,7 +190,9 @@ class _HandViewState extends State<HandView> {
       key: ValueKey(card),
       duration: reduce ? Duration.zero : const Duration(milliseconds: 120),
       left: index * 42 + 12,
-      top: selected ? 0 : 4 + (index - (widget.hand.cards.length - 1) / 2).abs() * 2,
+      top: selected
+          ? 0
+          : 4 + (index - (widget.hand.cards.length - 1) / 2).abs() * 2,
       child: DragTarget<String>(
         onWillAcceptWithDetails: (details) => details.data != card,
         onAcceptWithDetails: (details) {
