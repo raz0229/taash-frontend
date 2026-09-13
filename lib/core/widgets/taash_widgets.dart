@@ -1,4 +1,3 @@
-
 import 'package:taash/l10n/copy.dart';
 import 'package:flutter/material.dart';
 import '../theme/taash_theme.dart';
@@ -192,7 +191,7 @@ class TaashAvatar extends StatelessWidget {
         ],
       ),
       child: ClipOval(
-        child: id >= 0 && id <= 14
+        child: id >= 0
             ? Image.asset(
                 'assets/pfps/$id.png',
                 fit: BoxFit.cover,

@@ -2530,6 +2530,12 @@ abstract class AppLocalizations {
   /// **'Friday card night'**
   String get fridayCardNight;
 
+  /// No description provided for @myRoomNamed.
+  ///
+  /// In en, this message translates to:
+  /// **'My {game} Room'**
+  String myRoomNamed(Object game);
+
   /// No description provided for @weLlFindAPublicRoomWith.
   ///
   /// In en, this message translates to:

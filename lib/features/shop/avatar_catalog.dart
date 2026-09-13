@@ -13,7 +13,7 @@ class AvatarItem {
   factory AvatarItem.fromJson(Map<String, dynamic> json) {
     final id = jsonInt(json['pfp_id'], -1);
     final cost = jsonInt(json['pfp_cost_in_coins'], -1);
-    if (id < 0 || id > 14 || cost < 0) {
+    if (id < 0 || cost < 0) {
       throw const FormatException(Copy.invalidAvatarCatalog);
     }
     return AvatarItem(

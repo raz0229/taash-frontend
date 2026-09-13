@@ -1404,6 +1404,11 @@ class AppLocalizationsEn extends AppLocalizations {
   String get fridayCardNight => 'Friday card night';
 
   @override
+  String myRoomNamed(Object game) {
+    return 'My $game Room';
+  }
+
+  @override
   String get weLlFindAPublicRoomWith =>
       'We’ll find a public room with room for you.';
 
