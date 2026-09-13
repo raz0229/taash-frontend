@@ -59,6 +59,7 @@ class RoomSession extends ChangeNotifier with WidgetsBindingObserver {
   final Future<String?> Function()? appCheckTokenProvider;
   VoidCallback? onStockDecreased;
   void Function(BluffChallengeEvent)? onBluffChallenge;
+  void Function(CardPlayedInfo)? onCardPlayed;
   final RoomSocketConnector _connector;
   final SnapshotReducer _reducer;
   final Duration commandTimeout, connectTimeout, reconnectBase, reconnectJitter;
@@ -536,7 +537,13 @@ class RoomSession extends ChangeNotifier with WidgetsBindingObserver {
         next.pileCount > previous.pileCount,
       _ => false,
     };
-    if (cardAdded) audio.playSfx('new_card_added_in_play_area');
+    if (cardAdded) {
+      audio.playSfx('new_card_added_in_play_area');
+      final played = detectCardPlay(previous, next);
+      if (played.playerId.isNotEmpty && played.cardCount > 0) {
+        onCardPlayed?.call(played);
+      }
+    }
 
     final stockDecreased = switch ((previousState, nextState)) {
       (DaketiState prev, DaketiState next) =>

@@ -25,6 +25,7 @@ import 'shared/bluff_challenge_animation.dart';
 import 'shared/bhabhi_thullu_animation.dart';
 import 'shared/daketi_steal_animation.dart';
 import 'shared/stock_draw_animation.dart';
+import 'shared/card_play_animation.dart';
 
 part 'game_menus.dart';
 part 'game_status.dart';
@@ -90,6 +91,16 @@ class _GameScreenState extends State<GameScreen>
   OverlayEntry? _daketiStealOverlay;
   final GlobalKey _daketiPlayAreaKey = GlobalKey();
   final GlobalKey _stockKey = GlobalKey();
+  // TC discard pile anchor so the play-card hand lands on the actual discard.
+  final GlobalKey _tcDiscardKey = GlobalKey();
+  // Local hand rail anchor so the play-card hand grabs from the real hand.
+  final GlobalKey _handKey = GlobalKey();
+  // Card-play drop animation: one active + draining at a time, kicked off from
+  // snapshot diffs for every seat (including other players' plays).
+  bool _playAnimationActive = false;
+  String _lastPlayKey = '';
+  DateTime _lastPlayAt = DateTime.fromMillisecondsSinceEpoch(0);
+  OverlayEntry? _playOverlay;
   @override
   RoomSession get session => widget.session;
   bool _played10sSound = false;
@@ -117,6 +128,7 @@ class _GameScreenState extends State<GameScreen>
     super.initState();
     session.onStockDecreased = _onStockDecreased;
     session.onBluffChallenge = _onBluffChallenge;
+    session.onCardPlayed = _onCardPlayed;
     session.addListener(changed);
     _reconcile();
   }
@@ -292,10 +304,12 @@ class _GameScreenState extends State<GameScreen>
   void dispose() {
     session.onStockDecreased = null;
     session.onBluffChallenge = null;
+    session.onCardPlayed = null;
     _stockDrawOverlay?.remove();
     _bluffOverlay?.remove();
     _thulluOverlay?.remove();
     _daketiStealOverlay?.remove();
+    _playOverlay?.remove();
     session.removeListener(changed);
     noticeTimer?.cancel();
     _turnTimer.dispose();
@@ -332,6 +346,59 @@ class _GameScreenState extends State<GameScreen>
     if (!mounted) return;
     _stockDrawOverlay?.remove();
     _stockDrawOverlay = null;
+  }
+
+  // Plays the card-drop animation whenever a snapshot confirms a card hit the
+  // table, for the local player and every other seat alike.
+  void _onCardPlayed(CardPlayedInfo info) {
+    if (!mounted) return;
+    if (MediaQuery.disableAnimationsOf(context)) return;
+    final s = session.snapshot;
+    if (s == null || !s.room.isActive) return;
+    if (_bluffAnimationActive || _thulluAnimationActive) return;
+    final playKey = '${info.playerId}|${info.cardCount}|${info.card}';
+    final now = DateTime.now();
+    if (_playAnimationActive ||
+        (playKey == _lastPlayKey &&
+            now.difference(_lastPlayAt) < const Duration(seconds: 2))) {
+      return;
+    }
+    _lastPlayKey = playKey;
+    _lastPlayAt = now;
+    setState(() => _playAnimationActive = true);
+
+    final self = info.playerId == session.playerId;
+    final sorted = [...s.players]..sort((a, b) => a.seat.compareTo(b.seat));
+    final seat = sorted.indexWhere((p) => p.id == info.playerId);
+
+    final targetKey = switch (s.room.game) {
+      GameType.bhabhi => _bhabhiTrickKey,
+      GameType.bluff => _bluffPileKey,
+      GameType.daketi => _daketiPlayAreaKey,
+      GameType.tc => _tcDiscardKey,
+    };
+    _playOverlay?.remove();
+    final entry = OverlayEntry(
+      builder: (_) => CardPlayAnimation(
+        game: s.room.game,
+        playerStripKey: _playerStripKey,
+        targetKey: targetKey,
+        fromSeat: self ? -1 : seat < 0 ? 0 : seat,
+        handKey: _handKey,
+        cardCount: info.cardCount,
+        card: info.card,
+        onComplete: _onCardPlayedComplete,
+      ),
+    );
+    _playOverlay = entry;
+    Overlay.of(context, rootOverlay: true).insert(entry);
+  }
+
+  void _onCardPlayedComplete() {
+    if (!mounted) return;
+    _playOverlay?.remove();
+    _playOverlay = null;
+    setState(() => _playAnimationActive = false);
   }
 
   @override
@@ -720,6 +787,7 @@ class _GameScreenState extends State<GameScreen>
         stockKey: s.room.game == GameType.daketi || s.room.game == GameType.tc
             ? _stockKey
             : null,
+        discardKey: s.room.game == GameType.tc ? _tcDiscardKey : null,
         onCardDrop: (card) => play(card),
         canDrop: ready && mine,
         onInspectCollection: (p) => inspectCollection(context, p),
@@ -898,6 +966,7 @@ class _GameScreenState extends State<GameScreen>
                                 ),
                               if (active)
                                 HandView(
+                                  key: _handKey,
                                   hand: hand,
                                   onChanged: () => setState(() {}),
                                   multiSelect: s.room.game == GameType.bluff,

@@ -21,6 +21,7 @@ class GameSurface extends StatelessWidget {
     this.trickKey,
     this.playAreaKey,
     this.stockKey,
+    this.discardKey,
     this.compact = false,
   });
   final RoomSnapshot snapshot;
@@ -41,6 +42,10 @@ class GameSurface extends StatelessWidget {
 
   /// Anchors the draw pile so the stock-draw hand can grab from the real deck.
   final Key? stockKey;
+
+  /// Anchors the TC discard pile so the play-card hand can drop onto the card
+  /// that was just discarded.
+  final Key? discardKey;
   final bool compact;
   String name(String id) => id == snapshot.you.id
       ? Copy.you
@@ -434,13 +439,16 @@ class GameSurface extends StatelessWidget {
             tint: tint,
           ),
         ),
-        _pile(
-          Copy.discard,
-          '${state.discardCount} cards',
-          state.discardTop,
-          glow: snapshot.isYourTurn && state.discardTop != null,
-          onTap: onTakeDiscard,
-          tint: tint,
+        KeyedSubtree(
+          key: discardKey,
+          child: _pile(
+            Copy.discard,
+            '${state.discardCount} cards',
+            state.discardTop,
+            glow: snapshot.isYourTurn && state.discardTop != null,
+            onTap: onTakeDiscard,
+            tint: tint,
+          ),
         ),
         Container(width: 1, height: compact ? 80 : 100, color: Colors.white24),
         _pile(Copy.indicator, 'Yarak rank', state.indicator, tint: tint),

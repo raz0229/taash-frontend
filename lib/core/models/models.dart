@@ -1,4 +1,5 @@
 import 'dart:collection';
+import 'dart:math';
 
 enum GameType {
   bhabhi('Bhabhi', 500, 7),
@@ -405,6 +406,67 @@ class BluffChallengeEvent {
 
   String get dedupKey =>
       '$bluffCaught|$challenger|$challenged|$declaredRank|${lastPlayCards.join(',')}';
+}
+
+/// A card (or cards) just played onto the table by [playerId], detected from a
+/// snapshot transition so every seat can show the same drop animation.
+class CardPlayedInfo {
+  const CardPlayedInfo({
+    required this.playerId,
+    required this.cardCount,
+    this.card = '',
+  });
+  final String playerId;
+  final int cardCount;
+
+  /// Face of the card that landed ('' when it stays hidden, e.g. Bluff).
+  final String card;
+}
+
+/// Figures out who played onto the table from a snapshot transition across
+/// every game. Prefers the exact hand-count drop (a play always shrinks that
+/// player's hand) and falls back to the turn/state metadata that Bhabhi and
+/// Bluff expose directly.
+CardPlayedInfo detectCardPlay(RoomSnapshot previous, RoomSnapshot next) {
+  String id = '';
+  var count = 0;
+  for (final now in next.players) {
+    final before = previous.players.where((p) => p.id == now.id).firstOrNull;
+    if (before == null) continue;
+    final dropped = before.handCount - now.handCount;
+    if (dropped > count) {
+      id = now.id;
+      count = dropped;
+    }
+  }
+  if (id.isEmpty) {
+    switch ((previous.gameState, next.gameState)) {
+      case (BluffState _, BluffState n) when n.lastPlayerId.isNotEmpty:
+        return CardPlayedInfo(
+          playerId: n.lastPlayerId,
+          cardCount: max(1, n.lastPlayCount),
+        );
+      case (BhabhiState _, BhabhiState n) when n.trick.isNotEmpty:
+        return CardPlayedInfo(playerId: n.trick.last.playerId, cardCount: 1, card: n.trick.last.card);
+      default:
+        return const CardPlayedInfo(playerId: '', cardCount: 0);
+    }
+  }
+  final card = switch ((previous.gameState, next.gameState)) {
+    (BhabhiState p, BhabhiState n)
+        when n.trick.length > p.trick.length && n.trick.last.playerId == id =>
+      n.trick.last.card,
+    (BluffState _, BluffState _) => '',
+    (DaketiState p, DaketiState n) when n.playArea.length > p.playArea.length =>
+      n.playArea.last,
+    (TcState _, TcState n) => n.discardTop ?? '',
+    _ => '',
+  };
+  return CardPlayedInfo(
+    playerId: id,
+    cardCount: count > 0 ? count : 1,
+    card: card,
+  );
 }
 
 class ChatAnimation {
