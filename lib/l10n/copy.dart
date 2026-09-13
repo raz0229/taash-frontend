@@ -335,7 +335,7 @@ abstract final class Copy {
   static const tapToSelectHoldToDragArrange =
       'Tap to select · hold to drag · arrange for a full view';
   static const yourHandIsEmptyFollowTheRoom =
-      'Your hand is empty. Follow the room for your result.';
+      'Spectator Mode. You can leave and your winning share will be added to your balance.';
   static const inspectAndArrangeYourCards = 'Inspect and arrange your cards';
   static const sortBySuitAndRank = 'Sort by suit and rank';
   static const sortByRank = 'Sort by rank';

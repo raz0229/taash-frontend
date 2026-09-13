@@ -835,7 +835,7 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get yourHandIsEmptyFollowTheRoom =>
-      'Your hand is empty. Follow the room for your result.';
+      'Spectator Mode. You can leave and your winning share will be added to your balance.';
 
   @override
   String get inspectAndArrangeYourCards => 'Inspect and arrange your cards';
