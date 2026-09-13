@@ -64,6 +64,7 @@ void main() {
                 onQuickMatch: (_) {},
                 onCreate: (_) {},
                 onJoin: () {},
+                onPlayBots: () {},
               ),
             ),
           ),

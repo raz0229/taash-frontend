@@ -2476,6 +2476,48 @@ abstract class AppLocalizations {
   /// **'Game'**
   String get game;
 
+  /// No description provided for @playVSBots.
+  ///
+  /// In en, this message translates to:
+  /// **'Play VS Bots'**
+  String get playVSBots;
+
+  /// No description provided for @practiceAgainstBots.
+  ///
+  /// In en, this message translates to:
+  /// **'Practice against bots. Same table, real pool.'**
+  String get practiceAgainstBots;
+
+  /// No description provided for @entryFeePerGame.
+  ///
+  /// In en, this message translates to:
+  /// **'Entry per game'**
+  String get entryFeePerGame;
+
+  /// No description provided for @pickYourGame.
+  ///
+  /// In en, this message translates to:
+  /// **'Pick your game'**
+  String get pickYourGame;
+
+  /// No description provided for @botsHeading.
+  ///
+  /// In en, this message translates to:
+  /// **'A full table.\nAll yours.'**
+  String get botsHeading;
+
+  /// No description provided for @botsSubtitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Choose the game and seats. Bots fill the table and the game starts right away.'**
+  String get botsSubtitle;
+
+  /// No description provided for @playNow.
+  ///
+  /// In en, this message translates to:
+  /// **'Play now'**
+  String get playNow;
+
   /// No description provided for @use125EnglishLettersNumbersOr.
   ///
   /// In en, this message translates to:

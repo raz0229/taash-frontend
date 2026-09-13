@@ -377,6 +377,20 @@ class ApiClient {
   Future<RoomSummary> findMatch(GameType game) async => RoomSummary.fromJson(
     await request('POST', '/v1/match', body: {'game_type': game.name}),
   );
+
+  /// Creates a fresh private room against bots for [game] and returns its
+  /// summary so the player can immediately join. [maxPlayers] defaults to the
+  /// game's maximum when omitted.
+  Future<RoomSummary> findBotsMatch({
+    required GameType game,
+    int? maxPlayers,
+  }) async => RoomSummary.fromJson(
+    await request(
+      'POST',
+      '/v1/match/bots',
+      body: {'game_type': game.name, 'max_players': ?maxPlayers},
+    ),
+  );
   Future<RoomSummary> getRoom(String code) async => RoomSummary.fromJson(
     await request(
       'GET',

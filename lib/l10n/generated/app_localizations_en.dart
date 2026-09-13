@@ -1374,6 +1374,29 @@ class AppLocalizationsEn extends AppLocalizations {
   String get game => 'Game';
 
   @override
+  String get playVSBots => 'Play VS Bots';
+
+  @override
+  String get practiceAgainstBots =>
+      'Practice against bots. Same table, real pool.';
+
+  @override
+  String get entryFeePerGame => 'Entry per game';
+
+  @override
+  String get pickYourGame => 'Pick your game';
+
+  @override
+  String get botsHeading => 'A full table.\nAll yours.';
+
+  @override
+  String get botsSubtitle =>
+      'Choose the game and seats. Bots fill the table and the game starts right away.';
+
+  @override
+  String get playNow => 'Play now';
+
+  @override
   String get use125EnglishLettersNumbersOr =>
       'Use 1–25 English letters, numbers or spaces.';
 

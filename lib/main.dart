@@ -47,10 +47,7 @@ Future<void> main() async {
   final config = AppConfig.fromEnvironment();
   await bootstrapFirebase(config);
   final admobInit = MobileAds.instance.initialize();
-  runApp(TaashApp(
-    config: config,
-    admobInitialization: admobInit,
-  ));
+  runApp(TaashApp(config: config, admobInitialization: admobInit));
 }
 
 Future<void> _noopAdmobInit() async {}
@@ -81,18 +78,21 @@ class _TaashAppState extends State<TaashApp> {
     }
     return client;
   }();
-  late final googleAuth = widget.googleAuth ??
+  late final googleAuth =
+      widget.googleAuth ??
       GoogleAuth(webClientId: widget.config.firebaseWebClientId);
   late final auth =
       widget.auth ?? AuthController(api: api, googleAuth: googleAuth);
   late final preferences = widget.preferences ?? Preferences();
   late final updateService = InAppUpdateService();
-  late final adService = widget.config.adMobRewardedAdUnitId.isNotEmpty ||
+  late final adService =
+      widget.config.adMobRewardedAdUnitId.isNotEmpty ||
           widget.config.adMobInterstitialAdUnitId.isNotEmpty
       ? AdService(
           adUnitId: widget.config.adMobRewardedAdUnitId,
           interstitialAdUnitId: widget.config.adMobInterstitialAdUnitId,
-          initialization: widget.admobInitialization ??
+          initialization:
+              widget.admobInitialization ??
               // If a test harness provided no init future, fall back to a
               // completed future so loading starts immediately.
               _noopAdmobInit(),
@@ -159,7 +159,12 @@ class _TaashAppState extends State<TaashApp> {
       ),
       home: !ready
           ? const BootScreen()
-          : _AppGate(auth: auth, api: api, preferences: preferences, adService: adService),
+          : _AppGate(
+              auth: auth,
+              api: api,
+              preferences: preferences,
+              adService: adService,
+            ),
     ),
   );
 }
@@ -380,7 +385,12 @@ class _AppGate extends StatelessWidget {
         );
       }
       if (auth.isSignedIn) {
-        return LobbyShell(auth: auth, api: api, preferences: preferences, adService: adService);
+        return LobbyShell(
+          auth: auth,
+          api: api,
+          preferences: preferences,
+          adService: adService,
+        );
       }
       if (auth.status == AuthStatus.maintenance ||
           auth.status == AuthStatus.offline) {
@@ -462,6 +472,21 @@ class _LobbyShellState extends State<LobbyShell> {
         api: widget.api,
         auth: widget.auth,
         game: game,
+        onJoin: (summary) => Navigator.pop(flowContext, summary),
+      ),
+    );
+    if (summary != null && mounted) await join(summary);
+  }
+
+  /// Opens the VS-bots menu. Playing from it creates a room against bots and
+  /// joins it right away.
+  Future<void> openBotsRoom() async {
+    if (joining || room != null) return;
+    final summary = await panel<RoomSummary>(
+      (flowContext) => BotsRoomFlow(
+        api: widget.api,
+        auth: widget.auth,
+        adService: widget.adService,
         onJoin: (summary) => Navigator.pop(flowContext, summary),
       ),
     );
@@ -567,6 +592,7 @@ class _LobbyShellState extends State<LobbyShell> {
         onQuickMatch: (g) => openRoom(RoomFlowMode.quick, g),
         onCreate: (g) => openRoom(RoomFlowMode.create, g),
         onJoin: () => openRoom(RoomFlowMode.join),
+        onPlayBots: () => openBotsRoom(),
       ),
     };
     return Scaffold(
@@ -575,6 +601,7 @@ class _LobbyShellState extends State<LobbyShell> {
         selectedIndex: tab,
         onDestinationSelected: (i) {
           widget.preferences.selection();
+          if (i != tab) audio.playSfx('generic_button_press');
           setState(() => tab = i);
         },
         height: 74,

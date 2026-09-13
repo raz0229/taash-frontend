@@ -7,6 +7,7 @@ import '../../core/auth/auth_controller.dart';
 import '../../core/errors/app_failure.dart';
 import '../../core/models/models.dart';
 import '../../core/theme/taash_theme.dart';
+import '../../core/widgets/reward_sheet.dart';
 import '../../core/widgets/taash_widgets.dart';
 import '../../l10n/copy.dart';
 import '../../l10n/strings.dart';
@@ -22,17 +23,19 @@ class HomeScreen extends StatefulWidget {
     required this.onQuickMatch,
     required this.onCreate,
     required this.onJoin,
+    required this.onPlayBots,
     this.adService,
   });
   final AuthController auth;
-  final VoidCallback onProfile, onSettings, onJoin;
+  final VoidCallback onProfile, onSettings, onJoin, onPlayBots;
   final ValueChanged<GameType> onQuickMatch, onCreate;
   final AdService? adService;
   @override
   State<HomeScreen> createState() => _HomeScreenState();
 }
 
-class _HomeScreenState extends State<HomeScreen> with SingleTickerProviderStateMixin {
+class _HomeScreenState extends State<HomeScreen>
+    with SingleTickerProviderStateMixin {
   int index = 0;
   double drag = 0;
   late final AnimationController _pulseController;
@@ -57,8 +60,9 @@ class _HomeScreenState extends State<HomeScreen> with SingleTickerProviderStateM
   }
 
   void advance(int delta) {
-    final next = (index + delta).clamp(0, lobbyGames.length - 1);
+    final next = (index + delta).clamp(0, lobbyCards.length - 1);
     if (next != index) {
+      audio.playSfx('generic_button_press');
       _pageController.animateToPage(
         next,
         duration: const Duration(milliseconds: 300),
@@ -68,6 +72,7 @@ class _HomeScreenState extends State<HomeScreen> with SingleTickerProviderStateM
   }
 
   Future<void> _claimReward() async {
+    audio.playSfx('generic_button_press');
     final auth = widget.auth;
     final playerId = auth.profile?.id;
     if (playerId == null) return;
@@ -76,14 +81,14 @@ class _HomeScreenState extends State<HomeScreen> with SingleTickerProviderStateM
       await auth.refreshProfile();
       audio.playSfx('coins_added_in_hourly_reward');
       if (!mounted) return;
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('Claimed $coins coins!')),
-      );
+      ScaffoldMessenger.of(
+        context,
+      ).showSnackBar(SnackBar(content: Text('Claimed $coins coins!')));
     } on AppFailure catch (e) {
       if (!mounted) return;
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text(e.message)),
-      );
+      ScaffoldMessenger.of(
+        context,
+      ).showSnackBar(SnackBar(content: Text(e.message)));
     }
   }
 
@@ -97,16 +102,33 @@ class _HomeScreenState extends State<HomeScreen> with SingleTickerProviderStateM
       isScrollControlled: true,
       useSafeArea: true,
       showDragHandle: true,
-      builder: (ctx) => _RewardSheet(
-        adService: adService,
-        auth: widget.auth,
-      ),
+      builder: (ctx) => RewardSheet(adService: adService, auth: widget.auth),
     );
+  }
+
+  /// Play the focused game, or open the VS-bots menu when the bots tile is
+  /// focused. A player who can't afford the entry is sent to the reward sheet
+  /// instead of matchmaking.
+  void _onPlay(GameType? game) {
+    audio.playSfx('generic_button_press');
+    if (game == null) {
+      widget.onPlayBots();
+      return;
+    }
+    if ((widget.auth.profile?.coins ?? 0) < game.entryFee) {
+      _showRewardModal();
+      return;
+    }
+    widget.onQuickMatch(game);
   }
 
   @override
   Widget build(BuildContext context) {
-    final profile = widget.auth.profile!, game = lobbyGames[index];
+    final profile = widget.auth.profile!, card = lobbyCards[index];
+    final game = switch (card) {
+      GameLobbyCard(:final game) => game,
+      BotsLobbyCard() => null,
+    };
     final large = MediaQuery.textScalerOf(context).scale(1) > 1.4;
     final short = MediaQuery.sizeOf(context).height < 720;
     final actions = Container(
@@ -128,9 +150,15 @@ class _HomeScreenState extends State<HomeScreen> with SingleTickerProviderStateM
                 elevation: 5,
                 shadowColor: const Color(0xff090812),
               ),
-              onPressed: () => widget.onQuickMatch(game),
-              icon: const Icon(Icons.play_arrow_rounded),
-              label: Text('Play ${game.label} · ${game.entryFee} coins'),
+              onPressed: () => _onPlay(game),
+              icon: Icon(
+                game == null
+                    ? Icons.smart_toy_outlined
+                    : Icons.play_arrow_rounded,
+              ),
+              label: game == null
+                  ? Text(Copy.playVSBots)
+                  : Text('Play ${game.label} · ${game.entryFee} coins'),
             ),
           ),
           const SizedBox(height: 8),
@@ -141,7 +169,10 @@ class _HomeScreenState extends State<HomeScreen> with SingleTickerProviderStateM
                   label: S.createRoom,
                   secondary: true,
                   icon: Icons.add_circle_outline,
-                  onPressed: () => widget.onCreate(game),
+                  onPressed: () {
+                    audio.playSfx('generic_button_press');
+                    widget.onCreate(game ?? gameDefault);
+                  },
                 ),
               ),
               const SizedBox(width: 10),
@@ -150,7 +181,10 @@ class _HomeScreenState extends State<HomeScreen> with SingleTickerProviderStateM
                   label: S.joinRoom,
                   secondary: true,
                   icon: Icons.vpn_key_outlined,
-                  onPressed: widget.onJoin,
+                  onPressed: () {
+                    audio.playSfx('generic_button_press');
+                    widget.onJoin();
+                  },
                 ),
               ),
             ],
@@ -167,13 +201,19 @@ class _HomeScreenState extends State<HomeScreen> with SingleTickerProviderStateM
               label: Copy.openYourProfile,
               button: true,
               child: GestureDetector(
-                onTap: widget.onProfile,
+                onTap: () {
+                  audio.playSfx('generic_button_press');
+                  widget.onProfile();
+                },
                 child: TaashAvatar(id: profile.selectedPfp, size: 46),
               ),
             ),
             IconButton(
               tooltip: Copy.settings,
-              onPressed: widget.onSettings,
+              onPressed: () {
+                audio.playSfx('generic_button_press');
+                widget.onSettings();
+              },
               icon: const Icon(
                 Icons.settings_outlined,
                 color: Color(0xffCBBEEA),
@@ -184,10 +224,7 @@ class _HomeScreenState extends State<HomeScreen> with SingleTickerProviderStateM
               child: IconButton(
                 tooltip: 'Claim Reward',
                 onPressed: _claimReward,
-                icon: const Icon(
-                  Icons.card_giftcard,
-                  color: T.ochre,
-                ),
+                icon: const Icon(Icons.card_giftcard, color: T.ochre),
               ),
             ),
             Expanded(
@@ -197,7 +234,10 @@ class _HomeScreenState extends State<HomeScreen> with SingleTickerProviderStateM
                 runSpacing: 5,
                 children: [
                   GestureDetector(
-                    onTap: _showRewardModal,
+                    onTap: () {
+                      audio.playSfx('generic_button_press');
+                      _showRewardModal();
+                    },
                     child: Row(
                       mainAxisSize: MainAxisSize.min,
                       children: [
@@ -282,7 +322,7 @@ class _HomeScreenState extends State<HomeScreen> with SingleTickerProviderStateM
               ),
             ),
             Text(
-              '${index + 1} / 4',
+              '${index + 1} / ${lobbyCards.length}',
               style: const TextStyle(color: T.muted, fontSize: 12),
             ),
           ],
@@ -291,9 +331,12 @@ class _HomeScreenState extends State<HomeScreen> with SingleTickerProviderStateM
       Padding(
         padding: const EdgeInsets.only(left: 18),
         child: Semantics(
-          label:
-              '${game.label}. ${gameDescription(game)}. Game ${index + 1} of 4',
-          onIncrease: index < 3 ? () => advance(1) : null,
+          label: game == null
+              ? '${Copy.playVSBots}. ${Copy.practiceAgainstBots}. '
+                    'Game ${index + 1} of ${lobbyCards.length}'
+              : '${game.label}. ${gameDescription(game)}. '
+                    'Game ${index + 1} of ${lobbyCards.length}',
+          onIncrease: index < lobbyCards.length - 1 ? () => advance(1) : null,
           onDecrease: index > 0 ? () => advance(-1) : null,
           child: SizedBox(
             height: large
@@ -304,14 +347,17 @@ class _HomeScreenState extends State<HomeScreen> with SingleTickerProviderStateM
             child: PageView.builder(
               controller: _pageController,
               onPageChanged: (i) => setState(() => index = i),
-              itemCount: 4,
+              itemCount: lobbyCards.length,
               itemBuilder: (context, i) {
                 return Padding(
                   padding: const EdgeInsets.only(right: 12),
-                  child: GameTile(
-                    game: lobbyGames[i],
-                    focused: i == index,
-                  ),
+                  child: switch (lobbyCards[i]) {
+                    GameLobbyCard(:final game) => GameTile(
+                      game: game,
+                      focused: i == index,
+                    ),
+                    BotsLobbyCard() => BotsGameTile(focused: i == index),
+                  },
                 );
               },
             ),
@@ -327,7 +373,7 @@ class _HomeScreenState extends State<HomeScreen> with SingleTickerProviderStateM
             icon: const Icon(Icons.chevron_left_rounded),
           ),
           ...List.generate(
-            4,
+            lobbyCards.length,
             (i) => AnimatedContainer(
               duration: MediaQuery.disableAnimationsOf(context)
                   ? Duration.zero
@@ -343,7 +389,7 @@ class _HomeScreenState extends State<HomeScreen> with SingleTickerProviderStateM
           ),
           IconButton(
             tooltip: Copy.nextGame,
-            onPressed: index < 3 ? () => advance(1) : null,
+            onPressed: index < lobbyCards.length - 1 ? () => advance(1) : null,
             icon: const Icon(Icons.chevron_right_rounded),
           ),
         ],
@@ -376,210 +422,6 @@ class _HomeScreenState extends State<HomeScreen> with SingleTickerProviderStateM
                 actions,
               ],
             ),
-    );
-  }
-}
-
-class _RewardSheet extends StatefulWidget {
-  const _RewardSheet({required this.adService, required this.auth});
-  final AdService adService;
-  final AuthController auth;
-
-  @override
-  State<_RewardSheet> createState() => _RewardSheetState();
-}
-
-class _RewardSheetState extends State<_RewardSheet> {
-  bool _loading = false;
-  bool _processing = false;
-  String? _error;
-
-  @override
-  void initState() {
-    super.initState();
-    widget.adService.addListener(_onAdChanged);
-  }
-
-  @override
-  void dispose() {
-    widget.adService.removeListener(_onAdChanged);
-    super.dispose();
-  }
-
-  void _onAdChanged() {
-    if (mounted) setState(() {});
-  }
-
-  Future<void> _watchAd() async {
-    if (_loading || _processing) return;
-    setState(() {
-      _loading = true;
-      _error = null;
-    });
-
-    try {
-      final sessionId = await widget.auth.api.startRewardSession();
-      final playerId = widget.auth.profile?.id ?? '';
-
-      if (!mounted) return;
-      setState(() => _loading = false);
-
-      final shown = await widget.adService.showRewardedAd(
-        customData: sessionId,
-        userId: playerId,
-        onUserEarnedReward: (amount) {
-          // The reward itself arrives via the AdMob SSV callback. In local
-          // development (no AdMob account / SSV callback URL yet) the callback
-          // never fires, so a dev-only grant endpoint mimics it. It must be
-          // disabled in production: it trusts the client.
-          if (widget.auth.api.needsDevRewardGrant) {
-            widget.auth.api.devGrantReward(sessionId).catchError((Object e) {});
-          }
-        },
-      );
-
-      if (!shown) {
-        if (!mounted) return;
-        setState(() => _error = 'Ad could not be shown. Please try again.');
-        return;
-      }
-
-      if (!mounted) return;
-      setState(() => _processing = true);
-
-      // Poll for balance update from SSV callback
-      for (var i = 0; i < 10; i++) {
-        await Future<void>.delayed(const Duration(seconds: 1));
-        if (!mounted) return;
-        try {
-          await widget.auth.refreshProfile();
-        } catch (_) {}
-        if (!mounted) return;
-        if (!mounted) break;
-      }
-
-      if (!mounted) return;
-      setState(() => _processing = false);
-
-      if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(
-            content: Text(
-              'Your reward is being processed. Please check your balance shortly.',
-            ),
-          ),
-        );
-        Navigator.of(context).pop();
-      }
-    } on AppFailure catch (e) {
-      if (!mounted) return;
-      setState(() {
-        _loading = false;
-        _error = e.message;
-      });
-    } catch (_) {
-      if (!mounted) return;
-      setState(() {
-        _loading = false;
-        _error = 'Something went wrong. Please try again.';
-      });
-    }
-  }
-
-  @override
-  Widget build(BuildContext context) {
-    final coins = widget.auth.profile?.coins ?? 0;
-    return Padding(
-      padding: const EdgeInsets.fromLTRB(24, 0, 24, 32),
-      child: Column(
-        mainAxisSize: MainAxisSize.min,
-        children: [
-          Container(
-            width: 48,
-            height: 4,
-            decoration: BoxDecoration(
-              color: T.outline,
-              borderRadius: BorderRadius.circular(2),
-            ),
-          ),
-          const SizedBox(height: 24),
-          Icon(
-            Icons.toll_rounded,
-            size: 48,
-            color: T.ochre,
-          ),
-          const SizedBox(height: 16),
-          Text(
-            'Need more coins?',
-            style: Theme.of(context).textTheme.headlineSmall?.copyWith(
-              fontWeight: FontWeight.w800,
-            ),
-          ),
-          const SizedBox(height: 8),
-          Text(
-            'Watch a short ad to earn 100 coins',
-            style: TextStyle(color: T.muted),
-          ),
-          const SizedBox(height: 8),
-          Text(
-            'Current balance: $coins coins',
-            style: TextStyle(
-              color: T.ochre,
-              fontWeight: FontWeight.w700,
-            ),
-          ),
-          const SizedBox(height: 24),
-          if (_processing) ...[
-            const CircularProgressIndicator(),
-            const SizedBox(height: 12),
-            Text(
-              'Processing your reward...',
-              style: TextStyle(color: T.muted),
-            ),
-          ] else ...[
-            SizedBox(
-              width: double.infinity,
-              child: FilledButton.icon(
-                style: FilledButton.styleFrom(
-                  backgroundColor: T.ochre,
-                  foregroundColor: const Color(0xff2B1B35),
-                  padding: const EdgeInsets.symmetric(vertical: 16),
-                ),
-                onPressed: (widget.adService.isReady && !_loading)
-                    ? _watchAd
-                    : null,
-                icon: _loading
-                    ? const SizedBox(
-                        width: 20,
-                        height: 20,
-                        child: CircularProgressIndicator(strokeWidth: 2),
-                      )
-                    : const Icon(Icons.play_circle_outline),
-                label: Text(
-                  _loading ? 'Preparing...' : 'Watch Ad +100 Coins',
-                ),
-              ),
-            ),
-            if (_error != null) ...[
-              const SizedBox(height: 12),
-              Text(
-                _error!,
-                style: const TextStyle(color: Colors.redAccent, fontSize: 13),
-                textAlign: TextAlign.center,
-              ),
-            ],
-            if (!widget.adService.isReady && !_loading) ...[
-              const SizedBox(height: 12),
-              Text(
-                'No ad available right now. Try again shortly.',
-                style: TextStyle(color: T.muted, fontSize: 13),
-                textAlign: TextAlign.center,
-              ),
-            ],
-          ],
-          const SizedBox(height: 16),
-        ],
-      ),
     );
   }
 }

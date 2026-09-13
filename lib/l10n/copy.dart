@@ -519,6 +519,15 @@ abstract final class Copy {
   static const fewerPlayers = 'Fewer players';
   static const seatsAtYourRoom = 'Seats at your room';
   static const game = 'Game';
+  static const playVSBots = 'Play VS Bots';
+  static const practiceAgainstBots =
+      'Practice against bots. Same table, real pool.';
+  static const entryFeePerGame = 'Entry per game';
+  static const pickYourGame = 'Pick your game';
+  static const botsHeading = 'A full table.\nAll yours.';
+  static const botsSubtitle =
+      'Choose the game and seats. Bots fill the table and the game starts right away.';
+  static const playNow = 'Play now';
   static const use125EnglishLettersNumbersOr =
       'Use 1–25 English letters, numbers or spaces.';
   static const fridayCardNight = 'Friday card night';

@@ -1,6 +1,8 @@
 import 'package:taash/l10n/copy.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import '../../core/ads/ad_service.dart';
+import '../../core/audio/audio_system.dart';
 import '../../core/auth/auth_controller.dart';
 import '../../core/errors/app_failure.dart';
 import '../../core/models/models.dart';
@@ -8,6 +10,7 @@ import '../../core/network/api_client.dart';
 import '../../core/theme/taash_theme.dart';
 import '../../core/widgets/taash_widgets.dart';
 import '../../l10n/strings.dart';
+import '../../core/widgets/reward_sheet.dart';
 
 enum RoomFlowMode { create, join, quick }
 
@@ -394,6 +397,182 @@ class _RoomFlowState extends State<RoomFlow> {
                 ],
               ],
             ),
+          ),
+        ),
+      ),
+    );
+  }
+}
+
+/// Pick a game and how many seats to fill with bots, then create the room.
+class BotsRoomFlow extends StatefulWidget {
+  const BotsRoomFlow({
+    super.key,
+    required this.api,
+    required this.auth,
+    required this.onJoin,
+    this.adService,
+    this.game = GameType.bhabhi,
+  });
+  final ApiClient api;
+  final AuthController auth;
+  final AdService? adService;
+  final GameType game;
+  final ValueChanged<RoomSummary> onJoin;
+  @override
+  State<BotsRoomFlow> createState() => _BotsRoomFlowState();
+}
+
+class _BotsRoomFlowState extends State<BotsRoomFlow> {
+  late GameType game = widget.game;
+  late int seats = widget.game.maxPlayers;
+  bool busy = false;
+  String? error;
+
+  Future<void> go() async {
+    if (busy) return;
+    if ((widget.auth.profile?.coins ?? 0) < game.entryFee) {
+      _needCoins();
+      return;
+    }
+    setState(() {
+      busy = true;
+      error = null;
+    });
+    try {
+      final r = await widget.api.findBotsMatch(game: game, maxPlayers: seats);
+      if (mounted) {
+        setState(() => busy = false);
+        widget.onJoin(r);
+      }
+    } on AppFailure catch (e) {
+      if (!mounted) return;
+      setState(() => busy = false);
+      if (e.code == 'insufficient_coins' || e.code == 'not_enough_coins') {
+        _needCoins();
+      } else {
+        setState(() => error = e.message);
+      }
+    } catch (_) {
+      if (!mounted) return;
+      setState(() {
+        busy = false;
+        error = Copy.weCouldNotCreateTheRoomPlease;
+      });
+    }
+  }
+
+  void _needCoins() {
+    final adService = widget.adService;
+    final balance = widget.auth.profile?.coins ?? 0;
+    if (adService == null || !mounted) {
+      setState(() => error = Copy.youNeedMoreCoins(game.entryFee - balance));
+      return;
+    }
+    audio.playSfx('generic_button_press');
+    showModalBottomSheet<void>(
+      context: context,
+      isScrollControlled: true,
+      useSafeArea: true,
+      showDragHandle: true,
+      builder: (ctx) => RewardSheet(adService: adService, auth: widget.auth),
+    );
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final balance = widget.auth.profile?.coins ?? 0;
+    return Scaffold(
+      appBar: AppBar(title: const Text(Copy.playVSBots)),
+      body: SafeArea(
+        child: SingleChildScrollView(
+          padding: const EdgeInsets.all(20),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              const TaashSectionHeader(
+                eyebrow: 'VS BOTS',
+                title: Copy.botsHeading,
+                subtitle: Copy.botsSubtitle,
+              ),
+              const SizedBox(height: 28),
+              DropdownButtonFormField<GameType>(
+                initialValue: game,
+                decoration: const InputDecoration(labelText: Copy.pickYourGame),
+                items: GameType.values
+                    .map(
+                      (g) => DropdownMenuItem(value: g, child: Text(g.label)),
+                    )
+                    .toList(),
+                onChanged: busy
+                    ? null
+                    : (v) {
+                        if (v != null) {
+                          setState(() {
+                            game = v;
+                            seats = seats.clamp(1, v.maxPlayers);
+                          });
+                        }
+                      },
+              ),
+              const SizedBox(height: 20),
+              TaashPanel(
+                child: Row(
+                  children: [
+                    const Expanded(
+                      child: Text(
+                        Copy.seatsAtYourRoom,
+                        style: TextStyle(fontWeight: FontWeight.w700),
+                      ),
+                    ),
+                    IconButton(
+                      tooltip: Copy.fewerPlayers,
+                      onPressed: seats > 2 && !busy
+                          ? () => setState(() => seats--)
+                          : null,
+                      icon: const Icon(Icons.remove_circle_outline),
+                    ),
+                    Text(
+                      '$seats',
+                      style: const TextStyle(
+                        fontSize: 24,
+                        fontWeight: FontWeight.w800,
+                      ),
+                    ),
+                    IconButton(
+                      tooltip: Copy.morePlayers,
+                      onPressed: seats < game.maxPlayers && !busy
+                          ? () => setState(() => seats++)
+                          : null,
+                      icon: const Icon(Icons.add_circle_outline),
+                    ),
+                  ],
+                ),
+              ),
+              const SizedBox(height: 20),
+              _Fee(fee: game.entryFee, balance: balance),
+              const SizedBox(height: 22),
+              if (error != null) ...[
+                Semantics(
+                  liveRegion: true,
+                  child: Text(error!, style: const TextStyle(color: T.danger)),
+                ),
+                TextButton(
+                  onPressed: busy ? null : go,
+                  child: const Text(Copy.tryAgain),
+                ),
+              ],
+              const SizedBox(height: 10),
+              SizedBox(
+                width: double.infinity,
+                child: TaashButton(
+                  label: Copy.playNow,
+                  icon: Icons.smart_toy_outlined,
+                  onPressed: go,
+                  busy: busy,
+                ),
+              ),
+            ],
           ),
         ),
       ),

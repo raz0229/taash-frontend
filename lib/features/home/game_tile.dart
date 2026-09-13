@@ -1,7 +1,115 @@
 import 'package:flutter/material.dart';
 import '../../core/models/models.dart';
 import '../../core/theme/taash_theme.dart';
+import '../../l10n/copy.dart';
 import 'game_art.dart';
+
+/// The self-contained "Play VS Bots" slide at the end of the home carousel.
+class BotsGameTile extends StatelessWidget {
+  const BotsGameTile({super.key, required this.focused});
+  final bool focused;
+  static const _teal = Color(0xff0E9F8E);
+  @override
+  Widget build(BuildContext context) => Container(
+    width: double.infinity,
+    decoration: BoxDecoration(
+      borderRadius: BorderRadius.circular(24),
+      border: Border.all(
+        color: focused ? _teal.withValues(alpha: .9) : Colors.white24,
+        width: 1.5,
+      ),
+      gradient: LinearGradient(
+        begin: Alignment.topLeft,
+        end: Alignment.bottomRight,
+        colors: [_teal, Color.lerp(_teal, Colors.black, .55)!],
+      ),
+    ),
+    clipBehavior: Clip.antiAlias,
+    child: Column(
+      crossAxisAlignment: CrossAxisAlignment.stretch,
+      children: [
+        Expanded(
+          child: Stack(
+            children: [
+              const Positioned.fill(child: BotsArt()),
+              Positioned(
+                top: 12,
+                left: 12,
+                child: Container(
+                  padding: EdgeInsets.symmetric(horizontal: 9, vertical: 5),
+                  decoration: BoxDecoration(
+                    color: Color(0xA01C1536),
+                    borderRadius: BorderRadius.all(Radius.circular(7)),
+                    border: Border.all(color: Colors.white24),
+                  ),
+                  child: Text(
+                    'VS BOTS',
+                    style: TextStyle(
+                      fontSize: 9,
+                      fontWeight: FontWeight.w800,
+                      letterSpacing: .6,
+                    ),
+                  ),
+                ),
+              ),
+            ],
+          ),
+        ),
+        Container(
+          padding: const EdgeInsets.fromLTRB(16, 12, 16, 15),
+          decoration: const BoxDecoration(
+            color: Color(0xff211A36),
+            // Follow the tile's rounded contour so the footer's corners aren't
+            // sliced off by the parent's bottom clip.
+            borderRadius: BorderRadius.vertical(bottom: Radius.circular(24)),
+          ),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Row(
+                children: [
+                  Expanded(
+                    child: Text(
+                      Copy.playVSBots,
+                      style: const TextStyle(
+                        fontSize: 25,
+                        fontWeight: FontWeight.w900,
+                        height: 1.12,
+                      ),
+                    ),
+                  ),
+                  const Icon(Icons.smart_toy_outlined, color: _teal, size: 23),
+                ],
+              ),
+              const SizedBox(height: 6),
+              Text(
+                Copy.practiceAgainstBots,
+                style: const TextStyle(color: Color(0xffC7BED9), fontSize: 11),
+              ),
+              const SizedBox(height: 10),
+              Row(
+                children: [
+                  const Icon(Icons.toll, color: T.ochre, size: 16),
+                  const SizedBox(width: 5),
+                  Text(
+                    Copy.entryFeePerGame,
+                    style: const TextStyle(
+                      color: T.ochre,
+                      fontSize: 12,
+                      fontWeight: FontWeight.w800,
+                    ),
+                  ),
+                  const Spacer(),
+                  const Icon(Icons.people_outline, color: T.muted, size: 17),
+                ],
+              ),
+            ],
+          ),
+        ),
+      ],
+    ),
+  );
+}
 
 class GameTile extends StatelessWidget {
   const GameTile({super.key, required this.game, required this.focused});
