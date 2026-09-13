@@ -113,7 +113,7 @@ class _LocalTurnTimerState extends State<LocalTurnTimer>
   @override
   void didChangeAppLifecycleState(AppLifecycleState state) {
     if (state == AppLifecycleState.resumed) {
-      setState(_start);
+      if (mounted) setState(_resume);
     } else {
       _pause();
     }

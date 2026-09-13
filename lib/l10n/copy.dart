@@ -291,7 +291,7 @@ abstract final class Copy {
   static const yourLocalTurnTimeEndedLeavingThe =
       'Your local turn time ended. Leaving the room…';
   static const thisDeviceAllows60SecondsPerTurn =
-      'This device allows 60 seconds per turn, or 120 for TC. When your local time ends, it requests leave. Reconnecting or resuming restarts this guide; it is not a server deadline.';
+      'This device allows 90 seconds per turn, or 120 for TC. When your local time ends, it requests leave. The guide pauses while the app is backgrounded; it is not a server deadline.';
   static const localTurnGuide = 'Local turn guide';
   static const yourPlaceMayBeLostAndThe =
       'Your place may be lost and the entry fee is not refunded. The remaining players can continue.';

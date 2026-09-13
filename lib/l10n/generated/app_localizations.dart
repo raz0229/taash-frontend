@@ -1363,7 +1363,7 @@ abstract class AppLocalizations {
   /// No description provided for @thisDeviceAllows60SecondsPerTurn.
   ///
   /// In en, this message translates to:
-  /// **'This device allows 60 seconds per turn, or 120 for TC. When your local time ends, it requests leave. Reconnecting or resuming restarts this guide; it is not a server deadline.'**
+  /// **'This device allows 90 seconds per turn, or 120 for TC. When your local time ends, it requests leave. The guide pauses while the app is backgrounded; it is not a server deadline.'**
   String get thisDeviceAllows60SecondsPerTurn;
 
   /// No description provided for @localTurnGuide.

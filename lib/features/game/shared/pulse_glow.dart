@@ -28,14 +28,6 @@ class _PulseGlowState extends State<PulseGlow>
   );
 
   @override
-  void initState() {
-    super.initState();
-    if (!MediaQuery.disableAnimationsOf(context)) {
-      _pulse.repeat(reverse: true);
-    }
-  }
-
-  @override
   void didChangeDependencies() {
     super.didChangeDependencies();
     if (MediaQuery.disableAnimationsOf(context)) {

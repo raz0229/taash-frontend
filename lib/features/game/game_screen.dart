@@ -50,7 +50,12 @@ class GameScreen extends StatefulWidget {
 }
 
 class _GameScreenState extends State<GameScreen>
-    with TickerProviderStateMixin, _GameMenus, _GameStatus, _GameActions {
+    with
+        TickerProviderStateMixin,
+        WidgetsBindingObserver,
+        _GameMenus,
+        _GameStatus,
+        _GameActions {
   @override
   final hand = HandOrder();
   @override
@@ -105,7 +110,7 @@ class _GameScreenState extends State<GameScreen>
   RoomSession get session => widget.session;
   bool _played10sSound = false;
   late final AnimationController _turnTimer =
-      AnimationController(vsync: this, duration: const Duration(seconds: 60))
+      AnimationController(vsync: this, duration: const Duration(seconds: 90))
         ..addListener(() {
           if (!mounted || !(session.snapshot?.isYourTurn ?? false)) return;
           final remaining =
@@ -126,6 +131,7 @@ class _GameScreenState extends State<GameScreen>
   @override
   void initState() {
     super.initState();
+    WidgetsBinding.instance.addObserver(this);
     session.onStockDecreased = _onStockDecreased;
     session.onBluffChallenge = _onBluffChallenge;
     session.onCardPlayed = _onCardPlayed;
@@ -138,7 +144,7 @@ class _GameScreenState extends State<GameScreen>
     if (s == null) return;
     turnSerial++;
     _turnTimer.duration = Duration(
-      seconds: s.room.game == GameType.tc ? 120 : 60,
+      seconds: s.room.game == GameType.tc ? 120 : 90,
     );
     _played10sSound = false;
     if (s.room.isActive && s.currentPlayerId.isNotEmpty) {
@@ -302,6 +308,7 @@ class _GameScreenState extends State<GameScreen>
 
   @override
   void dispose() {
+    WidgetsBinding.instance.removeObserver(this);
     session.onStockDecreased = null;
     session.onBluffChallenge = null;
     session.onCardPlayed = null;
@@ -319,6 +326,26 @@ class _GameScreenState extends State<GameScreen>
   void _onStockDecreased() {
     if (!mounted) return;
     _showStockDrawAnimation();
+  }
+
+  @override
+  void didChangeAppLifecycleState(AppLifecycleState state) {
+    if (state == AppLifecycleState.resumed) {
+      final s = session.snapshot;
+      if (s != null &&
+          s.room.isActive &&
+          s.currentPlayerId.isNotEmpty &&
+          !(_bluffAnimationActive || _thulluAnimationActive) &&
+          !_turnTimer.isAnimating &&
+          _turnTimer.value > 0 &&
+          _turnTimer.value < 1) {
+        _turnTimer.forward();
+      }
+    } else {
+      // Freeze the local deadline while hidden so backgrounding neither resets
+      // the clock nor silently expires the turn.
+      _turnTimer.stop();
+    }
   }
 
   OverlayEntry? _stockDrawOverlay;
@@ -870,7 +897,7 @@ class _GameScreenState extends State<GameScreen>
                             mine: mine,
                             paused:
                                 _bluffAnimationActive || _thulluAnimationActive,
-                            seconds: s!.room.game == GameType.tc ? 120 : 60,
+                            seconds: s!.room.game == GameType.tc ? 120 : 90,
                             accent: GameTint(s.room.game).accent,
                             onExpired: () => leave(expired: true),
                           ),

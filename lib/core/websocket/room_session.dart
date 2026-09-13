@@ -45,6 +45,7 @@ class RoomSession extends ChangeNotifier with WidgetsBindingObserver {
     this.reconnectBase = const Duration(seconds: 3),
     this.reconnectJitter = const Duration(milliseconds: 700),
     this.maxReconnectAttempts = 6,
+    this.resumeProbeTimeout = const Duration(seconds: 4),
     bool observeLifecycle = true,
   }) : _connector = connector ?? connectRoomSocket,
        _reducer = SnapshotReducer(playerId: playerId),
@@ -63,6 +64,7 @@ class RoomSession extends ChangeNotifier with WidgetsBindingObserver {
   final RoomSocketConnector _connector;
   final SnapshotReducer _reducer;
   final Duration commandTimeout, connectTimeout, reconnectBase, reconnectJitter;
+  final Duration resumeProbeTimeout;
   final int maxReconnectAttempts;
   final bool _observeLifecycle;
   final _random = Random.secure();
@@ -294,6 +296,7 @@ class RoomSession extends ChangeNotifier with WidgetsBindingObserver {
     String type,
     Map<String, dynamic>? payload, {
     bool internal = false,
+    Duration? timeout,
   }) {
     final socket = _socket;
     if (socket == null || _room == null) {
@@ -304,7 +307,7 @@ class RoomSession extends ChangeNotifier with WidgetsBindingObserver {
     final id = '${DateTime.now().microsecondsSinceEpoch}-${++_serial}';
     final completer = Completer<Map<String, dynamic>>();
     final mutation = type != 'room.snapshot';
-    final timer = Timer(commandTimeout, () {
+    final timer = Timer(timeout ?? commandTimeout, () {
       final pending = _pending.remove(id);
       if (pending == null) return;
       final failure = AppFailure(
@@ -350,11 +353,11 @@ class RoomSession extends ChangeNotifier with WidgetsBindingObserver {
     return completer.future;
   }
 
-  Future<void> requestSnapshot() async {
+  Future<void> requestSnapshot({Duration? timeout}) async {
     if (_socket == null) {
       throw const AppFailure('offline', 'Reconnect to check the latest room.');
     }
-    await _sendCommand('room.snapshot', null, internal: true);
+    await _sendCommand('room.snapshot', null, internal: true, timeout: timeout);
   }
 
   void _receive(Object? data, int generation) {
@@ -702,17 +705,40 @@ class RoomSession extends ChangeNotifier with WidgetsBindingObserver {
     _notify();
   }
 
+  /// Upper bound for the snapshot probe sent each time the app returns to the
+  /// foreground. A healthy server answers well inside this window; a transport
+  /// the OS or server dropped while we were backgrounded will not.
+  static const defaultResumeProbeTimeout = Duration(seconds: 4);
+
   @override
   void didChangeAppLifecycleState(AppLifecycleState state) {
     if (state == AppLifecycleState.resumed) {
-      if (connected) {
-        unawaited(requestSnapshot().catchError((Object _) {}));
-      } else if (this.state == RoomConnectionState.offline) {
-        unawaited(retryConnection().catchError((Object _) {}));
-      }
+      unawaited(_recoverFromBackground());
     }
     // Do not close a healthy socket merely on pause: the current backend
     // treats transport close as forfeiture. The OS can still interrupt it.
+  }
+
+  Future<void> _recoverFromBackground() async {
+    if (_disposed || _closing || _room == null) return;
+    if (state == RoomConnectionState.offline) {
+      unawaited(retryConnection().catchError((Object _) {}));
+      return;
+    }
+    if (!connected || _socket == null) return;
+    try {
+      // Reconcile the resumed state and confirm the background transport is
+      // actually alive, not merely flagged as connected.
+      await requestSnapshot(timeout: resumeProbeTimeout);
+    } catch (_) {
+      if (_disposed || _closing || _room == null) return;
+      if (connected && _socket != null) {
+        // The probe wrote nothing back, so the previous socket stopped working
+        // while the app was hidden. Drop it and recover on a fresh transport.
+        await _disconnectTransport();
+        _scheduleReconnect();
+      }
+    }
   }
 
   @override
