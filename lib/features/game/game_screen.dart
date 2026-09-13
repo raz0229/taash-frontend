@@ -20,6 +20,7 @@ import 'shared/hand_view.dart';
 import 'shared/local_turn_timer.dart';
 import 'shared/player_strip.dart';
 import 'shared/room_backdrop.dart';
+import 'shared/game_tint.dart';
 import 'shared/bluff_challenge_animation.dart';
 import 'shared/bhabhi_thullu_animation.dart';
 import 'shared/daketi_steal_animation.dart';
@@ -689,7 +690,7 @@ class _GameScreenState extends State<GameScreen>
           children: [
             Icon(
               mine ? Icons.play_arrow_rounded : Icons.hourglass_top_rounded,
-              color: T.ochre,
+              color: GameTint(s.room.game).accent,
               size: 22,
             ),
             const SizedBox(width: 8),
@@ -783,8 +784,10 @@ class _GameScreenState extends State<GameScreen>
                               ),
                               Text(
                                 session.roomId ?? Copy.connecting,
-                                style: const TextStyle(
-                                  color: T.mint,
+                                style: TextStyle(
+                                  color: GameTint(
+                                    s?.room.game ?? GameType.bhabhi,
+                                  ).tint,
                                   fontSize: 10,
                                   letterSpacing: 2,
                                 ),
@@ -800,6 +803,7 @@ class _GameScreenState extends State<GameScreen>
                             paused:
                                 _bluffAnimationActive || _thulluAnimationActive,
                             seconds: s!.room.game == GameType.tc ? 120 : 60,
+                            accent: GameTint(s.room.game).accent,
                             onExpired: () => leave(expired: true),
                           ),
                         IconButton(
@@ -823,7 +827,11 @@ class _GameScreenState extends State<GameScreen>
                             mainAxisSize: MainAxisSize.min,
                             children: [
                               if (!terminal)
-                                const CircularProgressIndicator(color: T.ochre),
+                                CircularProgressIndicator(
+                                  color: GameTint(
+                                    s?.room.game ?? GameType.bhabhi,
+                                  ).accent,
+                                ),
                               const SizedBox(height: 20),
                               Text(
                                 terminal
@@ -896,10 +904,12 @@ class _GameScreenState extends State<GameScreen>
                                   canSelect: ready && mine,
                                   canPlay: allowed,
                                   isYourTurn: mine,
+                                  game: s.room.game,
                                   allowSort:
                                       s.room.game == GameType.bhabhi ||
                                       s.room.game == GameType.bluff,
-                                  sortByRank: s.room.game == GameType.bluff,
+                                  sortByRank:
+                                      s.room.game == GameType.bluff,
                                 ),
                               if (active)
                                 ConstrainedBox(
@@ -957,18 +967,18 @@ class _GameScreenState extends State<GameScreen>
                                         ),
                                       ),
                                     ),
-                                    if (session.busy || working)
-                                      const Padding(
-                                        padding: EdgeInsets.only(left: 10),
-                                        child: SizedBox(
-                                          width: 17,
-                                          height: 17,
-                                          child: CircularProgressIndicator(
-                                            strokeWidth: 2,
-                                            color: T.ochre,
-                                          ),
-                                        ),
-                                      ),
+if (session.busy || working)
+                                       Padding(
+                                         padding: const EdgeInsets.only(left: 10),
+                                         child: SizedBox(
+                                           width: 17,
+                                           height: 17,
+                                           child: CircularProgressIndicator(
+                                             strokeWidth: 2,
+                                             color: GameTint(s.room.game).accent,
+                                           ),
+                                         ),
+                                       ),
                                   ],
                                 ),
                               ),

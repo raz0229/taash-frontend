@@ -1,11 +1,12 @@
 import '../../core/audio/audio_system.dart';
-
 import 'package:taash/l10n/copy.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import '../../core/models/models.dart';
 import '../../core/theme/taash_theme.dart';
 import '../../core/widgets/taash_widgets.dart';
 import '../../core/websocket/room_session.dart';
+import '../game/shared/game_tint.dart';
 
 class ChatSheet extends StatefulWidget {
   const ChatSheet({
@@ -82,6 +83,9 @@ class _ChatSheetState extends State<ChatSheet> {
   @override
   Widget build(BuildContext context) {
     final chat = widget.session.chat;
+    final tint = GameTint(
+      widget.session.snapshot?.room.game ?? GameType.bhabhi,
+    );
     return SafeArea(
       child: Padding(
         padding: EdgeInsets.only(
@@ -157,7 +161,7 @@ class _ChatSheetState extends State<ChatSheet> {
                               margin: const EdgeInsets.only(bottom: 10),
                               padding: const EdgeInsets.all(12),
                               decoration: BoxDecoration(
-                                color: mine ? T.mint : T.surface,
+                                color: mine ? tint.accent : tint.tray,
                                 borderRadius: BorderRadius.circular(16),
                               ),
                               child: Column(
@@ -170,11 +174,18 @@ class _ChatSheetState extends State<ChatSheet> {
                                           ? FontWeight.w900
                                           : FontWeight.w800,
                                       fontSize: 11,
-                                      color: mine ? T.pine : T.muted,
+                                      color: mine
+                                          ? tint.onAccent
+                                          : tint.tint,
                                     ),
                                   ),
                                   const SizedBox(height: 3),
-                                  SelectableText(message.text),
+                                  SelectableText(
+                                    message.text,
+                                    style: TextStyle(
+                                      color: mine ? tint.onAccent : Colors.white,
+                                    ),
+                                  ),
                                 ],
                               ),
                             ),

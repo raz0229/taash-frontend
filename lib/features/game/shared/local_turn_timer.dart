@@ -13,12 +13,14 @@ class LocalTurnTimer extends StatefulWidget {
     required this.mine,
     required this.seconds,
     required this.onExpired,
+    required this.accent,
     this.paused = false,
   });
   final String turnKey;
   final bool active, mine;
   final int seconds;
   final bool paused;
+  final Color accent;
   final VoidCallback onExpired;
   @override
   State<LocalTurnTimer> createState() => _LocalTurnTimerState();
@@ -139,7 +141,9 @@ class _LocalTurnTimerState extends State<LocalTurnTimer>
             child: CircularProgressIndicator(
               value: widget.active ? _remaining / widget.seconds : 1,
               strokeWidth: 2,
-              color: _remaining <= 10 ? T.ochre : T.mint,
+              color: _remaining <= 10
+                  ? Color.lerp(widget.accent, Colors.white, .45)!
+                  : widget.accent,
               backgroundColor: Colors.white12,
             ),
           ),

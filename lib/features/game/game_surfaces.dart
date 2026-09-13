@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import '../../core/models/models.dart';
 import '../../core/theme/taash_theme.dart';
 import '../../core/widgets/taash_widgets.dart';
+import 'shared/game_tint.dart';
 import 'shared/hand_order.dart';
 import 'shared/playing_card.dart';
 
@@ -47,7 +48,9 @@ class GameSurface extends StatelessWidget {
             Copy.player;
 
   @override
-  Widget build(BuildContext context) => DragTarget<String>(
+  Widget build(BuildContext context) {
+    final tint = GameTint(snapshot.room.game);
+    return DragTarget<String>(
     onWillAcceptWithDetails: (_) => canDrop,
     onAcceptWithDetails: (d) => onCardDrop(d.data),
     builder: (context, candidates, _) => AnimatedContainer(
@@ -58,29 +61,35 @@ class GameSurface extends StatelessWidget {
       margin: const EdgeInsets.fromLTRB(12, 4, 12, 8),
       padding: EdgeInsets.fromLTRB(12, compact ? 8 : 16, 12, compact ? 6 : 14),
       decoration: BoxDecoration(
-        gradient: const RadialGradient(
-          colors: [Color(0xff5239A0), Color(0xff271D5B)],
+        gradient: RadialGradient(
+          colors: [
+            tint.surface,
+            Color.lerp(tint.surface, tint.tray, .7)!,
+          ],
           radius: .85,
         ),
         borderRadius: BorderRadius.circular(64),
         border: Border.all(
-          color: candidates.isNotEmpty ? T.ochre : const Color(0xff9B82E0),
+          color: candidates.isNotEmpty ? tint.accent : tint.edge,
           width: 2,
         ),
-        boxShadow: const [
-          BoxShadow(
+        boxShadow: [
+          const BoxShadow(
             color: Color(0xff0C0825),
             offset: Offset(0, 7),
             blurRadius: 2,
           ),
-          BoxShadow(color: Color(0x406D4DDD), blurRadius: 22),
+          BoxShadow(
+            color: tint.surface.withValues(alpha: .25),
+            blurRadius: 22,
+          ),
         ],
       ),
       child: switch (snapshot.gameState) {
-        final BhabhiState state => _bhabhi(state),
-        final BluffState state => _bluff(state),
-        final DaketiState state => _daketi(state),
-        final TcState state => _tc(state),
+        final BhabhiState state => _bhabhi(state, tint),
+        final BluffState state => _bluff(state, tint),
+        final DaketiState state => _daketi(state, tint),
+        final TcState state => _tc(state, tint),
         null => const Text(
           Copy.waitingForTheLatestRoom,
           textAlign: TextAlign.center,
@@ -88,8 +97,9 @@ class GameSurface extends StatelessWidget {
       },
     ),
   );
+  }
 
-  Widget _label(String title, {String? detail}) => Column(
+  Widget _label(String title, {String? detail, Color? shade}) => Column(
     mainAxisSize: MainAxisSize.min,
     children: [
       Text(
@@ -106,7 +116,7 @@ class GameSurface extends StatelessWidget {
         Text(
           detail,
           textAlign: TextAlign.center,
-          style: const TextStyle(color: Color(0xffC7BCE8), fontSize: 11),
+          style: TextStyle(color: shade ?? const Color(0xffC7BCE8), fontSize: 11),
         ),
       ],
     ],
@@ -127,7 +137,7 @@ class GameSurface extends StatelessWidget {
       ),
     ),
   );
-  Widget _bhabhi(BhabhiState state) => Column(
+  Widget _bhabhi(BhabhiState state, GameTint tint) => Column(
     mainAxisSize: MainAxisSize.min,
     children: [
       _label(
@@ -139,6 +149,7 @@ class GameSurface extends StatelessWidget {
         detail: state.lastThullu
             ? '${name(state.lastPickupPlayerId)} picks up'
             : '${state.trick.length} cards on the room',
+        shade: tint.tint,
       ),
       KeyedSubtree(
         key: trickKey,
@@ -165,7 +176,7 @@ class GameSurface extends StatelessWidget {
                             maxLines: 1,
                             overflow: TextOverflow.ellipsis,
                             textAlign: TextAlign.center,
-                            style: const TextStyle(color: T.mint, fontSize: 10),
+                            style: TextStyle(color: tint.tint, fontSize: 10),
                           ),
                         ),
                       ],
@@ -177,11 +188,11 @@ class GameSurface extends StatelessWidget {
         state.firstTrick
             ? 'Open with Hukum ka Yakka'
             : 'Follow suit when you can',
-        style: const TextStyle(color: Color(0xffC7BCE8), fontSize: 11),
+        style: TextStyle(color: tint.tint, fontSize: 11),
       ),
     ],
   );
-  Widget _bluff(BluffState state) => Column(
+  Widget _bluff(BluffState state, GameTint tint) => Column(
     mainAxisSize: MainAxisSize.min,
     children: [
       _label(
@@ -191,6 +202,7 @@ class GameSurface extends StatelessWidget {
         detail: state.lastPlayCount > 0
             ? '${name(state.lastPlayerId)} played ${state.lastPlayCount} cards'
             : 'Choose 2–4 cards to open',
+        shade: tint.tint,
       ),
       SizedBox(height: compact ? 6 : 10),
       Semantics(
@@ -219,13 +231,13 @@ class GameSurface extends StatelessWidget {
           child: Text(
             '${name(state.pendingWinnerId)} is out · challenge is still open',
             textAlign: TextAlign.center,
-            style: const TextStyle(color: T.ochre, fontSize: 12),
+            style: TextStyle(color: tint.accent, fontSize: 12),
           ),
         ),
       if (state.passedPlayerIds.isNotEmpty)
         Text(
           '${state.passedPlayerIds.length} passed',
-          style: const TextStyle(color: T.mint, fontSize: 11),
+          style: TextStyle(color: tint.tint, fontSize: 11),
         ),
     ],
   );
@@ -293,7 +305,7 @@ class GameSurface extends StatelessWidget {
           ),
   );
 
-  Widget _daketi(DaketiState state) => compact
+  Widget _daketi(DaketiState state, GameTint tint) => compact
       ? Column(
           mainAxisSize: MainAxisSize.min,
           children: [
@@ -303,14 +315,15 @@ class GameSurface extends StatelessWidget {
                   child: _label(
                     'Match a rank',
                     detail: '${state.stockCount} in stock',
+                    shade: tint.tint,
                   ),
                 ),
                 IconButton(
                   tooltip: 'Your collection',
                   onPressed: _inspectOwnCollection,
-                  icon: const Icon(
+                  icon: Icon(
                     Icons.collections_bookmark_outlined,
-                    color: T.ochre,
+                    color: tint.accent,
                   ),
                 ),
               ],
@@ -326,9 +339,9 @@ class GameSurface extends StatelessWidget {
                             state.stockCount,
                           )
                       ? BoxDecoration(
-                          boxShadow: const [
+                          boxShadow: [
                             BoxShadow(
-                              color: T.ochre,
+                              color: tint.accent,
                               blurRadius: 12,
                               spreadRadius: 2,
                             ),
@@ -346,9 +359,9 @@ class GameSurface extends StatelessWidget {
               _daketiArea(state),
             ]),
             if (state.playArea.isEmpty)
-              const Text(
+              Text(
                 Copy.thePlayAreaIsClear,
-                style: TextStyle(fontSize: 11),
+                style: TextStyle(color: tint.tint, fontSize: 11),
               ),
           ],
         )
@@ -358,6 +371,7 @@ class GameSurface extends StatelessWidget {
             _label(
               'Match a rank. Take the cards.',
               detail: '${state.stockCount} in stock',
+              shade: tint.tint,
             ),
             _cards([
               KeyedSubtree(
@@ -374,19 +388,20 @@ class GameSurface extends StatelessWidget {
                         state.stockCount,
                       ),
                   onTap: onDrawStock,
+                  tint: tint,
                 ),
               ),
               _daketiArea(state),
             ]),
             if (state.playArea.isEmpty)
-              const Text(
+              Text(
                 Copy.thePlayAreaIsClear,
-                style: TextStyle(color: T.mint, fontSize: 11),
+                style: TextStyle(color: tint.tint, fontSize: 11),
               ),
             TextButton.icon(
               onPressed: _inspectOwnCollection,
               style: TextButton.styleFrom(
-                foregroundColor: T.ochre,
+                foregroundColor: tint.accent,
                 minimumSize: const Size(48, 48),
                 padding: const EdgeInsets.symmetric(horizontal: 8),
               ),
@@ -398,12 +413,13 @@ class GameSurface extends StatelessWidget {
             ),
           ],
         );
-  Widget _tc(TcState state) => Column(
+  Widget _tc(TcState state, GameTint tint) => Column(
     mainAxisSize: MainAxisSize.min,
     children: [
       _label(
         'Build 4 + 3 + 3',
         detail: '${CardIdentity.rankNameFor(state.yarakRank)} cards are Yarak',
+        shade: tint.tint,
       ),
       _cards([
         KeyedSubtree(
@@ -415,6 +431,7 @@ class GameSurface extends StatelessWidget {
             back: true,
             glow: snapshot.isYourTurn && state.stockCount > 0,
             onTap: onDrawStock,
+            tint: tint,
           ),
         ),
         _pile(
@@ -423,9 +440,10 @@ class GameSurface extends StatelessWidget {
           state.discardTop,
           glow: snapshot.isYourTurn && state.discardTop != null,
           onTap: onTakeDiscard,
+          tint: tint,
         ),
         Container(width: 1, height: compact ? 80 : 100, color: Colors.white24),
-        _pile(Copy.indicator, 'Yarak rank', state.indicator),
+        _pile(Copy.indicator, 'Yarak rank', state.indicator, tint: tint),
       ]),
     ],
   );
@@ -436,6 +454,7 @@ class GameSurface extends StatelessWidget {
     bool back = false,
     bool glow = false,
     VoidCallback? onTap,
+    GameTint? tint,
   }) => GestureDetector(
     onTap: onTap,
     child: Column(
@@ -455,7 +474,7 @@ class GameSurface extends StatelessWidget {
               ? BoxDecoration(
                   boxShadow: [
                     BoxShadow(
-                      color: T.ochre.withValues(alpha: .5),
+                      color: (tint?.accent ?? T.ochre).withValues(alpha: .5),
                       blurRadius: 10,
                       spreadRadius: 2,
                     ),
@@ -483,7 +502,10 @@ class GameSurface extends StatelessWidget {
         const SizedBox(height: 5),
         Text(
           detail,
-          style: const TextStyle(color: Color(0xffC7BCE8), fontSize: 10),
+          style: TextStyle(
+            color: tint?.tint ?? const Color(0xffC7BCE8),
+            fontSize: 10,
+          ),
         ),
       ],
     ),

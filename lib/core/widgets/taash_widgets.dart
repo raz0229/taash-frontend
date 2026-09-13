@@ -13,11 +13,18 @@ class TaashButton extends StatelessWidget {
     this.busy = false,
     this.onDark = false,
     this.compact = false,
+    this.fill,
+    this.onFill,
   });
   final String label;
   final VoidCallback? onPressed;
   final IconData? icon;
   final bool secondary, busy, onDark, compact;
+
+  /// Primary fill for a game-tinted button (e.g. the waiting room's Leave
+  /// button). When set, it replaces [onDark]'s fixed ochre background.
+  final Color? fill;
+  final Color? onFill;
   @override
   Widget build(BuildContext context) {
     final content = Row(
@@ -61,11 +68,11 @@ class TaashButton extends StatelessWidget {
               child: content,
             )
           : FilledButton(
-              style: onDark
+              style: onDark || fill != null
                   ? FilledButton.styleFrom(
                       disabledForegroundColor: T.mint,
-                      backgroundColor: T.ochre,
-                      foregroundColor: const Color(0xff2A193A),
+                      backgroundColor: fill ?? T.ochre,
+                      foregroundColor: onFill ?? const Color(0xff2A193A),
                       disabledBackgroundColor: const Color(0xff3B2D58),
                       padding: compact ? const EdgeInsets.all(6) : null,
                       minimumSize: compact ? const Size(48, 48) : null,

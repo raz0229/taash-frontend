@@ -3,6 +3,7 @@ import '../../../core/models/models.dart';
 import '../../../core/theme/taash_theme.dart';
 import '../../../core/widgets/taash_widgets.dart';
 import '../../../l10n/copy.dart';
+import 'game_tint.dart';
 import 'playing_card.dart';
 import '../game_surfaces.dart' as import_game_surfaces;
 
@@ -103,6 +104,7 @@ class _PlayerStripState extends State<PlayerStrip>
   @override
   Widget build(BuildContext context) {
     final s = widget.snapshot;
+    final tint = GameTint(s.room.game);
     final players = [...s.players]..sort((a, b) => a.seat.compareTo(b.seat));
     final compact = MediaQuery.sizeOf(context).height < 720;
     final large = MediaQuery.textScalerOf(context).scale(1) > 1.4;
@@ -165,14 +167,14 @@ class _PlayerStripState extends State<PlayerStrip>
                                 shape: BoxShape.circle,
                                 border: Border.all(
                                   color: turn
-                                      ? T.ochre
-                                      : const Color(0xff7A659E),
+                                      ? tint.accent
+                                      : tint.edge,
                                   width: turn ? 2 : 1,
                                 ),
                                 boxShadow: turn
                                     ? [
                                         BoxShadow(
-                                          color: T.ochre.withValues(
+                                          color: tint.accent.withValues(
                                             alpha: .12 + _pulse.value * .15,
                                           ),
                                           blurRadius: 16,
@@ -201,7 +203,7 @@ class _PlayerStripState extends State<PlayerStrip>
                                       CircularProgressIndicator(
                                         value: 1 - widget.turnTimer!.value,
                                         strokeWidth: 2,
-                                        color: T.ochre,
+                                        color: tint.accent,
                                         backgroundColor: Colors.white12,
                                       ),
                                 ),
@@ -260,11 +262,9 @@ class _PlayerStripState extends State<PlayerStrip>
                                   vertical: 3,
                                 ),
                                 decoration: BoxDecoration(
-                                  color: const Color(0xff21153D),
+                                  color: tint.tray,
                                   borderRadius: BorderRadius.circular(6),
-                                  border: Border.all(
-                                    color: const Color(0xff9A81C3),
-                                  ),
+                                  border: Border.all(color: tint.edge),
                                 ),
                                 child: Row(
                                   mainAxisSize: MainAxisSize.min,
@@ -291,12 +291,12 @@ class _PlayerStripState extends State<PlayerStrip>
                             ),
                           ),
                           if (!p.connected && !p.isBot)
-                            const Positioned(
+                            Positioned(
                               left: 8,
                               top: 8,
                               child: Icon(
                                 Icons.cloud_off,
-                                color: T.ochre,
+                                color: tint.accent,
                                 size: 16,
                               ),
                             ),
@@ -314,12 +314,12 @@ class _PlayerStripState extends State<PlayerStrip>
                                   padding: EdgeInsets.zero,
                                   style: IconButton.styleFrom(
                                     minimumSize: const Size(40, 40),
-                                    backgroundColor: const Color(0xff332251),
+                                    backgroundColor: tint.tray,
                                   ),
-                                  icon: const Icon(
+                                  icon: Icon(
                                     Icons.add_reaction_outlined,
                                     size: 18,
-                                    color: T.ochre,
+                                    color: tint.accent,
                                   ),
                                 ),
                               ),
@@ -334,7 +334,7 @@ class _PlayerStripState extends State<PlayerStrip>
                         vertical: 4,
                       ),
                       decoration: BoxDecoration(
-                        color: turn ? T.ochre : const Color(0xff30234F),
+                        color: turn ? tint.accent : tint.tray,
                         borderRadius: BorderRadius.circular(8),
                       ),
                       child: Text(
@@ -342,7 +342,7 @@ class _PlayerStripState extends State<PlayerStrip>
                         maxLines: 1,
                         overflow: TextOverflow.ellipsis,
                         style: TextStyle(
-                          color: turn ? const Color(0xff291833) : T.white,
+                          color: turn ? tint.onAccent : T.white,
                           fontWeight: FontWeight.w800,
                           fontSize: 12,
                         ),
@@ -360,7 +360,7 @@ class _PlayerStripState extends State<PlayerStrip>
                             ? 'BOT'
                             : 'SEAT ${p.seat + 1}',
                         style: TextStyle(
-                          color: turn ? T.ochre : const Color(0xffB2A4CD),
+                          color: turn ? tint.accent : tint.tint,
                           fontSize: 8,
                           letterSpacing: 1,
                           fontWeight: FontWeight.w700,

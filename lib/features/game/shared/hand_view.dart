@@ -1,5 +1,7 @@
 import 'package:taash/l10n/copy.dart';
 import 'package:flutter/material.dart';
+import '../../../core/models/models.dart';
+import 'game_tint.dart';
 import 'hand_order.dart';
 import 'playing_card.dart';
 
@@ -12,6 +14,7 @@ class HandView extends StatefulWidget {
     required this.canSelect,
     required this.canPlay,
     required this.isYourTurn,
+    required this.game,
     this.onDrop,
     this.sortByRank,
     this.allowSort = false,
@@ -20,6 +23,7 @@ class HandView extends StatefulWidget {
   final VoidCallback onChanged;
   final bool multiSelect, canSelect, allowSort, isYourTurn;
   final bool? sortByRank;
+  final GameType game;
   final bool Function(String) canPlay;
   final void Function(String)? onDrop;
 
@@ -51,6 +55,7 @@ class _HandViewState extends State<HandView> {
   @override
   Widget build(BuildContext context) {
     final cards = widget.hand.cards;
+    final tint = GameTint(widget.game);
     final compact =
         MediaQuery.sizeOf(context).height < 720 &&
         MediaQuery.textScalerOf(context).scale(1) <= 1.4;
@@ -66,9 +71,9 @@ class _HandViewState extends State<HandView> {
         duration: const Duration(milliseconds: 300),
         curve: Curves.easeOutCubic,
         padding: const EdgeInsets.fromLTRB(16, 6, 16, 4),
-        decoration: const BoxDecoration(
-          color: Color(0xff19122E),
-          border: Border(top: BorderSide(color: Color(0xff705091))),
+        decoration: BoxDecoration(
+          color: tint.tray,
+          border: Border(top: BorderSide(color: tint.surface)),
         ),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
@@ -79,8 +84,8 @@ class _HandViewState extends State<HandView> {
                 Expanded(
                   child: Text(
                     Copy.yourHAND(cards.length),
-                    style: const TextStyle(
-                      color: Color(0xffCBBFE3),
+                    style: TextStyle(
+                      color: tint.tint,
                       fontSize: 12,
                       fontWeight: FontWeight.w800,
                       letterSpacing: 1,
@@ -168,9 +173,9 @@ class _HandViewState extends State<HandView> {
                             widget.hand.selected.isEmpty
                                 ? Copy.tapToSelectHoldToDragArrange
                                 : '${widget.hand.selected.length} selected · tap the action below or drag to the room',
-                            style: const TextStyle(
+                            style: TextStyle(
                               fontSize: 11,
-                              color: Color(0xffCBBFE3),
+                              color: tint.tint,
                             ),
                           ),
                         ),

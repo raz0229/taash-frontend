@@ -68,7 +68,9 @@ mixin _GameStatus on State<GameScreen> {
     RoomConnectionState.recovered => GameCopy.recovered,
     _ => GameCopy.syncing,
   };
-  Widget _waiting(RoomSnapshot s) => ListView(
+  Widget _waiting(RoomSnapshot s) {
+    final tint = GameTint(s.room.game);
+    return ListView(
     padding: const EdgeInsets.all(24),
     children: [
       const SizedBox(height: 15),
@@ -79,10 +81,10 @@ mixin _GameStatus on State<GameScreen> {
           decoration: BoxDecoration(
             shape: BoxShape.circle,
             gradient: RadialGradient(
-              colors: [T.ochre.withValues(alpha: .2), Colors.transparent],
+              colors: [tint.accent.withValues(alpha: .18), Colors.transparent],
             ),
           ),
-          child: const Icon(Icons.chair_alt_outlined, size: 52, color: T.ochre),
+          child: Icon(Icons.chair_alt_outlined, size: 52, color: tint.accent),
         ),
       ),
       const SizedBox(height: 16),
@@ -101,14 +103,14 @@ mixin _GameStatus on State<GameScreen> {
         child: Container(
           padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 6),
           decoration: BoxDecoration(
-            color: T.coral.withValues(alpha: .15),
+            color: tint.accent.withValues(alpha: .15),
             borderRadius: BorderRadius.circular(20),
-            border: Border.all(color: T.coral.withValues(alpha: .3)),
+            border: Border.all(color: tint.accent.withValues(alpha: .3)),
           ),
           child: Text(
             s.room.game.label,
-            style: const TextStyle(
-              color: T.coral,
+            style: TextStyle(
+              color: tint.accent,
               fontWeight: FontWeight.w700,
               fontSize: 13,
             ),
@@ -127,14 +129,14 @@ mixin _GameStatus on State<GameScreen> {
         child: Container(
           padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 16),
           decoration: BoxDecoration(
-            gradient: const LinearGradient(
-              colors: [Color(0xff1C3894), Color(0xff2E5BD8)],
+            gradient: LinearGradient(
+              colors: [tint.surface, tint.surfaceLight],
             ),
             borderRadius: BorderRadius.circular(20),
-            border: Border.all(color: const Color(0xff70B7FF), width: 1.5),
+            border: Border.all(color: tint.tint, width: 1.5),
             boxShadow: [
               BoxShadow(
-                color: const Color(0xff3163DB).withValues(alpha: .3),
+                color: tint.surface.withValues(alpha: .35),
                 blurRadius: 20,
                 offset: const Offset(0, 4),
               ),
@@ -142,10 +144,10 @@ mixin _GameStatus on State<GameScreen> {
           ),
           child: Column(
             children: [
-              const Text(
+              Text(
                 'ROOM CODE',
                 style: TextStyle(
-                  color: T.mint,
+                  color: tint.tint,
                   fontSize: 10,
                   fontWeight: FontWeight.w700,
                   letterSpacing: 2,
@@ -172,9 +174,12 @@ mixin _GameStatus on State<GameScreen> {
             Clipboard.setData(ClipboardData(text: s.room.id));
             announce(Copy.roomCodeCopied);
           },
-          icon: const Icon(Icons.copy, size: 16),
-          label: const Text(Copy.copyCode),
-          style: TextButton.styleFrom(foregroundColor: T.ochre),
+          icon: Icon(Icons.copy, size: 16, color: tint.accent),
+          label: Text(
+            Copy.copyCode,
+            style: TextStyle(color: tint.accent),
+          ),
+          style: TextButton.styleFrom(foregroundColor: tint.accent),
         ),
       ),
       const SizedBox(height: 14),
@@ -191,15 +196,15 @@ mixin _GameStatus on State<GameScreen> {
                 decoration: BoxDecoration(
                   shape: BoxShape.circle,
                   color: i < s.players.length
-                      ? T.ochre.withValues(alpha: .8)
+                      ? tint.accent.withValues(alpha: .85)
                       : Colors.white12,
                   border: Border.all(
-                    color: i < s.players.length ? T.ochre : Colors.white24,
+                    color: i < s.players.length ? tint.accent : Colors.white24,
                     width: 2,
                   ),
                 ),
                 child: i < s.players.length
-                    ? const Icon(Icons.person, size: 14, color: T.ink)
+                    ? Icon(Icons.person, size: 14, color: tint.onAccent)
                     : const Icon(
                         Icons.person_outline,
                         size: 14,
@@ -245,14 +250,14 @@ mixin _GameStatus on State<GameScreen> {
                     child: CircularProgressIndicator(
                       value: value / 80.0,
                       strokeWidth: 2.5,
-                      color: T.ochre,
+                      color: tint.accent,
                     ),
                   ),
                 ),
                 const SizedBox(height: 8),
                 Text(
                   '${value.ceil()}s remaining',
-                  style: const TextStyle(color: T.ochre, fontSize: 11),
+                  style: TextStyle(color: tint.accent, fontSize: 11),
                 ),
               ],
             );
@@ -263,9 +268,12 @@ mixin _GameStatus on State<GameScreen> {
         label: Copy.leaveRoom,
         onPressed: () => leave(),
         busy: leaving,
+        fill: tint.accent,
+        onFill: tint.onAccent,
       ),
     ],
   );
+  }
   String _instruction(RoomSnapshot s) => switch (s.room.game) {
     GameType.bhabhi => 'choose a card',
     GameType.bluff =>
