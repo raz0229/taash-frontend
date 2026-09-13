@@ -52,6 +52,10 @@ class S {
   static const invalidEmail = Copy.enterAValidEmailAddress;
   static const invalidPassword = Copy.useAtLeast6Characters;
   static const invalidName = Copy.use125LettersNumbersOrSpaces;
+  static const verifyYourEmail = Copy.verifyYourEmail;
+  static const autoSignInAfterVerification = Copy.autoSignInAfterVerification;
+  static const iVeVerifiedContinue = Copy.iVeVerifiedContinue;
+  static const verificationEmailSent = Copy.verificationEmailSent;
   static const noServerTitle = Copy.yourRoomIsNearlyReady;
   static const noServerBody = Copy.thisBuildNeedsItsTaashOnlineServerConnection;
   static const updateAvailable = Copy.anUpdateIsAvailable;

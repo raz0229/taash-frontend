@@ -133,7 +133,7 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get fourFamiliarGamesARoomForEveryone =>
-      'Four familiar games. A room for everyone.';
+      'Bhabhi, Daketi, Bluff & Tissar Chousar - All in once place.';
 
   @override
   String get yourNextCardNightStartsHere =>
@@ -449,6 +449,35 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get chooseYourCountryToContinue => 'Choose your country to continue.';
+
+  @override
+  String get verifyYourEmail => 'Verify your email';
+
+  @override
+  String weSentAVerificationLinkTo(Object value0) {
+    return 'We sent a verification link to $value0. Tap it, then come back and sign in to take your seat.';
+  }
+
+  @override
+  String get autoSignInAfterVerification =>
+      'We’ll sign you in automatically once the link is tapped.';
+
+  @override
+  String get iVeVerifiedContinue => 'I’ve verified · continue';
+
+  @override
+  String get resendEmail => 'Resend email';
+
+  @override
+  String get useADifferentAccount => 'Use a different account';
+
+  @override
+  String get verificationEmailSent =>
+      'Verification email sent. Check your inbox.';
+
+  @override
+  String get weCouldNotSendTheVerificationEmail =>
+      'We could not send the verification email. Please try again.';
 
   @override
   String get duplicateAvatarIDs => 'Duplicate avatar IDs';

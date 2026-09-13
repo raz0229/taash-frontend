@@ -47,6 +47,14 @@ class AppFailure implements Exception {
           'Check your email and password, then try again.',
         'email_exists' =>
           'An account with this email already exists. Try signing in.',
+        'email_verification_required' =>
+          'Verify your email to continue. We sent a link to your inbox.',
+        'email_not_verified' =>
+          'Check your inbox and tap the verification link, then try again.',
+        'verification_email_failed' =>
+          'We could not send the verification email. Please try again shortly.',
+        'upstream_timeout' =>
+          'The sign-in service is responding slowly. Please try again.',
         'server_under_maintenance' =>
           'TaashOnline is taking a short maintenance break.',
         'room_conflict' =>

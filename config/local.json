@@ -1,6 +1,6 @@
 {
   "MOCK_BACKEND": "false",
-  "TAASH_API_URL": "http://192.168.1.8:8080",
+  "TAASH_API_URL": "http://10.130.141.129:8080",
   "FIREBASE_API_KEY": "AIzaSyBBWR8sWqpyk0dyhh6E3nF0TCFyISrUbwQ",
   "FIREBASE_APP_ID": "1:425933145706:android:6ecb931d5bbbd84c732c13",
   "FIREBASE_PROJECT_ID": "river-bruin-423311-v3",

@@ -362,6 +362,9 @@ class AuthController extends ChangeNotifier {
 
   Future<void> forgotPassword(String email) => api.forgotPassword(email);
 
+  Future<void> resendVerificationEmail(String email, String password) =>
+      api.sendVerificationEmail(email, password);
+
   Future<void> signOut() async {
     final token = _session?.idToken;
     final generation = ++_generation;

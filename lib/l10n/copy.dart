@@ -50,7 +50,7 @@ abstract final class Copy {
   static const createAccount = 'Create account';
   static const letSPlay = 'Let’s play';
   static const fourFamiliarGamesARoomForEveryone =
-      'Four familiar games. A room for everyone.';
+      'Bhabhi, Daketi, Bluff & Tissar Chousar - All in once place.';
   static const yourNextCardNightStartsHere =
       'Your next card night\nstarts here.';
   static const goodCardsBetterCompany = 'Good cards. Better company.';
@@ -177,6 +177,18 @@ abstract final class Copy {
   static const weCouldNotConnectPleaseTryAgain =
       'We could not connect. Please try again.';
   static const chooseYourCountryToContinue = 'Choose your country to continue.';
+  static const verifyYourEmail = 'Verify your email';
+  static String weSentAVerificationLinkTo(Object? value0) =>
+      'We sent a verification link to $value0. Tap it, then come back and sign in to take your seat.';
+  static const autoSignInAfterVerification =
+      'We’ll sign you in automatically once the link is tapped.';
+  static const iVeVerifiedContinue = 'I’ve verified · continue';
+  static const resendEmail = 'Resend email';
+  static const useADifferentAccount = 'Use a different account';
+  static const verificationEmailSent =
+      'Verification email sent. Check your inbox.';
+  static const weCouldNotSendTheVerificationEmail =
+      'We could not send the verification email. Please try again.';
   static const continueWithGoogle = 'Continue with Google';
   static const or = 'or';
   static const almostThere = 'Almost there';

@@ -11,7 +11,7 @@ class ApiClient {
   ApiClient({
     required this.config,
     http.Client? client,
-    this.timeout = const Duration(seconds: 15),
+    this.timeout = const Duration(seconds: 30),
   }) : _client = client ?? http.Client();
   final AppConfig config;
   final http.Client _client;
@@ -187,6 +187,17 @@ class ApiClient {
       '/v1/auth/forgotPassword',
       authenticated: false,
       body: {'email': email.trim()},
+    );
+  }
+
+  /// Re-sends the account verification link. The server proves ownership with
+  /// the password and never returns a session for an unverified account.
+  Future<void> sendVerificationEmail(String email, String password) async {
+    await request(
+      'POST',
+      '/v1/auth/sendVerificationEmail',
+      authenticated: false,
+      body: {'email': email.trim(), 'password': password},
     );
   }
 

@@ -319,7 +319,7 @@ abstract class AppLocalizations {
   /// No description provided for @fourFamiliarGamesARoomForEveryone.
   ///
   /// In en, this message translates to:
-  /// **'Four familiar games. A room for everyone.'**
+  /// **'Bhabhi, Daketi, Bluff & Tissar Chousar - All in once place.'**
   String get fourFamiliarGamesARoomForEveryone;
 
   /// No description provided for @yourNextCardNightStartsHere.
@@ -885,6 +885,54 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Choose your country to continue.'**
   String get chooseYourCountryToContinue;
+
+  /// No description provided for @verifyYourEmail.
+  ///
+  /// In en, this message translates to:
+  /// **'Verify your email'**
+  String get verifyYourEmail;
+
+  /// No description provided for @weSentAVerificationLinkTo.
+  ///
+  /// In en, this message translates to:
+  /// **'We sent a verification link to {value0}. Tap it, then come back and sign in to take your seat.'**
+  String weSentAVerificationLinkTo(Object value0);
+
+  /// No description provided for @autoSignInAfterVerification.
+  ///
+  /// In en, this message translates to:
+  /// **'We’ll sign you in automatically once the link is tapped.'**
+  String get autoSignInAfterVerification;
+
+  /// No description provided for @iVeVerifiedContinue.
+  ///
+  /// In en, this message translates to:
+  /// **'I’ve verified · continue'**
+  String get iVeVerifiedContinue;
+
+  /// No description provided for @resendEmail.
+  ///
+  /// In en, this message translates to:
+  /// **'Resend email'**
+  String get resendEmail;
+
+  /// No description provided for @useADifferentAccount.
+  ///
+  /// In en, this message translates to:
+  /// **'Use a different account'**
+  String get useADifferentAccount;
+
+  /// No description provided for @verificationEmailSent.
+  ///
+  /// In en, this message translates to:
+  /// **'Verification email sent. Check your inbox.'**
+  String get verificationEmailSent;
+
+  /// No description provided for @weCouldNotSendTheVerificationEmail.
+  ///
+  /// In en, this message translates to:
+  /// **'We could not send the verification email. Please try again.'**
+  String get weCouldNotSendTheVerificationEmail;
 
   /// No description provided for @duplicateAvatarIDs.
   ///

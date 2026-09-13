@@ -1,4 +1,5 @@
 import 'package:taash/l10n/copy.dart';
+import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import '../../core/auth/auth_controller.dart';
@@ -24,10 +25,14 @@ class _AuthScreenState extends State<AuthScreen> {
       password = TextEditingController(),
       name = TextEditingController();
   bool register = false, reset = false, hidden = true, busy = false;
+  bool emailVerifyRequired = false;
+  Timer? _verifyTimer;
+  bool _polling = false;
   String? message;
   Map<String, dynamic>? country;
   @override
   void dispose() {
+    _verifyTimer?.cancel();
     email.dispose();
     password.dispose();
     name.dispose();
@@ -59,6 +64,73 @@ class _AuthScreenState extends State<AuthScreen> {
         await widget.auth.signIn(email.text, password.text);
       }
     } on AppFailure catch (e) {
+      if (mounted) {
+        if (e.code == 'email_verification_required' ||
+            e.code == 'email_not_verified') {
+          setState(() {
+            emailVerifyRequired = true;
+            message = null;
+          });
+          _startVerifyPolling();
+        } else {
+          setState(() => message = e.message);
+        }
+      }
+    } catch (_) {
+      if (mounted) {
+        setState(() => message = Copy.weCouldNotConnectPleaseTryAgain);
+      }
+    } finally {
+      if (mounted) setState(() => busy = false);
+    }
+  }
+
+  /// The final step of registration: the account's email must be verified
+  /// before the first sign-in. This screen asks the player to confirm they've
+  /// tapped the link, then signs them in.
+  Future<void> verifyContinue() async {
+    setState(() {
+      busy = true;
+      message = null;
+    });
+    try {
+      await widget.auth.signIn(email.text, password.text);
+      _stopVerifyPolling();
+    } on AppFailure catch (e) {
+      if (!mounted) return;
+      // The auto-verify poll can briefly overlap this tap; retry once rather
+      // than surfacing "sign-in is already in progress".
+      if (e.code == 'busy') {
+        await Future<void>.delayed(const Duration(milliseconds: 700));
+        if (!mounted) return;
+        try {
+          await widget.auth.signIn(email.text, password.text);
+          _stopVerifyPolling();
+          return;
+        } on AppFailure catch (retryFailure) {
+          if (mounted) setState(() => message = retryFailure.message);
+          return;
+        }
+      }
+      setState(() => message = e.message);
+    } catch (_) {
+      if (mounted) {
+        setState(() => message = Copy.weCouldNotConnectPleaseTryAgain);
+      }
+    } finally {
+      if (mounted) setState(() => busy = false);
+    }
+  }
+
+  Future<void> resend() async {
+    setState(() {
+      busy = true;
+      message = null;
+    });
+    try {
+      await widget.auth.resendVerificationEmail(email.text, password.text);
+      if (mounted) setState(() => message = S.verificationEmailSent);
+    } on AppFailure catch (e) {
       if (mounted) setState(() => message = e.message);
     } catch (_) {
       if (mounted) {
@@ -66,6 +138,49 @@ class _AuthScreenState extends State<AuthScreen> {
       }
     } finally {
       if (mounted) setState(() => busy = false);
+    }
+  }
+
+  /// Polls the server so the player is signed in the moment their email
+  /// becomes verified — no need to tap "I've verified · continue".
+  void _startVerifyPolling() {
+    _verifyTimer?.cancel();
+    _verifyTimer = Timer.periodic(
+      const Duration(seconds: 4),
+      (_) => _pollVerification(),
+    );
+    _pollVerification();
+  }
+
+  void _stopVerifyPolling() {
+    _verifyTimer?.cancel();
+    _verifyTimer = null;
+  }
+
+  Future<void> _pollVerification() async {
+    if (_polling || !mounted || busy || !emailVerifyRequired) return;
+    _polling = true;
+    try {
+      await widget.auth.signIn(email.text, password.text);
+      _stopVerifyPolling();
+    } on AppFailure catch (e) {
+      if (!mounted) return;
+      if (e.code == 'email_not_verified' ||
+          e.isOffline ||
+          e.code == 'timeout' ||
+          e.code == 'upstream_timeout' ||
+          e.code == 'rate_limited') {
+        return; // still waiting; try again on the next tick
+      }
+      _stopVerifyPolling();
+      setState(() => message = e.message);
+    } catch (_) {
+      if (mounted) {
+        _stopVerifyPolling();
+        setState(() => message = Copy.weCouldNotConnectPleaseTryAgain);
+      }
+    } finally {
+      _polling = false;
     }
   }
 
@@ -139,6 +254,73 @@ class _AuthScreenState extends State<AuthScreen> {
     return result;
   }
 
+  /// Sign-up checkpoint: the account exists but the server won't hand out a
+  /// session until the email link is tapped. Google and legacy sign-ins never
+  /// reach this screen.
+  Widget _verificationPanel() {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.stretch,
+      children: [
+        const SizedBox(height: 8),
+        const Icon(Icons.mark_email_read_outlined, size: 64, color: T.mint),
+        const SizedBox(height: 18),
+        Text(
+          S.verifyYourEmail,
+          textAlign: TextAlign.center,
+          style: Theme.of(context).textTheme.headlineSmall,
+        ),
+        const SizedBox(height: 10),
+        Text(
+          Copy.weSentAVerificationLinkTo(email.text.trim()),
+          textAlign: TextAlign.center,
+          style: const TextStyle(color: T.muted, fontSize: 15, height: 1.4),
+        ),
+        const SizedBox(height: 8),
+        Text(
+          S.autoSignInAfterVerification,
+          textAlign: TextAlign.center,
+          style: const TextStyle(color: T.muted, fontSize: 13, height: 1.4),
+        ),
+        const SizedBox(height: 26),
+        if (message != null)
+          Padding(
+            padding: const EdgeInsets.only(bottom: 18),
+            child: Semantics(
+              liveRegion: true,
+              child: TaashPanel(
+                color: T.ochre.withValues(alpha: .18),
+                padding: const EdgeInsets.all(14),
+                child: Text(message!),
+              ),
+            ),
+          ),
+        TaashButton(
+          label: S.iVeVerifiedContinue,
+          onPressed: verifyContinue,
+          busy: busy,
+          icon: Icons.arrow_forward_rounded,
+        ),
+        const SizedBox(height: 6),
+        TextButton(
+          onPressed: busy ? null : resend,
+          child: Text(Copy.resendEmail),
+        ),
+        TextButton(
+          onPressed: busy
+              ? null
+              : () {
+                  _stopVerifyPolling();
+                  setState(() {
+                    emailVerifyRequired = false;
+                    message = null;
+                  });
+                },
+          child: Text(Copy.useADifferentAccount),
+        ),
+      ],
+    );
+  }
+
   @override
   Widget build(BuildContext context) => Scaffold(
     body: SafeArea(
@@ -192,7 +374,7 @@ class _AuthScreenState extends State<AuthScreen> {
                           ? Copy.backToTheRoom
                           : register
                           ? Copy.thereSASeatWithYourName
-                          : 'Your next card night.',
+                          : 'Your Desi card games.',
                       style: Theme.of(context).textTheme.headlineMedium,
                     ),
                     const SizedBox(height: 12),
@@ -201,234 +383,241 @@ class _AuthScreenState extends State<AuthScreen> {
                       style: const TextStyle(color: T.muted, fontSize: 16),
                     ),
                     const SizedBox(height: 20),
-                    if (!reset)
-                      Container(
-                        padding: const EdgeInsets.all(4),
-                        decoration: BoxDecoration(
-                          color: T.outline.withValues(alpha: .45),
-                          borderRadius: BorderRadius.circular(16),
-                        ),
-                        child: Row(
-                          children: [
-                            for (final (value, label) in [
-                              (false, Copy.signIn),
-                              (true, Copy.register),
-                            ])
-                              Expanded(
-                                child: GestureDetector(
-                                  onTap: busy
-                                      ? null
-                                      : () => setState(() {
-                                          register = value;
-                                          message = null;
-                                        }),
-                                  child: AnimatedContainer(
-                                    duration: T.micro,
-                                    padding: const EdgeInsets.symmetric(
-                                      vertical: 13,
-                                    ),
-                                    decoration: BoxDecoration(
-                                      color: register == value
-                                          ? T.surface
-                                          : Colors.transparent,
-                                      borderRadius: BorderRadius.circular(12),
-                                    ),
-                                    child: Text(
-                                      label,
-                                      textAlign: TextAlign.center,
-                                      style: TextStyle(
-                                        fontWeight: FontWeight.w700,
+                    if (emailVerifyRequired)
+                      _verificationPanel()
+                    else ...[
+                      if (!reset)
+                        Container(
+                          padding: const EdgeInsets.all(4),
+                          decoration: BoxDecoration(
+                            color: T.outline.withValues(alpha: .45),
+                            borderRadius: BorderRadius.circular(16),
+                          ),
+                          child: Row(
+                            children: [
+                              for (final (value, label) in [
+                                (false, Copy.signIn),
+                                (true, Copy.register),
+                              ])
+                                Expanded(
+                                  child: GestureDetector(
+                                    onTap: busy
+                                        ? null
+                                        : () => setState(() {
+                                            register = value;
+                                            message = null;
+                                          }),
+                                    child: AnimatedContainer(
+                                      duration: T.micro,
+                                      padding: const EdgeInsets.symmetric(
+                                        vertical: 13,
+                                      ),
+                                      decoration: BoxDecoration(
                                         color: register == value
-                                            ? T.ink
-                                            : T.muted,
+                                            ? T.surface
+                                            : Colors.transparent,
+                                        borderRadius: BorderRadius.circular(12),
+                                      ),
+                                      child: Text(
+                                        label,
+                                        textAlign: TextAlign.center,
+                                        style: TextStyle(
+                                          fontWeight: FontWeight.w700,
+                                          color: register == value
+                                              ? T.ink
+                                              : T.muted,
+                                        ),
                                       ),
                                     ),
                                   ),
                                 ),
-                              ),
-                          ],
-                        ),
-                      ),
-                    const SizedBox(height: 24),
-                    if (register && !reset) ...[
-                      TextFormField(
-                        controller: name,
-                        decoration: const InputDecoration(
-                          labelText: S.displayName,
-                          prefixIcon: Icon(Icons.person_outline),
-                        ),
-                        maxLength: 25,
-                        inputFormatters: [
-                          FilteringTextInputFormatter.deny(RegExp(r'[<>]')),
-                          // A13: Only allow ASCII letters, numbers, and spaces.
-                          FilteringTextInputFormatter.allow(
-                            RegExp(r'[A-Za-z0-9 ]'),
+                            ],
                           ),
-                        ],
+                        ),
+                      const SizedBox(height: 24),
+                      if (register && !reset) ...[
+                        TextFormField(
+                          controller: name,
+                          decoration: const InputDecoration(
+                            labelText: S.displayName,
+                            prefixIcon: Icon(Icons.person_outline),
+                          ),
+                          maxLength: 25,
+                          inputFormatters: [
+                            FilteringTextInputFormatter.deny(RegExp(r'[<>]')),
+                            // A13: Only allow ASCII letters, numbers, and spaces.
+                            FilteringTextInputFormatter.allow(
+                              RegExp(r'[A-Za-z0-9 ]'),
+                            ),
+                          ],
+                          validator: (v) =>
+                              v == null ||
+                                  v.trim().isEmpty ||
+                                  v.trim().length > 25 ||
+                                  !RegExp(r'^[A-Za-z0-9 ]+$').hasMatch(v.trim())
+                              ? S.invalidName
+                              : null,
+                        ),
+                        const SizedBox(height: 14),
+                      ],
+                      TextFormField(
+                        controller: email,
+                        keyboardType: TextInputType.emailAddress,
+                        autofillHints: const [AutofillHints.email],
+                        autocorrect: false,
+                        decoration: const InputDecoration(
+                          labelText: S.email,
+                          prefixIcon: Icon(Icons.alternate_email),
+                        ),
                         validator: (v) =>
                             v == null ||
-                                v.trim().isEmpty ||
-                                v.trim().length > 25 ||
-                                !RegExp(r'^[A-Za-z0-9 ]+$').hasMatch(v.trim())
-                            ? S.invalidName
-                            : null,
-                      ),
-                      const SizedBox(height: 14),
-                    ],
-                    TextFormField(
-                      controller: email,
-                      keyboardType: TextInputType.emailAddress,
-                      autofillHints: const [AutofillHints.email],
-                      autocorrect: false,
-                      decoration: const InputDecoration(
-                        labelText: S.email,
-                        prefixIcon: Icon(Icons.alternate_email),
-                      ),
-                      validator: (v) =>
-                          v == null ||
-                              !RegExp(
-                                r'^[^\s@]+@[^\s@]+\.[^\s@]+$',
-                              ).hasMatch(v.trim())
-                          ? S.invalidEmail
-                          : null,
-                    ),
-                    const SizedBox(height: 16),
-                    if (!reset) ...[
-                      TextFormField(
-                        controller: password,
-                        obscureText: hidden,
-                        autofillHints: [
-                          register
-                              ? AutofillHints.newPassword
-                              : AutofillHints.password,
-                        ],
-                        enableSuggestions: false,
-                        autocorrect: false,
-                        decoration: InputDecoration(
-                          labelText: S.password,
-                          prefixIcon: const Icon(Icons.lock_outline),
-                          suffixIcon: IconButton(
-                            tooltip: hidden
-                                ? Copy.showPassword
-                                : Copy.hidePassword,
-                            onPressed: () => setState(() => hidden = !hidden),
-                            icon: Icon(
-                              hidden
-                                  ? Icons.visibility_outlined
-                                  : Icons.visibility_off_outlined,
-                            ),
-                          ),
-                        ),
-                        validator: (v) => v == null || v.length < 6
-                            ? S.invalidPassword
+                                !RegExp(
+                                  r'^[^\s@]+@[^\s@]+\.[^\s@]+$',
+                                ).hasMatch(v.trim())
+                            ? S.invalidEmail
                             : null,
                       ),
                       const SizedBox(height: 16),
-                    ],
-                    if (register && !reset) ...[
-                      OutlinedButton(
-                        onPressed: busy
-                            ? null
-                            : () async {
-                                final result =
-                                    await Navigator.push<Map<String, dynamic>>(
-                                      context,
-                                      MaterialPageRoute(
-                                        builder: (_) => const CountrySelector(),
-                                      ),
-                                    );
-                                if (result != null && mounted) {
-                                  setState(() => country = result);
-                                }
-                              },
-                        child: Row(
-                          children: [
-                            country == null
-                                ? const Icon(Icons.public, size: 20)
-                                : TaashFlag(code: country!['code']),
-                            const SizedBox(width: 12),
-                            Expanded(
-                              child: Text(
-                                country == null
-                                    ? Copy.chooseYourCountry
-                                    : '${country!['name']} · ${country!['code']}',
+                      if (!reset) ...[
+                        TextFormField(
+                          controller: password,
+                          obscureText: hidden,
+                          autofillHints: [
+                            register
+                                ? AutofillHints.newPassword
+                                : AutofillHints.password,
+                          ],
+                          enableSuggestions: false,
+                          autocorrect: false,
+                          decoration: InputDecoration(
+                            labelText: S.password,
+                            prefixIcon: const Icon(Icons.lock_outline),
+                            suffixIcon: IconButton(
+                              tooltip: hidden
+                                  ? Copy.showPassword
+                                  : Copy.hidePassword,
+                              onPressed: () => setState(() => hidden = !hidden),
+                              icon: Icon(
+                                hidden
+                                    ? Icons.visibility_outlined
+                                    : Icons.visibility_off_outlined,
                               ),
                             ),
-                            const Icon(Icons.expand_more),
+                          ),
+                          validator: (v) => v == null || v.length < 6
+                              ? S.invalidPassword
+                              : null,
+                        ),
+                        const SizedBox(height: 16),
+                      ],
+                      if (register && !reset) ...[
+                        OutlinedButton(
+                          onPressed: busy
+                              ? null
+                              : () async {
+                                  final result =
+                                      await Navigator.push<
+                                        Map<String, dynamic>
+                                      >(
+                                        context,
+                                        MaterialPageRoute(
+                                          builder: (_) =>
+                                              const CountrySelector(),
+                                        ),
+                                      );
+                                  if (result != null && mounted) {
+                                    setState(() => country = result);
+                                  }
+                                },
+                          child: Row(
+                            children: [
+                              country == null
+                                  ? const Icon(Icons.public, size: 20)
+                                  : TaashFlag(code: country!['code']),
+                              const SizedBox(width: 12),
+                              Expanded(
+                                child: Text(
+                                  country == null
+                                      ? Copy.chooseYourCountry
+                                      : '${country!['name']} · ${country!['code']}',
+                                ),
+                              ),
+                              const Icon(Icons.expand_more),
+                            ],
+                          ),
+                        ),
+                        const SizedBox(height: 16),
+                      ],
+                      if (!reset) ...[
+                        const SizedBox(height: 10),
+                        const Row(
+                          children: [
+                            Expanded(child: Divider(color: T.outline)),
+                            Padding(
+                              padding: EdgeInsets.symmetric(horizontal: 12),
+                              child: Text(
+                                Copy.or,
+                                style: TextStyle(
+                                  color: T.muted,
+                                  fontSize: 13,
+                                  fontWeight: FontWeight.w700,
+                                ),
+                              ),
+                            ),
+                            Expanded(child: Divider(color: T.outline)),
                           ],
                         ),
-                      ),
-                      const SizedBox(height: 16),
-                    ],
-                    if (!reset) ...[
-                      const SizedBox(height: 10),
-                      const Row(
-                        children: [
-                          Expanded(child: Divider(color: T.outline)),
-                          Padding(
-                            padding: EdgeInsets.symmetric(horizontal: 12),
-                            child: Text(
-                              Copy.or,
-                              style: TextStyle(
-                                color: T.muted,
-                                fontSize: 13,
-                                fontWeight: FontWeight.w700,
-                              ),
+                        const SizedBox(height: 16),
+                        SizedBox(
+                          width: double.infinity,
+                          child: OutlinedButton.icon(
+                            onPressed: busy ? null : googleSignIn,
+                            icon: const GoogleLogo(),
+                            label: const Text(Copy.continueWithGoogle),
+                          ),
+                        ),
+                        const SizedBox(height: 8),
+                      ],
+                      if (message != null)
+                        Padding(
+                          padding: const EdgeInsets.only(bottom: 18),
+                          child: Semantics(
+                            liveRegion: true,
+                            child: TaashPanel(
+                              color: T.ochre.withValues(alpha: .18),
+                              padding: const EdgeInsets.all(14),
+                              child: Text(message!),
                             ),
                           ),
-                          Expanded(child: Divider(color: T.outline)),
-                        ],
-                      ),
-                      const SizedBox(height: 16),
+                        ),
                       SizedBox(
                         width: double.infinity,
-                        child: OutlinedButton.icon(
-                          onPressed: busy ? null : googleSignIn,
-                          icon: const GoogleLogo(),
-                          label: const Text(Copy.continueWithGoogle),
+                        child: TaashButton(
+                          label: reset
+                              ? S.reset
+                              : register
+                              ? S.register
+                              : S.signIn,
+                          onPressed: submit,
+                          busy: busy,
+                          icon: reset
+                              ? Icons.mail_outline
+                              : Icons.arrow_forward_rounded,
                         ),
                       ),
                       const SizedBox(height: 8),
-                    ],
-                    if (message != null)
-                      Padding(
-                        padding: const EdgeInsets.only(bottom: 18),
-                        child: Semantics(
-                          liveRegion: true,
-                          child: TaashPanel(
-                            color: T.ochre.withValues(alpha: .18),
-                            padding: const EdgeInsets.all(14),
-                            child: Text(message!),
-                          ),
+                      Center(
+                        child: TextButton(
+                          onPressed: busy
+                              ? null
+                              : () => setState(() {
+                                  reset = !reset;
+                                  message = null;
+                                }),
+                          child: Text(reset ? Copy.backToSignIn : S.forgot),
                         ),
                       ),
-                    SizedBox(
-                      width: double.infinity,
-                      child: TaashButton(
-                        label: reset
-                            ? S.reset
-                            : register
-                            ? S.register
-                            : S.signIn,
-                        onPressed: submit,
-                        busy: busy,
-                        icon: reset
-                            ? Icons.mail_outline
-                            : Icons.arrow_forward_rounded,
-                      ),
-                    ),
-                    const SizedBox(height: 8),
-                    Center(
-                      child: TextButton(
-                        onPressed: busy
-                            ? null
-                            : () => setState(() {
-                                reset = !reset;
-                                message = null;
-                              }),
-                        child: Text(reset ? Copy.backToSignIn : S.forgot),
-                      ),
-                    ),
+                    ],
                     const SizedBox(height: 18),
                     const Row(
                       mainAxisAlignment: MainAxisAlignment.center,
@@ -509,13 +698,10 @@ class _GoogleProfileSheetState extends State<_GoogleProfileSheet> {
           const SizedBox(height: 12),
           OutlinedButton(
             onPressed: () async {
-              final result =
-                  await Navigator.push<Map<String, dynamic>>(
-                    context,
-                    MaterialPageRoute(
-                      builder: (_) => const CountrySelector(),
-                    ),
-                  );
+              final result = await Navigator.push<Map<String, dynamic>>(
+                context,
+                MaterialPageRoute(builder: (_) => const CountrySelector()),
+              );
               if (result != null && mounted) {
                 setState(() => selectedCountryCode = result['code']);
               }

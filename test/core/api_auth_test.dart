@@ -225,4 +225,88 @@ void main() {
       api.close();
     },
   );
+
+  test('register surfaces email_verification_required instead of a session',
+      () async {
+    final api = ApiClient(
+      config: config,
+      client: MockClient(
+        (_) async => http.Response(
+          jsonEncode({
+            'error': {
+              'code': 'email_verification_required',
+              'message': 'we sent a verification email to your address',
+            },
+          }),
+          409,
+        ),
+      ),
+    );
+    final auth = AuthController(api: api, store: MemorySessionStore());
+    await auth.restore();
+    await expectLater(
+      auth.register(
+        email: 'sana@example.test',
+        password: 'secret123',
+        displayName: 'Sana',
+        country: 'PK',
+      ),
+      throwsA(
+        isA<AppFailure>().having(
+          (e) => e.code,
+          'code',
+          'email_verification_required',
+        ),
+      ),
+    );
+    expect(auth.isSignedIn, isFalse);
+    auth.dispose();
+    api.close();
+  });
+
+  test('signIn maps email_not_verified without normalizing it', () async {
+    final api = ApiClient(
+      config: config,
+      client: MockClient(
+        (_) async => http.Response(
+          jsonEncode({
+            'error': {
+              'code': 'email_not_verified',
+              'message': 'verify your email before signing in',
+            },
+          }),
+          403,
+        ),
+      ),
+    );
+    final auth = AuthController(api: api, store: MemorySessionStore());
+    await auth.restore();
+    await expectLater(
+      auth.signIn('sana@example.test', 'secret123'),
+      throwsA(
+        isA<AppFailure>().having((e) => e.code, 'code', 'email_not_verified'),
+      ),
+    );
+    expect(auth.isSignedIn, isFalse);
+    auth.dispose();
+    api.close();
+  });
+
+  test('sendVerificationEmail posts credentials to the resend endpoint',
+      () async {
+    http.Request? captured;
+    final api = ApiClient(
+      config: config,
+      client: MockClient((request) async {
+        captured = request;
+        return http.Response(jsonEncode({'status': 'email_sent'}), 200);
+      }),
+    );
+    await api.sendVerificationEmail('sana@example.test', 'secret123');
+    expect(captured!.method, 'POST');
+    expect(captured!.url.path, '/v1/auth/sendVerificationEmail');
+    expect(captured!.body, contains('sana@example.test'));
+    expect(captured!.body, contains('secret123'));
+    api.close();
+  });
 }
