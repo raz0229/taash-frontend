@@ -43,6 +43,9 @@ class _RoomFlowState extends State<RoomFlow> {
   @override
   void initState() {
     super.initState();
+    if (widget.mode == RoomFlowMode.create) {
+      name.text = Copy.myRoomNamed(game.label);
+    }
     if (widget.mode == RoomFlowMode.quick) {
       WidgetsBinding.instance.addPostFrameCallback((_) => lookup());
     }
@@ -203,8 +206,13 @@ class _RoomFlowState extends State<RoomFlow> {
                         : (v) {
                             if (v != null) {
                               setState(() {
+                                final isDefaultName =
+                                    name.text == Copy.myRoomNamed(game.label);
                                 game = v;
                                 seats = seats.clamp(1, v.maxPlayers);
+                                if (isDefaultName) {
+                                  name.text = Copy.myRoomNamed(v.label);
+                                }
                               });
                             }
                           },

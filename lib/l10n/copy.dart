@@ -531,6 +531,7 @@ abstract final class Copy {
   static const use125EnglishLettersNumbersOr =
       'Use 1–25 English letters, numbers or spaces.';
   static const fridayCardNight = 'Friday card night';
+  static String myRoomNamed(String game) => 'My $game Room';
   static const weLlFindAPublicRoomWith =
       'We’ll find a public room with room for you.';
   static const pasteTheSixCharacterCodeYourFriend =
