@@ -13,5 +13,9 @@
   { "pfp_id": 11, "pfp_cost_in_coins": 50000, "avatar_name": "Bhalu", "avatar_rank": "legendary", "pfp_picture_in_frontend": "11.png"},
   { "pfp_id": 12, "pfp_cost_in_coins": 51000, "avatar_name": "Joker", "avatar_rank": "legendary", "pfp_picture_in_frontend": "12.png"},
   { "pfp_id": 13, "pfp_cost_in_coins": 80000, "avatar_name": "Batman", "avatar_rank": "legendary", "pfp_picture_in_frontend": "13.png"},
-  {"pfp_id": 14, "pfp_cost_in_coins": 90000, "avatar_name": "Dev", "avatar_rank": "legendary", "pfp_picture_in_frontend": "14.png"}
+  {"pfp_id": 14, "pfp_cost_in_coins": 90000, "avatar_name": "Dev", "avatar_rank": "legendary", "pfp_picture_in_frontend": "14.png"},
+  {"pfp_id": 15, "pfp_cost_in_coins": 30000, "avatar_name": "804", "avatar_rank": "epic", "pfp_picture_in_frontend": "15.png"},
+  {"pfp_id": 16, "pfp_cost_in_coins": 0, "avatar_name": "Taxi", "avatar_rank": "common", "pfp_picture_in_frontend": "16.png"},
+  {"pfp_id": 17, "pfp_cost_in_coins": 0, "avatar_name": "Malang", "avatar_rank": "common", "pfp_picture_in_frontend": "17.png"},
+  {"pfp_id": 18, "pfp_cost_in_coins": 0, "avatar_name": "Kala", "avatar_rank": "common", "pfp_picture_in_frontend": "18.png"}
 ]
