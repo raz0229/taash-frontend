@@ -726,7 +726,7 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get thisDeviceAllows60SecondsPerTurn =>
-      'This device allows 90 seconds per turn, or 120 for TC. When your local time ends, it requests leave. The guide pauses while the app is backgrounded; it is not a server deadline.';
+      'This device allows 90 seconds per turn, or 120 for TC. When your local time ends, it requests leave. The guide keeps counting even while the app is backgrounded; it is not a server deadline.';
 
   @override
   String get localTurnGuide => 'Local turn guide';
@@ -860,6 +860,9 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get paused => 'Paused';
+
+  @override
+  String get waitForYourTurn => 'Wait for your turn...';
 
   @override
   String get yakka => 'YAKKA';

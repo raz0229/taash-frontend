@@ -26,8 +26,7 @@ class LocalTurnTimer extends StatefulWidget {
   State<LocalTurnTimer> createState() => _LocalTurnTimerState();
 }
 
-class _LocalTurnTimerState extends State<LocalTurnTimer>
-    with WidgetsBindingObserver {
+class _LocalTurnTimerState extends State<LocalTurnTimer> {
   Timer? _timer;
   final Stopwatch _watch = Stopwatch();
   int _remaining = 0;
@@ -35,7 +34,6 @@ class _LocalTurnTimerState extends State<LocalTurnTimer>
   @override
   void initState() {
     super.initState();
-    WidgetsBinding.instance.addObserver(this);
     _start();
   }
 
@@ -53,6 +51,9 @@ class _LocalTurnTimerState extends State<LocalTurnTimer>
       }
     }
   }
+
+  // Deliberately no app-lifecycle handling: the stopwatch is wall-clock time,
+  // so the countdown (and expiry) keeps running while the app is backgrounded.
 
   void _start() {
     _timer?.cancel();
@@ -111,18 +112,8 @@ class _LocalTurnTimerState extends State<LocalTurnTimer>
   }
 
   @override
-  void didChangeAppLifecycleState(AppLifecycleState state) {
-    if (state == AppLifecycleState.resumed) {
-      if (mounted) setState(_resume);
-    } else {
-      _pause();
-    }
-  }
-
-  @override
   void dispose() {
     _timer?.cancel();
-    WidgetsBinding.instance.removeObserver(this);
     super.dispose();
   }
 

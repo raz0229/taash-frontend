@@ -329,6 +329,34 @@ void showNotice(BuildContext context, String message) => ScaffoldMessenger.of(
   context,
 ).showSnackBar(SnackBar(content: Text(message)));
 
+/// Small, brief, non-blocking hint. Replaces any prior hint instead of queuing.
+void showFlash(
+  BuildContext context,
+  String message, {
+  Duration duration = const Duration(milliseconds: 1400),
+}) {
+  final messenger = ScaffoldMessenger.of(context);
+  messenger
+    ..removeCurrentSnackBar()
+    ..showSnackBar(
+      SnackBar(
+        content: Text(
+          message,
+          textAlign: TextAlign.center,
+          style: const TextStyle(
+            color: Colors.white,
+            fontWeight: FontWeight.w700,
+            fontSize: 13,
+          ),
+        ),
+        behavior: SnackBarBehavior.floating,
+        width: 240,
+        duration: duration,
+        padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
+      ),
+    );
+}
+
 class TaashFlag extends StatelessWidget {
   const TaashFlag({super.key, required this.code, this.size = 20});
   final String code;

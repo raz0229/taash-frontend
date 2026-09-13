@@ -21,7 +21,11 @@ mixin _GameActions on State<GameScreen> {
     }) => buttons.add(
       TaashButton(
         label: label,
-        onPressed: enabled && allowed ? action : null,
+        onPressed: enabled && allowed
+            ? action
+            : !s.isYourTurn
+            ? () => showFlash(context, Copy.waitForYourTurn)
+            : null,
         secondary: secondary,
         onDark: true,
         compact: compact,

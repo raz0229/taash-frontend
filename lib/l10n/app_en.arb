@@ -290,7 +290,7 @@
   "theWinningHand": "The winning hand",
   "finalPlacesComeFromTheServerYour": "Final places come from the server. Your profile refreshes with the latest coins and XP.",
   "yourLocalTurnTimeEndedLeavingThe": "Your local turn time ended. Leaving the room…",
-  "thisDeviceAllows60SecondsPerTurn": "This device allows 90 seconds per turn, or 120 for TC. When your local time ends, it requests leave. The guide pauses while the app is backgrounded; it is not a server deadline.",
+  "thisDeviceAllows60SecondsPerTurn": "This device allows 90 seconds per turn, or 120 for TC. When your local time ends, it requests leave. The guide keeps counting even while the app is backgrounded; it is not a server deadline.",
   "localTurnGuide": "Local turn guide",
   "yourPlaceMayBeLostAndThe": "Your place may be lost and the entry fee is not refunded. The remaining players can continue.",
   "leaveThisRoom": "Leave this room?",
@@ -350,6 +350,7 @@
   },
   "chooseUpToFourCardsForBluff": "Choose up to four cards for Bluff.",
   "paused": "Paused",
+  "waitForYourTurn": "Wait for your turn...",
   "yakka": "YAKKA",
   "tapTo": "Tap to {value0}",
   "@tapTo": {

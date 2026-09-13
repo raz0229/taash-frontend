@@ -1363,7 +1363,7 @@ abstract class AppLocalizations {
   /// No description provided for @thisDeviceAllows60SecondsPerTurn.
   ///
   /// In en, this message translates to:
-  /// **'This device allows 90 seconds per turn, or 120 for TC. When your local time ends, it requests leave. The guide pauses while the app is backgrounded; it is not a server deadline.'**
+  /// **'This device allows 90 seconds per turn, or 120 for TC. When your local time ends, it requests leave. The guide keeps counting even while the app is backgrounded; it is not a server deadline.'**
   String get thisDeviceAllows60SecondsPerTurn;
 
   /// No description provided for @localTurnGuide.
@@ -1593,6 +1593,12 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Paused'**
   String get paused;
+
+  /// No description provided for @waitForYourTurn.
+  ///
+  /// In en, this message translates to:
+  /// **'Wait for your turn...'**
+  String get waitForYourTurn;
 
   /// No description provided for @yakka.
   ///

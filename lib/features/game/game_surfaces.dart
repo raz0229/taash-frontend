@@ -6,7 +6,7 @@ import '../../core/widgets/taash_widgets.dart';
 import 'shared/game_tint.dart';
 import 'shared/hand_order.dart';
 import 'shared/playing_card.dart';
-import 'shared/pulse_glow.dart';
+import 'shared/card_shake.dart';
 
 /// Public cards stay at the center; private cards only come from HandView.
 class GameSurface extends StatelessWidget {
@@ -351,11 +351,7 @@ class GameSurface extends StatelessWidget {
             ),
             _cards([
               daketiCanDraw
-                  ? PulseGlow(
-                      color: tint.accent,
-                      blurRadius: 12,
-                      child: stock,
-                    )
+                  ? CardShake(child: stock)
                   : stock,
               _daketiArea(state),
             ]),
@@ -382,7 +378,7 @@ class GameSurface extends StatelessWidget {
                   '${state.stockCount}',
                   null,
                   back: true,
-                  glow: daketiCanDraw,
+                  shake: daketiCanDraw,
                   onTap: onDrawStock,
                   tint: tint,
                 ),
@@ -426,7 +422,7 @@ class GameSurface extends StatelessWidget {
             '${state.stockCount} left',
             null,
             back: true,
-            glow:
+            shake:
                 snapshot.isYourTurn &&
                 HandGuidance.tcMayDraw(snapshot.you.hand.length) &&
                 state.stockCount > 0,
@@ -440,7 +436,7 @@ class GameSurface extends StatelessWidget {
             Copy.discard,
             '${state.discardCount} cards',
             state.discardTop,
-            glow: snapshot.isYourTurn && state.discardTop != null,
+            shake: snapshot.isYourTurn && state.discardTop != null,
             onTap: onTakeDiscard,
             tint: tint,
           ),
@@ -455,73 +451,53 @@ class GameSurface extends StatelessWidget {
     String detail,
     String? card, {
     bool back = false,
-    bool glow = false,
+    bool shake = false,
     VoidCallback? onTap,
     GameTint? tint,
-  }) => GestureDetector(
-    onTap: onTap,
-    child: Column(
-      mainAxisSize: MainAxisSize.min,
-      children: [
-        Text(
-          title,
-          style: const TextStyle(
-            color: T.white,
-            fontSize: 11,
-            fontWeight: FontWeight.w700,
+  }) {
+    final cardWidget = (card == null && !back)
+        ? Container(
+            width: compact ? 44 : 60,
+            height: compact ? 61.6 : 84,
+            alignment: Alignment.center,
+            decoration: BoxDecoration(
+              border: Border.all(color: Colors.white24),
+              borderRadius: BorderRadius.circular(7),
+            ),
+            child: const Text(Copy.empty, style: TextStyle(fontSize: 10)),
+          )
+        : PlayingCard(
+            card: card,
+            faceDown: back,
+            width: compact ? 44 : 60,
+          );
+    return GestureDetector(
+      onTap: onTap,
+      child: Column(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          Text(
+            title,
+            style: const TextStyle(
+              color: T.white,
+              fontSize: 11,
+              fontWeight: FontWeight.w700,
+            ),
           ),
-        ),
-        const SizedBox(height: 6),
-        glow
-            ? PulseGlow(
-                color: tint?.accent ?? T.ochre,
-                child: (card == null && !back)
-                    ? Container(
-                        width: compact ? 44 : 60,
-                        height: compact ? 61.6 : 84,
-                        alignment: Alignment.center,
-                        decoration: BoxDecoration(
-                          border: Border.all(color: Colors.white24),
-                          borderRadius: BorderRadius.circular(7),
-                        ),
-                        child: const Text(
-                          Copy.empty,
-                          style: TextStyle(fontSize: 10),
-                        ),
-                      )
-                    : PlayingCard(
-                        card: card,
-                        faceDown: back,
-                        width: compact ? 44 : 60,
-                      ),
-              )
-            : (card == null && !back)
-                ? Container(
-                    width: compact ? 44 : 60,
-                    height: compact ? 61.6 : 84,
-                    alignment: Alignment.center,
-                    decoration: BoxDecoration(
-                      border: Border.all(color: Colors.white24),
-                      borderRadius: BorderRadius.circular(7),
-                    ),
-                    child: const Text(Copy.empty, style: TextStyle(fontSize: 10)),
-                  )
-                : PlayingCard(
-                    card: card,
-                    faceDown: back,
-                    width: compact ? 44 : 60,
-                  ),
-        const SizedBox(height: 5),
-        Text(
-          detail,
-          style: TextStyle(
-            color: tint?.tint ?? const Color(0xffC7BCE8),
-            fontSize: 10,
+          const SizedBox(height: 6),
+          shake ? CardShake(child: cardWidget) : cardWidget,
+          const SizedBox(height: 5),
+          Text(
+            detail,
+            style: TextStyle(
+              color: tint?.tint ?? const Color(0xffC7BCE8),
+              fontSize: 10,
+            ),
           ),
-        ),
-      ],
-    ),
-  );
+        ],
+      ),
+    );
+  }
 }
 
 Future<void> inspectCollection(BuildContext context, PublicPlayer player) =>

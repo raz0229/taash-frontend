@@ -52,7 +52,6 @@ class GameScreen extends StatefulWidget {
 class _GameScreenState extends State<GameScreen>
     with
         TickerProviderStateMixin,
-        WidgetsBindingObserver,
         _GameMenus,
         _GameStatus,
         _GameActions {
@@ -131,7 +130,6 @@ class _GameScreenState extends State<GameScreen>
   @override
   void initState() {
     super.initState();
-    WidgetsBinding.instance.addObserver(this);
     session.onStockDecreased = _onStockDecreased;
     session.onBluffChallenge = _onBluffChallenge;
     session.onCardPlayed = _onCardPlayed;
@@ -308,7 +306,6 @@ class _GameScreenState extends State<GameScreen>
 
   @override
   void dispose() {
-    WidgetsBinding.instance.removeObserver(this);
     session.onStockDecreased = null;
     session.onBluffChallenge = null;
     session.onCardPlayed = null;
@@ -326,26 +323,6 @@ class _GameScreenState extends State<GameScreen>
   void _onStockDecreased() {
     if (!mounted) return;
     _showStockDrawAnimation();
-  }
-
-  @override
-  void didChangeAppLifecycleState(AppLifecycleState state) {
-    if (state == AppLifecycleState.resumed) {
-      final s = session.snapshot;
-      if (s != null &&
-          s.room.isActive &&
-          s.currentPlayerId.isNotEmpty &&
-          !(_bluffAnimationActive || _thulluAnimationActive) &&
-          !_turnTimer.isAnimating &&
-          _turnTimer.value > 0 &&
-          _turnTimer.value < 1) {
-        _turnTimer.forward();
-      }
-    } else {
-      // Freeze the local deadline while hidden so backgrounding neither resets
-      // the clock nor silently expires the turn.
-      _turnTimer.stop();
-    }
   }
 
   OverlayEntry? _stockDrawOverlay;
@@ -818,15 +795,26 @@ class _GameScreenState extends State<GameScreen>
         onCardDrop: (card) => play(card),
         canDrop: ready && mine,
         onInspectCollection: (p) => inspectCollection(context, p),
-        onDrawStock: ready && mine
-            ? () {
-                if (s.room.game == GameType.daketi) {
-                  send('daketi.draw');
-                } else if (s.room.game == GameType.tc)
-                  send('tc.draw_stock');
-              }
-            : null,
-        onTakeDiscard: ready && mine ? () => send('tc.take_discard') : null,
+        onDrawStock: () {
+          if (!mine) {
+            showFlash(context, Copy.waitForYourTurn);
+            return;
+          }
+          if (!ready) return;
+          if (s.room.game == GameType.daketi) {
+            send('daketi.draw');
+          } else if (s.room.game == GameType.tc) {
+            send('tc.draw_stock');
+          }
+        },
+        onTakeDiscard: () {
+          if (!mine) {
+            showFlash(context, Copy.waitForYourTurn);
+            return;
+          }
+          if (!ready) return;
+          send('tc.take_discard');
+        },
       ),
     ],
   );

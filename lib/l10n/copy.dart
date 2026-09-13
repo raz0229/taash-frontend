@@ -291,7 +291,7 @@ abstract final class Copy {
   static const yourLocalTurnTimeEndedLeavingThe =
       'Your local turn time ended. Leaving the room…';
   static const thisDeviceAllows60SecondsPerTurn =
-      'This device allows 90 seconds per turn, or 120 for TC. When your local time ends, it requests leave. The guide pauses while the app is backgrounded; it is not a server deadline.';
+      'This device allows 90 seconds per turn, or 120 for TC. When your local time ends, it requests leave. The guide keeps counting even while the app is backgrounded; it is not a server deadline.';
   static const localTurnGuide = 'Local turn guide';
   static const yourPlaceMayBeLostAndThe =
       'Your place may be lost and the entry fee is not refunded. The remaining players can continue.';
@@ -344,6 +344,7 @@ abstract final class Copy {
   static const chooseUpToFourCardsForBluff =
       'Choose up to four cards for Bluff.';
   static const paused = 'Paused';
+  static const waitForYourTurn = 'Wait for your turn...';
   static const yakka = 'YAKKA';
   static String tapTo(Object? value0) => 'Tap to $value0';
   static const faceDownCard = 'Face-down card';

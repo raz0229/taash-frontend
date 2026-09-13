@@ -77,8 +77,7 @@ class AppFailure implements Exception {
           'We could not send a reset email. Please try again later.',
         'database_error' =>
           'Your account needs a server check. Try signing in before registering again.',
-        'firebase_delete_failed' =>
-          'Sign in again, then retry account deletion.',
+        'firebase_delete_failed' => 'Sign out and Sign in again, then Retry.',
         'invalid_request' =>
           'That action is not available right now. Check your choices.',
         _ => 'Something went wrong on the server. Please try again shortly.',
