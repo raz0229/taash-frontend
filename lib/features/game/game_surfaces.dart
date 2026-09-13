@@ -6,6 +6,7 @@ import '../../core/widgets/taash_widgets.dart';
 import 'shared/game_tint.dart';
 import 'shared/hand_order.dart';
 import 'shared/playing_card.dart';
+import 'shared/pulse_glow.dart';
 
 /// Public cards stay at the center; private cards only come from HandView.
 class GameSurface extends StatelessWidget {
@@ -310,8 +311,23 @@ class GameSurface extends StatelessWidget {
           ),
   );
 
-  Widget _daketi(DaketiState state, GameTint tint) => compact
-      ? Column(
+  Widget _daketi(DaketiState state, GameTint tint) {
+    final daketiCanDraw =
+        snapshot.isYourTurn &&
+        HandGuidance.daketiMayDraw(
+          snapshot.you.hand.length,
+          state.stockCount,
+        );
+    final stock = KeyedSubtree(
+      key: stockKey,
+      child: PlayingCard(
+        faceDown: true,
+        width: 44,
+        onTap: onDrawStock,
+      ),
+    );
+    return compact
+        ? Column(
           mainAxisSize: MainAxisSize.min,
           children: [
             Row(
@@ -334,33 +350,13 @@ class GameSurface extends StatelessWidget {
               ],
             ),
             _cards([
-              KeyedSubtree(
-                key: stockKey,
-                child: Container(
-                  decoration:
-                      snapshot.isYourTurn &&
-                          HandGuidance.daketiMayDraw(
-                            snapshot.you.hand.length,
-                            state.stockCount,
-                          )
-                      ? BoxDecoration(
-                          boxShadow: [
-                            BoxShadow(
-                              color: tint.accent,
-                              blurRadius: 12,
-                              spreadRadius: 2,
-                            ),
-                          ],
-                          borderRadius: BorderRadius.circular(5),
-                        )
-                      : null,
-                  child: PlayingCard(
-                    faceDown: true,
-                    width: 44,
-                    onTap: onDrawStock,
-                  ),
-                ),
-              ),
+              daketiCanDraw
+                  ? PulseGlow(
+                      color: tint.accent,
+                      blurRadius: 12,
+                      child: stock,
+                    )
+                  : stock,
               _daketiArea(state),
             ]),
             if (state.playArea.isEmpty)
@@ -386,12 +382,7 @@ class GameSurface extends StatelessWidget {
                   '${state.stockCount}',
                   null,
                   back: true,
-                  glow:
-                      snapshot.isYourTurn &&
-                      HandGuidance.daketiMayDraw(
-                        snapshot.you.hand.length,
-                        state.stockCount,
-                      ),
+                  glow: daketiCanDraw,
                   onTap: onDrawStock,
                   tint: tint,
                 ),
@@ -418,6 +409,7 @@ class GameSurface extends StatelessWidget {
             ),
           ],
         );
+  }
   Widget _tc(TcState state, GameTint tint) => Column(
     mainAxisSize: MainAxisSize.min,
     children: [
@@ -434,7 +426,10 @@ class GameSurface extends StatelessWidget {
             '${state.stockCount} left',
             null,
             back: true,
-            glow: snapshot.isYourTurn && state.stockCount > 0,
+            glow:
+                snapshot.isYourTurn &&
+                HandGuidance.tcMayDraw(snapshot.you.hand.length) &&
+                state.stockCount > 0,
             onTap: onDrawStock,
             tint: tint,
           ),
@@ -477,36 +472,45 @@ class GameSurface extends StatelessWidget {
           ),
         ),
         const SizedBox(height: 6),
-        Container(
-          decoration: glow
-              ? BoxDecoration(
-                  boxShadow: [
-                    BoxShadow(
-                      color: (tint?.accent ?? T.ochre).withValues(alpha: .5),
-                      blurRadius: 10,
-                      spreadRadius: 2,
+        glow
+            ? PulseGlow(
+                color: tint?.accent ?? T.ochre,
+                child: (card == null && !back)
+                    ? Container(
+                        width: compact ? 44 : 60,
+                        height: compact ? 61.6 : 84,
+                        alignment: Alignment.center,
+                        decoration: BoxDecoration(
+                          border: Border.all(color: Colors.white24),
+                          borderRadius: BorderRadius.circular(7),
+                        ),
+                        child: const Text(
+                          Copy.empty,
+                          style: TextStyle(fontSize: 10),
+                        ),
+                      )
+                    : PlayingCard(
+                        card: card,
+                        faceDown: back,
+                        width: compact ? 44 : 60,
+                      ),
+              )
+            : (card == null && !back)
+                ? Container(
+                    width: compact ? 44 : 60,
+                    height: compact ? 61.6 : 84,
+                    alignment: Alignment.center,
+                    decoration: BoxDecoration(
+                      border: Border.all(color: Colors.white24),
+                      borderRadius: BorderRadius.circular(7),
                     ),
-                  ],
-                  borderRadius: BorderRadius.circular(7),
-                )
-              : null,
-          child: (card == null && !back)
-              ? Container(
-                  width: compact ? 44 : 60,
-                  height: compact ? 61.6 : 84,
-                  alignment: Alignment.center,
-                  decoration: BoxDecoration(
-                    border: Border.all(color: Colors.white24),
-                    borderRadius: BorderRadius.circular(7),
+                    child: const Text(Copy.empty, style: TextStyle(fontSize: 10)),
+                  )
+                : PlayingCard(
+                    card: card,
+                    faceDown: back,
+                    width: compact ? 44 : 60,
                   ),
-                  child: const Text(Copy.empty, style: TextStyle(fontSize: 10)),
-                )
-              : PlayingCard(
-                  card: card,
-                  faceDown: back,
-                  width: compact ? 44 : 60,
-                ),
-        ),
         const SizedBox(height: 5),
         Text(
           detail,
