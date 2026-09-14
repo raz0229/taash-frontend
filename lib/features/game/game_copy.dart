@@ -24,6 +24,7 @@ abstract final class GameCopy {
   static const resultDetail = Copy.finalPlacesComeFromTheServerYour;
   static const revealTitle = Copy.theWinningHand;
   static const revealDetail = Copy.exploreTheRevealedCardsBeforeViewingThe;
+  static const winningGroupOf = 'Group of';
   static const bhabhiOpening = Copy.openWithYakkaOfHukam;
   static const bhabhiLead = Copy.chooseOneCardToLead;
   static const bluffOpening = Copy.choose24CardsAndDeclareA;

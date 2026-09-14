@@ -29,6 +29,7 @@ class SnapshotReducer {
       current = previous.withPrivatePlayer(
         previous.you,
         reveal: next.winnerHand,
+        groups: next.winnerGroups,
       );
       return true;
     }
@@ -44,6 +45,7 @@ class SnapshotReducer {
       accepted = accepted.withPrivatePlayer(
         accepted.you,
         reveal: previous!.winnerHand,
+        groups: previous.winnerGroups,
       );
     }
     current = accepted;

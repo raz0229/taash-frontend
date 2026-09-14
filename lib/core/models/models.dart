@@ -41,6 +41,11 @@ List<String> cardList(Object? value) => jsonList(value, (card) {
   return id;
 });
 
+List<List<String>> cardGroups(Object? value) => jsonList(
+  value,
+  (group) => cardList(group),
+);
+
 class PlayerProfile {
   PlayerProfile({
     required this.id,
@@ -292,9 +297,13 @@ class RoomSnapshot {
     this.currentPlayerId = '',
     this.gameState,
     List<String> winnerHand = const [],
+    List<List<String>> winnerGroups = const [],
   }) : players = List.unmodifiable(players),
        winners = List.unmodifiable(winners),
-       winnerHand = List.unmodifiable(winnerHand);
+       winnerHand = List.unmodifiable(winnerHand),
+       winnerGroups = List.unmodifiable(
+         winnerGroups.map((g) => List<String>.unmodifiable(g)),
+       );
   factory RoomSnapshot.fromJson(Map<String, dynamic> json) {
     final room = RoomSummary.fromJson(jsonObject(json['room']));
     return RoomSnapshot(
@@ -310,6 +319,7 @@ class RoomSnapshot {
           ? null
           : PublicGameState.parse(room.game, jsonObject(json['game_state'])),
       winnerHand: cardList(json['winner_hand']),
+      winnerGroups: cardGroups(json['winner_groups']),
     );
   }
   final RoomSummary room;
@@ -319,11 +329,13 @@ class RoomSnapshot {
   final String currentPlayerId;
   final PublicGameState? gameState;
   final List<String> winnerHand;
+  final List<List<String>> winnerGroups;
   bool get isYourTurn => room.isActive && currentPlayerId == you.id;
 
   RoomSnapshot withPrivatePlayer(
     PrivatePlayer privatePlayer, {
     List<String>? reveal,
+    List<List<String>>? groups,
   }) => RoomSnapshot(
     room: room,
     you: privatePlayer,
@@ -332,6 +344,7 @@ class RoomSnapshot {
     currentPlayerId: currentPlayerId,
     gameState: gameState,
     winnerHand: reveal ?? winnerHand,
+    winnerGroups: groups ?? winnerGroups,
   );
 }
 

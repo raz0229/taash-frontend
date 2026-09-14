@@ -947,7 +947,11 @@ class _GameScreenState extends State<GameScreen>
                     )
                   else if (finished)
                     Expanded(
-                      child: ResultsView(snapshot: s, onHome: () => leave()),
+                      child: ResultsView(
+                        snapshot: s,
+                        session: session,
+                        onHome: () => leave(),
+                      ),
                     )
                   else
                     Expanded(

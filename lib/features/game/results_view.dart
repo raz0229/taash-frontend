@@ -2,14 +2,22 @@ import 'package:taash/l10n/copy.dart';
 import 'package:flutter/material.dart';
 import '../../core/models/models.dart';
 import '../../core/theme/taash_theme.dart';
+import '../../core/websocket/room_session.dart';
 import '../../core/widgets/taash_widgets.dart';
+import '../chat/chat_sheet.dart';
 import 'game_copy.dart';
 import 'shared/celebration_overlay.dart';
 import 'shared/playing_card.dart';
 
 class ResultsView extends StatefulWidget {
-  const ResultsView({super.key, required this.snapshot, required this.onHome});
+  const ResultsView({
+    super.key,
+    required this.snapshot,
+    required this.session,
+    required this.onHome,
+  });
   final RoomSnapshot snapshot;
+  final RoomSession session;
   final VoidCallback onHome;
   @override
   State<ResultsView> createState() => _ResultsViewState();
@@ -19,6 +27,41 @@ class _ResultsViewState extends State<ResultsView> {
   bool revealDone = false;
   // B6: Trigger confetti once when entering results.
   bool showConfetti = true;
+  bool muted = false;
+  int readCount = 0;
+
+  @override
+  void initState() {
+    super.initState();
+    readCount = widget.session.chat.length;
+    widget.session.addListener(_changed);
+  }
+
+  void _changed() {
+    if (mounted) setState(() {});
+  }
+
+  @override
+  void dispose() {
+    widget.session.removeListener(_changed);
+    super.dispose();
+  }
+
+  Future<void> _openChat() async {
+    setState(() => readCount = widget.session.chat.length);
+    await showModalBottomSheet<void>(
+      context: context,
+      isScrollControlled: true,
+      useSafeArea: true,
+      showDragHandle: true,
+      builder: (_) => ChatSheet(
+        session: widget.session,
+        muted: muted,
+        onMuteChanged: (v) => setState(() => muted = v),
+      ),
+    );
+    if (mounted) setState(() => readCount = widget.session.chat.length);
+  }
 
   // A7: Explorable winner hand dialog for TC.
   void _exploreWinnerHand(BuildContext context) {
@@ -29,15 +72,11 @@ class _ResultsViewState extends State<ResultsView> {
         title: const Text(GameCopy.revealTitle),
         content: SizedBox(
           width: double.maxFinite,
-          child: GridView.count(
-            crossAxisCount: 4,
-            mainAxisSpacing: 10,
-            crossAxisSpacing: 10,
-            childAspectRatio: 1 / 1.4,
-            shrinkWrap: true,
-            children: s.winnerHand
-                .map((c) => PlayingCard(card: c, width: 60))
-                .toList(),
+          child: _WinnerGroups(
+            groups: s.winnerGroups,
+            hand: s.winnerHand,
+            cardWidth: 60,
+            compact: true,
           ),
         ),
         actions: [
@@ -52,6 +91,32 @@ class _ResultsViewState extends State<ResultsView> {
     });
   }
 
+  Widget _chatRow() {
+    final unread = (widget.session.chat.length - readCount).clamp(0, 200);
+    final last = widget.session.chat.isEmpty
+        ? null
+        : widget.session.chat.last;
+    return TextButton.icon(
+      onPressed: _openChat,
+      icon: Badge(
+        label: Text('$unread'),
+        isLabelVisible:
+            !muted && widget.session.chat.length > readCount,
+        child: const Icon(Icons.chat_bubble_outline, size: 19),
+      ),
+      label: Text(
+        muted
+            ? Copy.chatMuted
+            : last == null
+            ? Copy.roomChat
+            : '${last.playerId == widget.session.playerId ? 'You' : last.displayName}: ${last.text}',
+        maxLines: 1,
+        overflow: TextOverflow.ellipsis,
+      ),
+      style: TextButton.styleFrom(foregroundColor: T.mint),
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     final s = widget.snapshot;
@@ -61,7 +126,7 @@ class _ResultsViewState extends State<ResultsView> {
     return Stack(
       children: [
         ListView(
-          padding: const EdgeInsets.all(24),
+          padding: const EdgeInsets.only(left: 24, right: 24, bottom: 24),
           children: [
             const SizedBox(height: 20),
             // B6: Larger trophy icon with gold glow.
@@ -102,14 +167,12 @@ class _ResultsViewState extends State<ResultsView> {
             ),
             const SizedBox(height: 26),
             if (reveal) ...[
-              // A7: Show winner hand as a tappable card wrap with explore button.
-              Wrap(
-                spacing: 12,
-                runSpacing: 14,
-                alignment: WrapAlignment.center,
-                children: s.winnerHand
-                    .map((c) => PlayingCard(card: c, width: 68))
-                    .toList(),
+              // A7: Show the verified 4+3+3 winning groups, rendered as three
+              // separate groups instead of one randomly-ordered list.
+              _WinnerGroups(
+                groups: s.winnerGroups,
+                hand: s.winnerHand,
+                cardWidth: 68,
               ),
               const SizedBox(height: 20),
               Wrap(
@@ -181,7 +244,10 @@ class _ResultsViewState extends State<ResultsView> {
                               ),
                             ),
                             const SizedBox(width: 12),
-                            TaashAvatar(id: player?.selectedPfp ?? 0, size: 46),
+                            TaashAvatar(
+                              id: player?.selectedPfp ?? 0,
+                              size: 46,
+                            ),
                             const SizedBox(width: 12),
                             Expanded(
                               child: Column(
@@ -215,6 +281,10 @@ class _ResultsViewState extends State<ResultsView> {
                   },
                 ),
               const SizedBox(height: 18),
+              // Room chat stays available after the game ends while any real
+              // player is still seated on the Winners screen.
+              _chatRow(),
+              const SizedBox(height: 12),
               TaashButton(
                 label: Copy.backToTheLobby,
                 onPressed: widget.onHome,
@@ -234,6 +304,70 @@ class _ResultsViewState extends State<ResultsView> {
             },
           ),
         ),
+      ],
+    );
+  }
+}
+
+/// Renders the TC winning hand either as the server's verified 4+3+3 groups
+/// (one labelled group per set) or, for older servers, as one flat wrap.
+class _WinnerGroups extends StatelessWidget {
+  const _WinnerGroups({
+    required this.groups,
+    required this.hand,
+    required this.cardWidth,
+    this.compact = false,
+  });
+  final List<List<String>> groups;
+  final List<String> hand;
+  final double cardWidth;
+  final bool compact;
+
+  @override
+  Widget build(BuildContext context) {
+    final tint = T.mint;
+    final showGroups = groups.isNotEmpty;
+    final grouped = showGroups ? groups : ([hand]);
+    return Column(
+      children: [
+        for (final group in grouped)
+          Padding(
+            padding: EdgeInsets.only(bottom: compact ? 10 : 16),
+            child: Column(
+              children: [
+                if (showGroups)
+                  Padding(
+                    padding: const EdgeInsets.only(bottom: 6),
+                    child: Container(
+                      padding: const EdgeInsets.symmetric(
+                        horizontal: 10,
+                        vertical: 4,
+                      ),
+                      decoration: BoxDecoration(
+                        color: tint.withValues(alpha: .14),
+                        borderRadius: BorderRadius.circular(12),
+                      ),
+                      child: Text(
+                        '${GameCopy.winningGroupOf} ${group.length}',
+                        style: const TextStyle(
+                          color: Colors.white,
+                          fontSize: 12,
+                          fontWeight: FontWeight.w700,
+                        ),
+                      ),
+                    ),
+                  ),
+                Wrap(
+                  spacing: 10,
+                  runSpacing: 10,
+                  alignment: WrapAlignment.center,
+                  children: group
+                      .map((c) => PlayingCard(card: c, width: cardWidth))
+                      .toList(),
+                ),
+              ],
+            ),
+          ),
       ],
     );
   }
