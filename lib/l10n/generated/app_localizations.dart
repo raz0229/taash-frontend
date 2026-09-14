@@ -1549,7 +1549,7 @@ abstract class AppLocalizations {
   /// No description provided for @yourHandIsEmptyFollowTheRoom.
   ///
   /// In en, this message translates to:
-  /// **'Your hand is empty. Follow the room for your result.'**
+  /// **'Spectator Mode. You can leave and your winning share will be added to your balance.'**
   String get yourHandIsEmptyFollowTheRoom;
 
   /// No description provided for @inspectAndArrangeYourCards.
