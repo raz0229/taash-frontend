@@ -40,11 +40,17 @@ android {
     }
     buildTypes {
         release {
-            // Without owner upload credentials the release artifact is unsigned.
+	    isMinifyEnabled = true
+            isShrinkResources = true
+
+	    // Without owner upload credentials the release artifact is unsigned.
             // Debug signing is never silently substituted for release signing.
             if (signingFile.exists()) signingConfig = signingConfigs.getByName("upload")
         }
     }
+}
+dependencies {
+    implementation("androidx.work:work-runtime:2.10.2")
 }
 kotlin { compilerOptions { jvmTarget = org.jetbrains.kotlin.gradle.dsl.JvmTarget.JVM_17 } }
 flutter { source = "../.." }
