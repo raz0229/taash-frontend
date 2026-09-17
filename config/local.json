@@ -7,11 +7,15 @@
   "FIREBASE_MESSAGING_SENDER_ID": "425933145706",
   "FIREBASE_STORAGE_BUCKET": "river-bruin-423311-v3.firebasestorage.app",
   "FIREBASE_WEB_CLIENT_ID": "425933145706-kkt8o2fu2l186mo3fsn7k5vrbtpalb49.apps.googleusercontent.com",
-  "ENABLE_APP_CHECK": "true",
-  "ALLOW_INSECURE_API": "true",
+  "ENABLE_APP_CHECK": "false",
+  "ALLOW_INSECURE_API": "false",
   "SUPPORT_EMAIL": "sheraztech229@gmail.com",
   "ADMOB_APP_ID": "ca-app-pub-9996609411214010~2502318446",
   "ADMOB_REWARDED_AD_UNIT_ID": "ca-app-pub-9996609411214010/7964124574",
   "ADMOB_INTERSTITIAL_AD_UNIT_ID": "ca-app-pub-9996609411214010/9413295434",
-  "ADMOB_DEV_REWARD_GRANT": "false"
+  "ADMOB_DEV_REWARD_GRANT": "false",
+  "CREDITS_DESGINED_BY": "https://www.linkedin.com/in/talhaabidj/",
+  "CREDIST_DESIGNER_NAME": "Talha Abid",
+  "CREDITS_DEVELOPED_BY": "https://github.com/raz0229",
+  "CREDITS_DEVELOPER_NAME": "Abdullah Janjua"
 }

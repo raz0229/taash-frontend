@@ -70,7 +70,7 @@ class TaashApp extends StatefulWidget {
   State<TaashApp> createState() => _TaashAppState();
 }
 
-class _TaashAppState extends State<TaashApp> {
+class _TaashAppState extends State<TaashApp> with WidgetsBindingObserver {
   late final api = () {
     final client = widget.auth?.api ?? ApiClient(config: widget.config);
     if (widget.config.enableAppCheck && !widget.config.mock) {
@@ -102,7 +102,18 @@ class _TaashAppState extends State<TaashApp> {
   @override
   void initState() {
     super.initState();
+    WidgetsBinding.instance.addObserver(this);
     _boot();
+  }
+
+  @override
+  void didChangeAppLifecycleState(AppLifecycleState state) {
+    if (state == AppLifecycleState.resumed) {
+      // Re-check on return to the foreground so a version published while the
+      // app was running is offered on the next resume, not just cold starts.
+      // A dismissal within this session is still respected by the service.
+      unawaited(updateService.checkForUpdate());
+    }
   }
 
   Future<void> _boot() async {
@@ -122,6 +133,7 @@ class _TaashAppState extends State<TaashApp> {
 
   @override
   void dispose() {
+    WidgetsBinding.instance.removeObserver(this);
     if (widget.auth == null) {
       auth.dispose();
       api.close();

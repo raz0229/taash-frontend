@@ -670,4 +670,8 @@ abstract final class Copy {
   static const restartToFinishInstalling = 'Restart to finish installing.';
   static const restart = 'Restart';
   static const later = 'Later';
+  static const credits = 'Credits';
+  static const creditsSubtitle = 'The people behind TaashOnline';
+  static const designedBy = 'Designed by';
+  static const developedBy = 'Developed by';
 }
