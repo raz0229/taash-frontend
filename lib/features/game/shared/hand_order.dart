@@ -119,12 +119,10 @@ abstract final class HandGuidance {
   static bool bhabhiCardAllowed(
     String card,
     List<String> hand, {
-    required bool firstTrick,
     required List<String> trick,
     bool resolving = false,
   }) {
     if (resolving || !hand.contains(card)) return false;
-    if (firstTrick && trick.isEmpty) return card == 'h-y';
     if (trick.isEmpty) return true;
     final lead = CardIdentity.parse(trick.first).suit;
     final hasLead = hand.any((own) => CardIdentity.parse(own).suit == lead);

@@ -660,7 +660,6 @@ class _GameScreenState extends State<GameScreen>
       return HandGuidance.bhabhiCardAllowed(
         card,
         s.you.hand,
-        firstTrick: state.firstTrick,
         trick: state.trick.map((p) => p.card).toList(),
       );
     }

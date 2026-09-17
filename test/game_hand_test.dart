@@ -42,16 +42,14 @@ void main() {
         HandGuidance.bhabhiCardAllowed(
           'h-2',
           hand,
-          firstTrick: true,
           trick: [],
         ),
-        false,
+        true,
       );
       expect(
         HandGuidance.bhabhiCardAllowed(
           'h-y',
           hand,
-          firstTrick: true,
           trick: [],
         ),
         true,
@@ -60,7 +58,14 @@ void main() {
         HandGuidance.bhabhiCardAllowed(
           'c-k',
           hand,
-          firstTrick: false,
+          trick: [],
+        ),
+        true,
+      );
+      expect(
+        HandGuidance.bhabhiCardAllowed(
+          'c-k',
+          hand,
           trick: ['h-3'],
         ),
         false,
@@ -69,7 +74,6 @@ void main() {
         HandGuidance.bhabhiCardAllowed(
           'c-k',
           ['c-k'],
-          firstTrick: false,
           trick: ['h-3'],
         ),
         true,
@@ -78,7 +82,6 @@ void main() {
         HandGuidance.bhabhiCardAllowed(
           'h-y',
           hand,
-          firstTrick: false,
           trick: [],
           resolving: true,
         ),

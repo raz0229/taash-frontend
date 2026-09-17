@@ -43,7 +43,7 @@ class S {
       Copy.taashonlineIsUnderMaintenanceYourSavedSession;
   static const loading = Copy.settingTheRoom;
   static const tips = [
-    Copy.bhabhiStartsWithHukamYakkaHY,
+    Copy.bhabhiHYHolderLeads,
     Copy.inBluffAnEmptyHandCanStill,
     Copy.inDaketiMatchingACollectionSTop,
     Copy.inTCYarakIsTheRankAfter,

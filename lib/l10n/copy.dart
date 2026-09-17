@@ -15,8 +15,8 @@ abstract final class Copy {
       'In Daketi, matching a collection’s top rank can steal it.';
   static const inBluffAnEmptyHandCanStill =
       'In Bluff, an empty hand can still be challenged.';
-  static const bhabhiStartsWithHukamYakkaHY =
-      'Bhabhi starts with Hukam Yakka — h-y.';
+  static const bhabhiHYHolderLeads =
+      'Bhabhi: the h-y holder leads the first turn and may play any card.';
   static const settingTheRoom = 'Setting the room…';
   static const taashonlineIsUnderMaintenanceYourSavedSession =
       'TaashOnline is under maintenance. Your saved session is safe. Please try again shortly.';
@@ -282,7 +282,7 @@ abstract final class Copy {
       'Play 1–4 cards, pass, or challenge';
   static const choose24CardsAndDeclareA = 'Choose 2–4 cards and declare a rank';
   static const chooseOneCardToLead = 'Choose one card to lead';
-  static const openWithYakkaOfHukam = 'Open with Yakka of Hukam';
+  static const openWithAnyCard = 'Open with any card';
   static const exploreTheRevealedCardsBeforeViewingThe =
       'Explore the revealed cards before viewing the final places.';
   static const theWinningHand = 'The winning hand';
@@ -646,14 +646,13 @@ abstract final class Copy {
   static const whenYouHaveTheLeadSuitYou =
       'When you have the lead suit, you must play it. After the first trick, an off-suit card can give Thullu to the highest lead-suit player.';
   static const followTheLead = 'Follow the lead';
-  static const hukamYakkaStartsTheFirstTrickThe =
-      'Hukam Yakka starts the first trick. The server assigns the first turn.';
-  static const anyKinga = 'Any Kinga';
-  static const hukamYakka = 'Hukam Yakka';
-  static const whichCardOpensTheFirstTrick =
-      'Which card opens the first trick?';
+  static const hYHolderGetsFirstTurn =
+      'The h-y holder gets the first turn and may open with any card.';
+  static const theDealer = 'The dealer';
+  static const theHYHolder = 'The h-y holder';
+  static const whoGetsTheFirstTurn = 'Who gets the first turn?';
   static const finishYourHandBeforeTheLastPlayer =
-      'Finish your hand before the last player. The first turn belongs to whoever holds Hukam Yakka, h-y.';
+      'Finish your hand before the last player. The first turn belongs to whoever holds Hukam Yakka, h-y, and they may lead any card.';
   static const leaveTheCardsBehind = 'Leave the cards behind';
   static String weCouldNotConnectToTheRoom(Object? value0) =>
       'We could not connect to the room. Your room code is $value0.';

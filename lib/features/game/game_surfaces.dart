@@ -192,7 +192,7 @@ class GameSurface extends StatelessWidget {
       ),
       Text(
         state.firstTrick
-            ? 'Open with Hukum ka Yakka'
+            ? 'Lead with any card'
             : 'Follow suit when you can',
         style: TextStyle(color: tint.tint, fontSize: 11),
       ),

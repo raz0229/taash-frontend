@@ -148,11 +148,11 @@ abstract class AppLocalizations {
   /// **'In Bluff, an empty hand can still be challenged.'**
   String get inBluffAnEmptyHandCanStill;
 
-  /// No description provided for @bhabhiStartsWithHukamYakkaHY.
+  /// No description provided for @bhabhiHYHolderLeads.
   ///
   /// In en, this message translates to:
-  /// **'Bhabhi starts with Hukam Yakka — h-y.'**
-  String get bhabhiStartsWithHukamYakkaHY;
+  /// **'Bhabhi: the h-y holder leads the first turn and may play any card.'**
+  String get bhabhiHYHolderLeads;
 
   /// No description provided for @settingTheRoom.
   ///
@@ -1330,11 +1330,11 @@ abstract class AppLocalizations {
   /// **'Choose one card to lead'**
   String get chooseOneCardToLead;
 
-  /// No description provided for @openWithYakkaOfHukam.
+  /// No description provided for @openWithAnyCard.
   ///
   /// In en, this message translates to:
-  /// **'Open with Yakka of Hukam'**
-  String get openWithYakkaOfHukam;
+  /// **'Open with any card'**
+  String get openWithAnyCard;
 
   /// No description provided for @exploreTheRevealedCardsBeforeViewingThe.
   ///
@@ -2990,34 +2990,34 @@ abstract class AppLocalizations {
   /// **'Follow the lead'**
   String get followTheLead;
 
-  /// No description provided for @hukamYakkaStartsTheFirstTrickThe.
+  /// No description provided for @hYHolderGetsFirstTurn.
   ///
   /// In en, this message translates to:
-  /// **'Hukam Yakka starts the first trick. The server assigns the first turn.'**
-  String get hukamYakkaStartsTheFirstTrickThe;
+  /// **'The h-y holder gets the first turn and may open with any card.'**
+  String get hYHolderGetsFirstTurn;
 
-  /// No description provided for @anyKinga.
+  /// No description provided for @theDealer.
   ///
   /// In en, this message translates to:
-  /// **'Any Kinga'**
-  String get anyKinga;
+  /// **'The dealer'**
+  String get theDealer;
 
-  /// No description provided for @hukamYakka.
+  /// No description provided for @theHYHolder.
   ///
   /// In en, this message translates to:
-  /// **'Hukam Yakka'**
-  String get hukamYakka;
+  /// **'The h-y holder'**
+  String get theHYHolder;
 
-  /// No description provided for @whichCardOpensTheFirstTrick.
+  /// No description provided for @whoGetsTheFirstTurn.
   ///
   /// In en, this message translates to:
-  /// **'Which card opens the first trick?'**
-  String get whichCardOpensTheFirstTrick;
+  /// **'Who gets the first turn?'**
+  String get whoGetsTheFirstTurn;
 
   /// No description provided for @finishYourHandBeforeTheLastPlayer.
   ///
   /// In en, this message translates to:
-  /// **'Finish your hand before the last player. The first turn belongs to whoever holds Hukam Yakka, h-y.'**
+  /// **'Finish your hand before the last player. The first turn belongs to whoever holds Hukam Yakka, h-y, and they may lead any card.'**
   String get finishYourHandBeforeTheLastPlayer;
 
   /// No description provided for @leaveTheCardsBehind.

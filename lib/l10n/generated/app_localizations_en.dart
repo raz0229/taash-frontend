@@ -42,8 +42,8 @@ class AppLocalizationsEn extends AppLocalizations {
       'In Bluff, an empty hand can still be challenged.';
 
   @override
-  String get bhabhiStartsWithHukamYakkaHY =>
-      'Bhabhi starts with Hukam Yakka — h-y.';
+  String get bhabhiHYHolderLeads =>
+      'Bhabhi: the h-y holder leads the first turn and may play any card.';
 
   @override
   String get settingTheRoom => 'Setting the room…';
@@ -707,7 +707,7 @@ class AppLocalizationsEn extends AppLocalizations {
   String get chooseOneCardToLead => 'Choose one card to lead';
 
   @override
-  String get openWithYakkaOfHukam => 'Open with Yakka of Hukam';
+  String get openWithAnyCard => 'Open with any card';
 
   @override
   String get exploreTheRevealedCardsBeforeViewingThe =>
@@ -1681,21 +1681,21 @@ class AppLocalizationsEn extends AppLocalizations {
   String get followTheLead => 'Follow the lead';
 
   @override
-  String get hukamYakkaStartsTheFirstTrickThe =>
-      'Hukam Yakka starts the first trick. The server assigns the first turn.';
+  String get hYHolderGetsFirstTurn =>
+      'The h-y holder gets the first turn and may open with any card.';
 
   @override
-  String get anyKinga => 'Any Kinga';
+  String get theDealer => 'The dealer';
 
   @override
-  String get hukamYakka => 'Hukam Yakka';
+  String get theHYHolder => 'The h-y holder';
 
   @override
-  String get whichCardOpensTheFirstTrick => 'Which card opens the first trick?';
+  String get whoGetsTheFirstTurn => 'Who gets the first turn?';
 
   @override
   String get finishYourHandBeforeTheLastPlayer =>
-      'Finish your hand before the last player. The first turn belongs to whoever holds Hukam Yakka, h-y.';
+      'Finish your hand before the last player. The first turn belongs to whoever holds Hukam Yakka, h-y, and they may lead any card.';
 
   @override
   String get leaveTheCardsBehind => 'Leave the cards behind';

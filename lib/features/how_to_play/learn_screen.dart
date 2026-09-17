@@ -27,10 +27,10 @@ const lessons = {
       Copy.leaveTheCardsBehind,
       Copy.finishYourHandBeforeTheLastPlayer,
       ['h-y', 'h-3', 'p-k'],
-      Copy.whichCardOpensTheFirstTrick,
-      [Copy.hukamYakka, Copy.anyKinga],
+      Copy.whoGetsTheFirstTurn,
+      [Copy.theHYHolder, Copy.theDealer],
       0,
-      Copy.hukamYakkaStartsTheFirstTrickThe,
+      Copy.hYHolderGetsFirstTurn,
     ),
     Lesson(
       Copy.followTheLead,
