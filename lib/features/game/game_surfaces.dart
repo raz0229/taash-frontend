@@ -521,11 +521,14 @@ Future<void> inspectCollection(BuildContext context, PublicPlayer player) =>
                 const Text(Copy.noCardsCollectedYet)
               else
                 Wrap(
-                  spacing: 10,
-                  runSpacing: 12,
+                  spacing: 12,
+                  runSpacing: 20,
                   children: [
-                    for (final card in player.collection)
-                      PlayingCard(card: card, width: 58),
+                    for (final group in _groupByRank(player.collection))
+                      _CardStack(
+                        cards: group,
+                        width: 58,
+                      ),
                   ],
                 ),
             ],
@@ -533,6 +536,78 @@ Future<void> inspectCollection(BuildContext context, PublicPlayer player) =>
         ),
       ),
     );
+
+/// Groups a collection into stacks of cards sharing the same rank (all 9s, all
+/// yakkas, ...), preserving the order in which each rank first appeared. Cards
+/// that do not parse keep their own card id as the grouping key.
+List<List<String>> _groupByRank(List<String> collection) {
+  final groups = <String, List<String>>{};
+  for (final card in collection) {
+    final identity = CardIdentity.parse(card);
+    final key = identity.valid ? identity.rank : card;
+    groups.putIfAbsent(key, () => []).add(card);
+  }
+  return groups.values.toList();
+}
+
+/// Renders identical cards as a pile stacked on top of each other: the last
+/// collected (top) card is the visible face of the pile, and every earlier card
+/// peeks out by a small corner so the pile is visually countable. A count badge
+/// sits on the bottom edge of the pile only when a group has more than one card.
+class _CardStack extends StatelessWidget {
+  const _CardStack({required this.cards, required this.width});
+  final List<String> cards;
+  final double width;
+
+  @override
+  Widget build(BuildContext context) {
+    final height = width * 1.4;
+    final count = cards.length;
+    const step = 10.0;
+    final spread = (count - 1) * step;
+    return SizedBox(
+      width: width + spread,
+      height: height + spread,
+      child: Stack(
+        children: [
+          for (var i = 0; i < count; i++)
+            Positioned(
+              left: i * step,
+              top: i * step,
+              child: PlayingCard(card: cards[i], width: width),
+            ),
+          if (count > 1)
+            Positioned(
+              left: 0,
+              right: 0,
+              bottom: 0,
+              child: Center(
+                child: Container(
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 7,
+                    vertical: 2,
+                  ),
+                  decoration: BoxDecoration(
+                    color: Colors.black.withValues(alpha: .62),
+                    borderRadius: BorderRadius.circular(10),
+                    border: Border.all(color: Colors.white24),
+                  ),
+                  child: Text(
+                    '$count',
+                    style: const TextStyle(
+                      color: Colors.white,
+                      fontSize: 12,
+                      fontWeight: FontWeight.w800,
+                    ),
+                  ),
+                ),
+              ),
+            ),
+        ],
+      ),
+    );
+  }
+}
 
 class _AnimatedCard extends StatelessWidget {
   const _AnimatedCard({required this.child, super.key});

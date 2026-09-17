@@ -29,6 +29,8 @@ class _ResultsViewState extends State<ResultsView> {
   bool showConfetti = true;
   bool muted = false;
   int readCount = 0;
+  // Remembered for the whole room, so the consent is only asked once.
+  bool chatAccepted = false;
 
   @override
   void initState() {
@@ -57,6 +59,8 @@ class _ResultsViewState extends State<ResultsView> {
       builder: (_) => ChatSheet(
         session: widget.session,
         muted: muted,
+        accepted: chatAccepted,
+        onAcceptedChanged: (v) => setState(() => chatAccepted = v),
         onMuteChanged: (v) => setState(() => muted = v),
       ),
     );

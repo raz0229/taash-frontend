@@ -15,10 +15,13 @@ class ChatSheet extends StatefulWidget {
     required this.muted,
     required this.onMuteChanged,
     this.allowed = true,
+    this.accepted = false,
+    this.onAcceptedChanged,
   });
   final RoomSession session;
-  final bool muted, allowed;
+  final bool muted, allowed, accepted;
   final ValueChanged<bool> onMuteChanged;
+  final ValueChanged<bool>? onAcceptedChanged;
   @override
   State<ChatSheet> createState() => _ChatSheetState();
 }
@@ -31,7 +34,14 @@ class _ChatSheetState extends State<ChatSheet> {
   void initState() {
     super.initState();
     _muted = widget.muted;
+    _accepted = widget.accepted;
     widget.session.addListener(_changed);
+  }
+
+  void _setAccepted(bool value) {
+    if (value == _accepted) return;
+    setState(() => _accepted = value);
+    widget.onAcceptedChanged?.call(value);
   }
 
   void _changed() {
@@ -196,7 +206,7 @@ class _ChatSheetState extends State<ChatSheet> {
               if (!_accepted && widget.allowed)
                 CheckboxListTile(
                   value: _accepted,
-                  onChanged: (v) => setState(() => _accepted = v ?? false),
+                  onChanged: (v) => _setAccepted(v ?? false),
                   controlAffinity: ListTileControlAffinity.leading,
                   dense: true,
                   title: const Text(

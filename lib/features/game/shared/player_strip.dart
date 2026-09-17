@@ -257,9 +257,11 @@ class _PlayerStripState extends State<PlayerStrip>
                                     }
                                   : null,
                               child: Container(
-                                padding: const EdgeInsets.symmetric(
-                                  horizontal: 4,
-                                  vertical: 3,
+                                // Only Daketi shows an enlarged top-card icon;
+                                // every other game keeps the original small chip.
+                                padding: EdgeInsets.symmetric(
+                                  horizontal: collection ? 5 : 4,
+                                  vertical: collection ? 4 : 3,
                                 ),
                                 decoration: BoxDecoration(
                                   color: tint.tray,
@@ -274,14 +276,14 @@ class _PlayerStripState extends State<PlayerStrip>
                                           ? p.collection.last
                                           : null,
                                       faceDown: !collection,
-                                      width: 11,
+                                      width: collection ? 22 : 11,
                                     ),
-                                    const SizedBox(width: 3),
+                                    SizedBox(width: collection ? 4 : 3),
                                     Text(
                                       '${collection ? p.collection.length : p.handCount}',
                                       textScaler: TextScaler.noScaling,
-                                      style: const TextStyle(
-                                        fontSize: 11,
+                                      style: TextStyle(
+                                        fontSize: collection ? 12 : 11,
                                         fontWeight: FontWeight.w800,
                                       ),
                                     ),

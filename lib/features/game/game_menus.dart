@@ -12,6 +12,9 @@ mixin _GameMenus on State<GameScreen> {
   void announce(String text);
   Future<void> send(String command, {Map<String, dynamic>? payload});
   Future<void> leave({bool expired = false});
+  // The "keep it friendly" consent is remembered for the whole room, so it is
+  // only asked once even if the chat sheet is reopened.
+  bool _chatAccepted = false;
   Future<void> openChat() async {
     setState(() {
       chatOpen = true;
@@ -25,6 +28,8 @@ mixin _GameMenus on State<GameScreen> {
       builder: (_) => ChatSheet(
         session: session,
         muted: muted,
+        accepted: _chatAccepted,
+        onAcceptedChanged: (v) => setState(() => _chatAccepted = v),
         onMuteChanged: (v) => setState(() => muted = v),
       ),
     );
