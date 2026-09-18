@@ -1378,6 +1378,12 @@ abstract class AppLocalizations {
   /// **'Your place may be lost and the entry fee is not refunded. The remaining players can continue.'**
   String get yourPlaceMayBeLostAndThe;
 
+  /// No description provided for @youCanSafelyLeaveThisRoom.
+  ///
+  /// In en, this message translates to:
+  /// **'You can safely leave this room. Your winning share will be deposited to your account when the game finishes.'**
+  String get youCanSafelyLeaveThisRoom;
+
   /// No description provided for @leaveThisRoom.
   ///
   /// In en, this message translates to:

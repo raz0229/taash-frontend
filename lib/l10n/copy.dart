@@ -295,6 +295,8 @@ abstract final class Copy {
   static const localTurnGuide = 'Local turn guide';
   static const yourPlaceMayBeLostAndThe =
       'Your place may be lost and the entry fee is not refunded. The remaining players can continue.';
+  static const youCanSafelyLeaveThisRoom =
+      'You can safely leave this room. Your winning share will be deposited to your account when the game finishes.';
   static const leaveThisRoom = 'Leave this room?';
   static const checkingYourMove = 'Checking your move…';
   static const thatActionCouldNotBeConfirmedCheck =

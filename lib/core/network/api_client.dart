@@ -333,13 +333,20 @@ class ApiClient {
     ),
   );
 
-  Future<int> claimThreeHourlyReward(String playerId) async {
+  /// Claims the three-hourly Sidelocks Wheel reward. The server picks and
+  /// credits the amount itself; the client only learns the result.
+  Future<({int rewardAmount, int coins})> claimThreeHourlyReward(
+    String playerId,
+  ) async {
     try {
       final response = await request(
         'POST',
         '/v1/players/${Uri.encodeComponent(playerId)}/claimThreeHourlyReward',
       );
-      return (response['coins'] as num).toInt();
+      return (
+        rewardAmount: (response['reward_amount'] as num?)?.toInt() ?? 0,
+        coins: (response['coins'] as num).toInt(),
+      );
     } on AppFailure catch (e) {
       if (e.statusCode == 409) {
         final minutes = (e.details?['time_remaining_in_minutes'] as num?)

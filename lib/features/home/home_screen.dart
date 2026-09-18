@@ -4,7 +4,6 @@ import 'dart:async';
 import 'package:flutter/material.dart';
 import '../../core/ads/ad_service.dart';
 import '../../core/auth/auth_controller.dart';
-import '../../core/errors/app_failure.dart';
 import '../../core/models/models.dart';
 import '../../core/theme/taash_theme.dart';
 import '../../core/widgets/reward_sheet.dart';
@@ -13,6 +12,7 @@ import '../../l10n/copy.dart';
 import '../../l10n/strings.dart';
 import 'game_art.dart';
 import 'game_tile.dart';
+import 'sidelocks_wheel.dart';
 
 class HomeScreen extends StatefulWidget {
   const HomeScreen({
@@ -74,22 +74,12 @@ class _HomeScreenState extends State<HomeScreen>
   Future<void> _claimReward() async {
     audio.playSfx('generic_button_press');
     final auth = widget.auth;
-    final playerId = auth.profile?.id;
-    if (playerId == null) return;
-    try {
-      final coins = await auth.api.claimThreeHourlyReward(playerId);
-      await auth.refreshProfile();
-      audio.playSfx('coins_added_in_hourly_reward');
-      if (!mounted) return;
-      ScaffoldMessenger.of(
-        context,
-      ).showSnackBar(SnackBar(content: Text('Claimed $coins coins!')));
-    } on AppFailure catch (e) {
-      if (!mounted) return;
-      ScaffoldMessenger.of(
-        context,
-      ).showSnackBar(SnackBar(content: Text(e.message)));
-    }
+    if (auth.profile == null) return;
+    await showSidelocksWheel(context, auth: auth);
+    if (!mounted) return;
+    // The wheel already knows the new balance, but refresh so the live chip
+    // and any stale cached profile stay in sync with the server.
+    await auth.refreshProfile();
   }
 
   void _showRewardModal() {

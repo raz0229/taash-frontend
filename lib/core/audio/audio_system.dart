@@ -8,6 +8,7 @@ class AudioSystem with WidgetsBindingObserver {
 
   late final AudioPlayer _bgmPlayer;
   final Set<AudioPlayer> _sfxPlayers = <AudioPlayer>{};
+  AudioPlayer? _loopPlayer;
 
   bool _bgmPlaying = false;
   bool _bgmPausedByLifecycle = false;
@@ -108,6 +109,36 @@ class AudioSystem with WidgetsBindingObserver {
       _sfxPlayers.remove(player);
       await player.dispose();
     }
+  }
+
+  /// Plays a looping clip (e.g. a machine sound) until [stopLoopingSfx] is
+  /// called. Only one such player exists at a time.
+  Future<void> playLoopingSfx(String name) async {
+    if (_isTest) return;
+    if (!sfxEnabled) return;
+    await stopLoopingSfx();
+    final player = AudioPlayer();
+    _loopPlayer = player;
+    try {
+      await player.setReleaseMode(ReleaseMode.loop);
+      await player.setAudioContext(_sfxContext);
+      await player.play(AssetSource('audio/$name.ogg'));
+    } catch (_) {
+      if (_loopPlayer == player) _loopPlayer = null;
+      await player.dispose();
+    }
+  }
+
+  Future<void> stopLoopingSfx() async {
+    final player = _loopPlayer;
+    _loopPlayer = null;
+    if (player == null) return;
+    try {
+      await player.stop();
+    } catch (_) {}
+    try {
+      await player.dispose();
+    } catch (_) {}
   }
 }
 

@@ -569,11 +569,18 @@ class _GameScreenState extends State<GameScreen>
   @override
   Future<void> leave({bool expired = false}) async {
     if (leaving) return;
-    if (!expired && !(session.snapshot?.room.isFinished ?? false)) {
+    final snapshot = session.snapshot;
+    if (!expired && !(snapshot?.room.isFinished ?? false)) {
+      // A player with an empty hand is in Spectator Mode: leaving is safe and
+      // their winning share is paid when the game finishes.
+      final spectator =
+          (snapshot?.room.isActive ?? false) && (snapshot?.you.hand.isEmpty ?? true);
       if (!await confirmAction(
             context,
             title: GameCopy.leaveTitle,
-            message: GameCopy.leaveMessage,
+            message: spectator
+                ? GameCopy.leaveMessageSafe
+                : GameCopy.leaveMessage,
             confirmLabel: Copy.leaveRoom,
           ) ||
           !mounted) {
