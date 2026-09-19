@@ -6,28 +6,49 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import '../../core/models/models.dart';
 import '../../core/theme/taash_theme.dart';
+import '../../core/audio/audio_system.dart';
 
 class ReactionChoice {
-  const ReactionChoice(this.id, this.cost, this.static);
+  const ReactionChoice(this.id, this.cost, this.static, {this.sfx});
   final int id, cost;
   final bool static;
+  /// Playable sfx key for this reaction (matches keys in the reaction overlay
+  /// env-agnostic catalog, e.g. `reactions/3`). `null` when the catalog has
+  /// not been loaded yet or the reaction has no sound effect configured.
+  final String? sfx;
   String get label => reactionLabel(id);
+  static Map<int, String>? _sfxCache;
+  /// The playable sfx key (e.g. `reactions/3`) for a reaction anim id, or
+  /// `null` if the catalog has not been loaded yet or the reaction has no sfx.
+  static String? sfxFor(int animId) => _sfxCache?[animId];
   static Future<List<ReactionChoice>> load() async {
     final data =
         jsonDecode(
               await rootBundle.loadString('assets/catalogs/reactions.json'),
             )
             as List;
-    return data
+    final choices = data
         .map(
           (row) => ReactionChoice(
             row['anim_id'] as int,
             row['anim_cost_in_coins'] as int,
             row['static'] == true,
+            sfx: (row['sfx_to_play'] as String?)?.sfxKey,
           ),
         )
         .toList(growable: false);
+    _sfxCache = {
+      for (final c in choices)
+        if (c.sfx != null) c.id: c.sfx!,
+    };
+    return choices;
   }
+}
+
+/// Map a configured sfx path (`audio/reactions/3.ogg`) to the key the audio
+/// system expects (`reactions/3`).
+extension on String {
+  String get sfxKey => substring('audio/'.length).replaceAll('.ogg', '');
 }
 
 String reactionLabel(int id) => const [
@@ -269,6 +290,9 @@ class _ReactionOverlayState extends State<ReactionOverlay>
   void initState() {
     super.initState();
     WidgetsBinding.instance.addObserver(this);
+    // Warm the reaction → sfx catalog mapping so the first reaction that is
+    // about to show has a configured sound effect ready to play.
+    ReactionChoice.load().catchError((_) => <ReactionChoice>[]);
     _ingest();
   }
 
@@ -299,8 +323,20 @@ class _ReactionOverlayState extends State<ReactionOverlay>
 
   void _drain() {
     while (_foreground && _active.length < 2 && _queue.isNotEmpty) {
-      _active.add(_queue.removeFirst());
+      final event = _queue.removeFirst();
+      _active.add(event);
+      _playSfx(event.animId);
     }
+  }
+
+  /// Plays the reaction's configured sound effect at the exact moment the
+  /// reaction becomes visible in the room. `audio.playSfx` is a no-op under
+  /// tests and when sfx are muted, and the reaction overlay only drains events
+  /// that pass its muted/foreground/staleness gates — so a sound is never
+  /// produced for a reaction the viewer cannot actually see.
+  void _playSfx(int animId) {
+    final key = ReactionChoice.sfxFor(animId) ?? 'reactions/$animId';
+    audio.playSfx(key);
   }
 
   @override

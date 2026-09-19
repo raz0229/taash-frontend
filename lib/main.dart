@@ -466,12 +466,23 @@ class _LobbyShellState extends State<LobbyShell> {
         ),
       );
   void profile(String id) => panel<void>(
-    (_) => ProfileScreen(
-      api: widget.api,
-      playerId: id,
-      own: id == widget.auth.profile?.id,
-    ),
-  );
+        (sheetContext) => ProfileScreen(
+          api: widget.api,
+          playerId: id,
+          own: id == widget.auth.profile?.id,
+          // Shortcut to the Avatars tab from your own profile. Hidden while
+          // inside a room and never wired for other players' profiles.
+          onAvatarTap: id == widget.auth.profile?.id && room == null
+              ? () {
+                  audio.playSfx('generic_button_press');
+                  // Popping the sheet through its own context targets the
+                  // ModalBottomSheetRoute directly(grids handled in tests).
+                  Navigator.of(context).pop();
+                  setState(() => tab = 1);
+                }
+              : null,
+        ),
+      );
 
   Future<void> openRoom(
     RoomFlowMode mode, [

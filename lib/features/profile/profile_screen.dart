@@ -15,10 +15,16 @@ class ProfileScreen extends StatefulWidget {
     required this.api,
     required this.playerId,
     this.own = false,
+    this.onAvatarTap,
   });
   final ApiClient api;
   final String playerId;
   final bool own;
+
+  /// Opens the Avatars collection from the player's own profile. Only wired
+  /// for the signed-in player outside a room, so other players' avatars and
+  /// in-room profiles never navigate away.
+  final VoidCallback? onAvatarTap;
   @override
   State<ProfileScreen> createState() => _ProfileScreenState();
 }
@@ -135,17 +141,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
                     TaashPanel(
                       child: Column(
                         children: [
-                          Container(
-                            padding: const EdgeInsets.all(5),
-                            decoration: BoxDecoration(
-                              shape: BoxShape.circle,
-                              border: Border.all(color: T.ochre, width: 2),
-                            ),
-                            child: TaashAvatar(
-                              id: profile.selectedPfp,
-                              size: 88,
-                            ),
-                          ),
+                          _avatar(profile),
                           const SizedBox(height: 16),
                           Text(
                             profile.displayName,
@@ -241,6 +237,28 @@ class _ProfileScreenState extends State<ProfileScreen> {
                   ],
                 ),
               ),
+      ),
+    );
+  }
+
+  Widget _avatar(PlayerProfile profile) {
+    final avatar = Container(
+      padding: const EdgeInsets.all(5),
+      decoration: BoxDecoration(
+        shape: BoxShape.circle,
+        border: Border.all(color: T.ochre, width: 2),
+      ),
+      child: TaashAvatar(id: profile.selectedPfp, size: 88),
+    );
+    if (!widget.own || widget.onAvatarTap == null) {
+      return avatar;
+    }
+    return Tooltip(
+      message: Copy.avatars,
+      child: Semantics(
+        label: Copy.avatars,
+        button: true,
+        child: GestureDetector(onTap: widget.onAvatarTap, child: avatar),
       ),
     );
   }

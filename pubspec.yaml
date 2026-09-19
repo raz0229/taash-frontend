@@ -1,7 +1,7 @@
 name: taash
 description: TaashOnline — Bhabhi, Daketi, Bluff, Tissar-Chousar.
 publish_to: none
-version: 1.0.3+14
+version: 1.0.4+15
 environment:
   sdk: '>=3.10.0 <4.0.0'
 dependencies:
@@ -39,6 +39,7 @@ flutter:
     - assets/pfps/
     - assets/reactions/
     - assets/audio/
+    - assets/audio/reactions/
     - assets/fonts/OFL.txt
   fonts:
     - family: DM Sans

@@ -1,12 +1,13 @@
 [
-    {"anim_id": 0, "anim_cost_in_coins": 15, "static": true, "contributor": "Laughing by Google Inc.", "anim_href_in_frontend": "0.gif" },
-    {"anim_id": 1, "anim_cost_in_coins": 15, "static": true, "contributor": "Hot Face by Google Inc. on IconScout", "anim_href_in_frontend": "1.gif" },
-    {"anim_id": 2, "anim_cost_in_coins": 20, "static": true, "contributor":"Folded Hands by Google Inc. on IconScout","anim_href_in_frontend": "2.gif" },
-    {"anim_id": 3, "anim_cost_in_coins": 20, "static": true, "contributor": "Concerned Emoji by Google Inc. on IconScout", "anim_href_in_frontend": "3.gif" },
-    {"anim_id": 4, "anim_cost_in_coins": 30, "static": true, "contributor": "Angry emoji by Google Inc. on IconScout", "anim_href_in_frontend": "4.gif" },
-    {"anim_id": 5, "anim_cost_in_coins": 30, "static": true, "contributor": "Clap by Google Inc.", "anim_href_in_frontend": "5.gif" },
-    {"anim_id": 6, "anim_cost_in_coins": 50, "static": false, "contributor": "Flying Rose by LordIcon", "anim_href_in_frontend": "6.gif" },
-    {"anim_id": 7, "anim_cost_in_coins": 50, "static": false, "contributor": "Sparkling Heart by LordIcon", "anim_href_in_frontend": "7.gif" },
-    {"anim_id": 8, "anim_cost_in_coins": 100, "static": false, "contributor": "Tomato Splash by LottieFiles", "anim_href_in_frontend": "8.gif" },
-    {"anim_id": 9, "anim_cost_in_coins": 100, "static": false, "contributor": "Donkey Braying by LottieFiles", "anim_href_in_frontend": "9.gif" }
+    {"anim_id": 0, "anim_cost_in_coins": 15, "static": true, "contributor": "Laughing by Google Inc.", "anim_href_in_frontend": "0.gif", "sfx_to_play": "audio/reactions/0.ogg"},
+    {"anim_id": 1, "anim_cost_in_coins": 15, "static": true, "contributor": "Hot Face by Google Inc. on IconScout", "anim_href_in_frontend": "1.gif", "sfx_to_play": "audio/reactions/1.ogg"},
+    {"anim_id": 2, "anim_cost_in_coins": 20, "static": true, "contributor":"Folded Hands by Google Inc. on IconScout","anim_href_in_frontend": "2.gif", "sfx_to_play": "audio/reactions/2.ogg" },
+    {"anim_id": 3, "anim_cost_in_coins": 20, "static": true, "contributor": "Concerned Emoji by Google Inc. on IconScout", "anim_href_in_frontend": "3.gif", "sfx_to_play": "audio/reactions/3.ogg" },
+    {"anim_id": 4, "anim_cost_in_coins": 30, "static": true, "contributor": "Angry emoji by Google Inc. on IconScout", "anim_href_in_frontend": "4.gif", "sfx_to_play": "audio/reactions/4.ogg" },
+    {"anim_id": 5, "anim_cost_in_coins": 30, "static": true, "contributor": "Clap by Google Inc.", "anim_href_in_frontend": "5.gif", "sfx_to_play": "audio/reactions/5.ogg" },
+    {"anim_id": 6, "anim_cost_in_coins": 50, "static": false, "contributor": "Flying Rose by LordIcon", "anim_href_in_frontend": "6.gif", "sfx_to_play": "audio/reactions/6.ogg" },
+    {"anim_id": 7, "anim_cost_in_coins": 50, "static": false, "contributor": "Sparkling Heart by LordIcon", "anim_href_in_frontend": "7.gif", "sfx_to_play": "audio/reactions/7.ogg" },
+    {"anim_id": 8, "anim_cost_in_coins": 100, "static": false, "contributor": "Tomato Splash by LottieFiles", "anim_href_in_frontend": "8.gif", "sfx_to_play": "audio/reactions/8.ogg" },
+    {"anim_id": 9, "anim_cost_in_coins": 100, "static": false, "contributor": "Donkey Braying by LottieFiles", "anim_href_in_frontend": "9.gif", "sfx_to_play": "audio/reactions/9.ogg" }
 ]
+
