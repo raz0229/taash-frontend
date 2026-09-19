@@ -537,17 +537,28 @@ Future<void> inspectCollection(BuildContext context, PublicPlayer player) =>
       ),
     );
 
-/// Groups a collection into stacks of cards sharing the same rank (all 9s, all
-/// yakkas, ...), preserving the order in which each rank first appeared. Cards
-/// that do not parse keep their own card id as the grouping key.
+/// Groups a collection into stacks, but only of cards that were collected
+/// consecutively (directly next to each other in the pile). Two cards of the
+/// same rank that are separated by a different rank are separate stacks,
+/// because they are not physically stacked on one another. Cards that do not
+/// parse keep their own card id as the grouping key.
 List<List<String>> _groupByRank(List<String> collection) {
-  final groups = <String, List<String>>{};
+  final groups = <List<String>>[];
+  var current = <String>[];
+  String? lastKey;
   for (final card in collection) {
     final identity = CardIdentity.parse(card);
     final key = identity.valid ? identity.rank : card;
-    groups.putIfAbsent(key, () => []).add(card);
+    if (current.isNotEmpty && key == lastKey) {
+      current.add(card);
+    } else {
+      if (current.isNotEmpty) groups.add(current);
+      current = [card];
+      lastKey = key;
+    }
   }
-  return groups.values.toList();
+  if (current.isNotEmpty) groups.add(current);
+  return groups;
 }
 
 /// Renders identical cards as a pile stacked on top of each other: the last
