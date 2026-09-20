@@ -2500,6 +2500,18 @@ abstract class AppLocalizations {
   /// **'Entry per game'**
   String get entryFeePerGame;
 
+  /// No description provided for @howToPlay.
+  ///
+  /// In en, this message translates to:
+  /// **'How to Play'**
+  String get howToPlay;
+
+  /// No description provided for @stepByStepLessonsForAllFour.
+  ///
+  /// In en, this message translates to:
+  /// **'Step-by-step lessons for all four games.'**
+  String get stepByStepLessonsForAllFour;
+
   /// No description provided for @pickYourGame.
   ///
   /// In en, this message translates to:

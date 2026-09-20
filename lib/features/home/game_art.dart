@@ -12,8 +12,8 @@ const lobbyGames = [
 ];
 const gameDefault = GameType.bhabhi;
 
-/// A slide in the home carousel. Every real game is a [GameLobbyCard]; the
-/// final slide is the self-contained "Play VS Bots" entry point.
+/// A slide in the home carousel. The "Play VS Bots" and "How to Play" entry
+/// points live below the carousel as full-width tiles instead of slides.
 sealed class LobbyCard {
   const LobbyCard();
 }
@@ -23,16 +23,11 @@ class GameLobbyCard extends LobbyCard {
   final GameType game;
 }
 
-class BotsLobbyCard extends LobbyCard {
-  const BotsLobbyCard();
-}
-
 const lobbyCards = [
   GameLobbyCard(GameType.bhabhi),
   GameLobbyCard(GameType.daketi),
   GameLobbyCard(GameType.bluff),
   GameLobbyCard(GameType.tc),
-  BotsLobbyCard(),
 ];
 Color gameColor(GameType game) => switch (game) {
   GameType.bhabhi => const Color(0xff8A38EA),
@@ -141,6 +136,119 @@ class GameArt extends StatelessWidget {
       },
     ),
   );
+}
+
+/// Composes a study scene (book + face-down cards) for the "How to Play" tile.
+class HowToArt extends StatelessWidget {
+  const HowToArt({super.key});
+  static const _coral = Color(0xffA581FF);
+  @override
+  Widget build(BuildContext context) => ExcludeSemantics(
+    child: LayoutBuilder(
+      builder: (context, c) {
+        final w = c.maxWidth;
+        return Stack(
+          clipBehavior: Clip.hardEdge,
+          children: [
+            Positioned.fill(child: CustomPaint(painter: _HowToBurstPainter())),
+            Positioned(
+              right: -w * .14,
+              top: 6,
+              width: w * .72,
+              height: w * .72,
+              child: DecoratedBox(
+                decoration: BoxDecoration(
+                  shape: BoxShape.circle,
+                  gradient: RadialGradient(
+                    colors: [
+                      Colors.white.withValues(alpha: .24),
+                      Colors.white.withValues(alpha: 0),
+                    ],
+                  ),
+                ),
+                child: const Icon(
+                  Icons.auto_stories_rounded,
+                  size: 150,
+                  color: Color(0xffF4EEFF),
+                ),
+              ),
+            ),
+            for (var i = 0; i < 3; i++)
+              Positioned(
+                left: w * .07 + i * w * .16,
+                top: 96 + (i - 1).abs() * 12,
+                child: Transform.rotate(
+                  angle: (i - 1) * .22 - .10,
+                  child: PlayingCard(
+                    card: i == 1 ? 'h-y' : 'p-k',
+                    width: w * .34,
+                    faceDown: i != 1,
+                  ),
+                ),
+              ),
+            Positioned(
+              left: w * .62,
+              top: 152,
+              child: Container(
+                padding: const EdgeInsets.all(9),
+                decoration: const BoxDecoration(
+                  shape: BoxShape.circle,
+                  gradient: LinearGradient(
+                    colors: [Color(0xffE9DFFF), _coral],
+                  ),
+                  boxShadow: [
+                    BoxShadow(
+                      color: Colors.black38,
+                      offset: Offset(0, 3),
+                      blurRadius: 8,
+                    ),
+                  ],
+                ),
+                child: const Icon(
+                  Icons.school_rounded,
+                  color: Color(0xff3A2480),
+                  size: 26,
+                ),
+              ),
+            ),
+          ],
+        );
+      },
+    ),
+  );
+}
+
+class _HowToBurstPainter extends CustomPainter {
+  const _HowToBurstPainter();
+  @override
+  void paint(Canvas canvas, Size size) {
+    final center = Offset(size.width * .40, size.height * .40);
+    final glow = Paint()
+      ..shader = RadialGradient(
+        colors: [
+          const Color(0xffA581FF).withValues(alpha: .55),
+          Colors.white.withValues(alpha: 0),
+        ],
+      ).createShader(Rect.fromCircle(center: center, radius: size.width * .85));
+    canvas.drawRect(Offset.zero & size, glow);
+    for (var i = 0; i < 12; i++) {
+      final x = (i * 59.0 + 23) % size.width;
+      final y = (i * 41.0 + 31) % (size.height * .7);
+      final r = i.isEven ? 3.0 : 1.8;
+      canvas.drawPath(
+        Path()
+          ..moveTo(x, y - r * 2)
+          ..lineTo(x + r, y)
+          ..lineTo(x, y + r * 2)
+          ..lineTo(x - r, y)
+          ..close(),
+        Paint()..color = const Color(0xffF3EEFF).withValues(alpha: .55),
+      );
+    }
+  }
+
+  @override
+  bool shouldRepaint(_HowToBurstPainter old) => false;
 }
 
 /// Composes the robot + face-down cards scene for the "Play VS Bots" tile.

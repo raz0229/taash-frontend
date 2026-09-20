@@ -465,6 +465,15 @@ class _LobbyShellState extends State<LobbyShell> {
           child: builder(sheetContext),
         ),
       );
+  void learn() => Navigator.push(
+    context,
+    MaterialPageRoute(
+      builder: (_) => Scaffold(
+        appBar: AppBar(title: const Text(Copy.learnTheGames)),
+        body: const SafeArea(child: LearnScreen()),
+      ),
+    ),
+  );
   void profile(String id) => panel<void>(
         (sheetContext) => ProfileScreen(
           api: widget.api,
@@ -616,6 +625,7 @@ class _LobbyShellState extends State<LobbyShell> {
         onCreate: (g) => openRoom(RoomFlowMode.create, g),
         onJoin: () => openRoom(RoomFlowMode.join),
         onPlayBots: () => openBotsRoom(),
+        onLearn: learn,
       ),
     };
     return Scaffold(

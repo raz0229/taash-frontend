@@ -1388,6 +1388,13 @@ class AppLocalizationsEn extends AppLocalizations {
   String get entryFeePerGame => 'Entry per game';
 
   @override
+  String get howToPlay => 'How to Play';
+
+  @override
+  String get stepByStepLessonsForAllFour =>
+      'Step-by-step lessons for all four games.';
+
+  @override
   String get pickYourGame => 'Pick your game';
 
   @override

@@ -65,6 +65,7 @@ void main() {
                 onCreate: (_) {},
                 onJoin: () {},
                 onPlayBots: () {},
+                onLearn: () {},
               ),
             ),
           ),

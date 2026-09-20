@@ -14,6 +14,16 @@ import 'game_art.dart';
 import 'game_tile.dart';
 import 'sidelocks_wheel.dart';
 
+/// Height of the games action band; the fixed-band slot the scroll-driven
+/// action bars swap inside. Tallest of the three bars.
+const _bandHeight = 132.0;
+
+/// Pixels of vertical travel an incoming tile must cover after breaking the
+/// bottom edge before the action-bar swap begins. Sized to keep every
+/// supported device (small→large, normal→200% text) resting with the games
+/// bar fully out — no mid-transition state on the first frame.
+const _bandDeadZone = 338.0;
+
 class HomeScreen extends StatefulWidget {
   const HomeScreen({
     super.key,
@@ -24,10 +34,11 @@ class HomeScreen extends StatefulWidget {
     required this.onCreate,
     required this.onJoin,
     required this.onPlayBots,
+    required this.onLearn,
     this.adService,
   });
   final AuthController auth;
-  final VoidCallback onProfile, onSettings, onJoin, onPlayBots;
+  final VoidCallback onProfile, onSettings, onJoin, onPlayBots, onLearn;
   final ValueChanged<GameType> onQuickMatch, onCreate;
   final AdService? adService;
   @override
@@ -41,6 +52,12 @@ class _HomeScreenState extends State<HomeScreen>
   late final AnimationController _pulseController;
   final PageController _pageController = PageController(viewportFraction: 0.85);
 
+  final GlobalKey _botsKey = GlobalKey();
+  final GlobalKey _howKey = GlobalKey();
+  final GlobalKey _barKey = GlobalKey();
+  final ValueNotifier<({double bots, double how})> _actionProgress =
+      ValueNotifier(const (bots: 0, how: 0));
+
   @override
   void initState() {
     super.initState();
@@ -50,12 +67,14 @@ class _HomeScreenState extends State<HomeScreen>
       lowerBound: 0.9,
       upperBound: 1.15,
     )..repeat(reverse: true);
+    _scheduleReveal();
   }
 
   @override
   void dispose() {
     _pulseController.dispose();
     _pageController.dispose();
+    _actionProgress.dispose();
     super.dispose();
   }
 
@@ -96,15 +115,10 @@ class _HomeScreenState extends State<HomeScreen>
     );
   }
 
-  /// Play the focused game, or open the VS-bots menu when the bots tile is
-  /// focused. A player who can't afford the entry is sent to the reward sheet
-  /// instead of matchmaking.
-  void _onPlay(GameType? game) {
+  /// Play the focused game. A player who can't afford the entry is sent to
+  /// the reward sheet instead of matchmaking.
+  void _onPlay(GameType game) {
     audio.playSfx('generic_button_press');
-    if (game == null) {
-      widget.onPlayBots();
-      return;
-    }
     if ((widget.auth.profile?.coins ?? 0) < game.entryFee) {
       _showRewardModal();
       return;
@@ -112,16 +126,59 @@ class _HomeScreenState extends State<HomeScreen>
     widget.onQuickMatch(game);
   }
 
+  /// Fraction (0–1) the tile under [key] has been pulled into the slot above
+  /// the fixed action band. Rises to 1 while the tile is fully in view and the
+  /// fixed band swaps to its action.
+  ///
+  /// Read the tile's position at layout time, not through a scroll
+  /// notification: viewport children are painted through the previous frame's
+  /// paint offset, so global transforms read stale geometry mid-fling. A
+  /// post-frame recompute (see [_scheduleReveal]) always measures settled
+  /// positions.
+  double _revealFraction(GlobalKey key) {
+    final ctx = key.currentContext;
+    final box = ctx?.findRenderObject();
+    final barBox = _barKey.currentContext?.findRenderObject();
+    if (box is! RenderBox || barBox is! RenderBox) return 0;
+    final tileTop = box.localToGlobal(Offset.zero).dy;
+    final tileHeight = box.size.height;
+    final barTop = barBox.localToGlobal(Offset.zero).dy;
+    final barHeight = barBox.size.height;
+    // How far the tile's top has risen above the bottom edge of the band.
+    final slide = barTop + barHeight - tileTop;
+    final window = barHeight + tileHeight - _bandDeadZone;
+    if (window <= 0) return slide > 0 ? 1 : 0;
+    return ((slide - _bandDeadZone) / window).clamp(0.0, 1.0);
+  }
+
+  void _scheduleReveal() {
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (!mounted) return;
+      _actionProgress.value = _computeActionProgress();
+    });
+  }
+
+  ({double bots, double how}) _computeActionProgress() =>
+      (bots: _revealFraction(_botsKey), how: _revealFraction(_howKey));
+
+  bool _onScroll(ScrollNotification notification) {
+    _scheduleReveal();
+    return false;
+  }
+
   @override
   Widget build(BuildContext context) {
-    final profile = widget.auth.profile!, card = lobbyCards[index];
-    final game = switch (card) {
+    final profile = widget.auth.profile!;
+    final game = switch (lobbyCards[index]) {
       GameLobbyCard(:final game) => game,
-      BotsLobbyCard() => null,
     };
     final large = MediaQuery.textScalerOf(context).scale(1) > 1.4;
     final short = MediaQuery.sizeOf(context).height < 720;
-    final actions = Container(
+    final tileHeight = large ? 460.0 : short ? 254.0 : 310.0;
+
+    // Bots action: single distinct teal "Play VS Bots" button.
+    final gamesBar = Container(
+      height: _bandHeight,
       padding: const EdgeInsets.fromLTRB(18, 10, 18, 14),
       decoration: const BoxDecoration(
         color: Color(0xff131224),
@@ -132,7 +189,9 @@ class _HomeScreenState extends State<HomeScreen>
         children: [
           SizedBox(
             width: double.infinity,
+            height: 48,
             child: FilledButton.icon(
+              key: const Key('lobbyPlayButton'),
               style: FilledButton.styleFrom(
                 backgroundColor: T.ochre,
                 foregroundColor: const Color(0xff2B1B35),
@@ -141,40 +200,40 @@ class _HomeScreenState extends State<HomeScreen>
                 shadowColor: const Color(0xff090812),
               ),
               onPressed: () => _onPlay(game),
-              icon: Icon(
-                game == null
-                    ? Icons.smart_toy_outlined
-                    : Icons.play_arrow_rounded,
-              ),
-              label: game == null
-                  ? Text(Copy.playVSBots)
-                  : Text('Play ${game.label} · ${game.entryFee} coins'),
+              icon: const Icon(Icons.play_arrow_rounded),
+              label: Text('Play ${game.label} · ${game.entryFee} coins'),
             ),
           ),
           const SizedBox(height: 8),
           Row(
             children: [
               Expanded(
-                child: TaashButton(
-                  label: S.createRoom,
-                  secondary: true,
-                  icon: Icons.add_circle_outline,
-                  onPressed: () {
-                    audio.playSfx('generic_button_press');
-                    widget.onCreate(game ?? gameDefault);
-                  },
+                child: SizedBox(
+                  height: 48,
+                  child: TaashButton(
+                    label: S.createRoom,
+                    secondary: true,
+                    icon: Icons.add_circle_outline,
+                    onPressed: () {
+                      audio.playSfx('generic_button_press');
+                      widget.onCreate(game);
+                    },
+                  ),
                 ),
               ),
               const SizedBox(width: 10),
               Expanded(
-                child: TaashButton(
-                  label: S.joinRoom,
-                  secondary: true,
-                  icon: Icons.vpn_key_outlined,
-                  onPressed: () {
-                    audio.playSfx('generic_button_press');
-                    widget.onJoin();
-                  },
+                child: SizedBox(
+                  height: 48,
+                  child: TaashButton(
+                    label: S.joinRoom,
+                    secondary: true,
+                    icon: Icons.vpn_key_outlined,
+                    onPressed: () {
+                      audio.playSfx('generic_button_press');
+                      widget.onJoin();
+                    },
+                  ),
                 ),
               ),
             ],
@@ -182,6 +241,89 @@ class _HomeScreenState extends State<HomeScreen>
         ],
       ),
     );
+
+    // Bots action: single distinct teal "Play VS Bots" button.
+    final botsBar = Container(
+      height: _bandHeight,
+      padding: const EdgeInsets.fromLTRB(18, 12, 18, 14),
+      decoration: const BoxDecoration(
+        color: Color(0xff131224),
+        border: Border(top: BorderSide(color: Color(0xff38304F))),
+      ),
+      child: Column(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          const Text(
+            Copy.practiceAgainstBots,
+            textAlign: TextAlign.center,
+            style: TextStyle(color: T.muted, fontSize: 11),
+          ),
+          const SizedBox(height: 10),
+          SizedBox(
+            width: double.infinity,
+            height: 48,
+            child: FilledButton.icon(
+              key: const Key('botsPlayButton'),
+              style: FilledButton.styleFrom(
+                backgroundColor: const Color(0xff0E9F8E),
+                foregroundColor: Colors.white,
+                side: const BorderSide(color: Color(0xff7FF3E4)),
+                elevation: 5,
+                shadowColor: const Color(0xff090812),
+              ),
+              onPressed: () {
+                audio.playSfx('generic_button_press');
+                widget.onPlayBots();
+              },
+              icon: const Icon(Icons.smart_toy_outlined),
+              label: const Text(Copy.playVSBots),
+            ),
+          ),
+        ],
+      ),
+    );
+
+    // Learn action: single distinct coral "How to Play" button.
+    final howBar = Container(
+      height: _bandHeight,
+      padding: const EdgeInsets.fromLTRB(18, 12, 18, 14),
+      decoration: const BoxDecoration(
+        color: Color(0xff131224),
+        border: Border(top: BorderSide(color: Color(0xff38304F))),
+      ),
+      child: Column(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          const Text(
+            Copy.stepByStepLessonsForAllFour,
+            textAlign: TextAlign.center,
+            style: TextStyle(color: T.muted, fontSize: 11),
+          ),
+          const SizedBox(height: 10),
+          SizedBox(
+            width: double.infinity,
+            height: 48,
+            child: FilledButton.icon(
+              key: const Key('howToPlayButton'),
+              style: FilledButton.styleFrom(
+                backgroundColor: const Color(0xffA581FF),
+                foregroundColor: const Color(0xff24164A),
+                side: const BorderSide(color: Color(0xffD9CBFF)),
+                elevation: 5,
+                shadowColor: const Color(0xff090812),
+              ),
+              onPressed: () {
+                audio.playSfx('generic_button_press');
+                widget.onLearn();
+              },
+              icon: const Icon(Icons.auto_stories_outlined),
+              label: const Text(Copy.howToPlay),
+            ),
+          ),
+        ],
+      ),
+    );
+
     final discovery = <Widget>[
       Padding(
         padding: const EdgeInsets.fromLTRB(18, 12, 18, 0),
@@ -321,33 +463,21 @@ class _HomeScreenState extends State<HomeScreen>
       Padding(
         padding: const EdgeInsets.only(left: 18),
         child: Semantics(
-          label: game == null
-              ? '${Copy.playVSBots}. ${Copy.practiceAgainstBots}. '
-                    'Game ${index + 1} of ${lobbyCards.length}'
-              : '${game.label}. ${gameDescription(game)}. '
-                    'Game ${index + 1} of ${lobbyCards.length}',
+          label: '${game.label}. ${gameDescription(game)}. '
+              'Game ${index + 1} of ${lobbyCards.length}',
           onIncrease: index < lobbyCards.length - 1 ? () => advance(1) : null,
           onDecrease: index > 0 ? () => advance(-1) : null,
           child: SizedBox(
-            height: large
-                ? 460
-                : short
-                ? 254
-                : 310,
+            height: tileHeight,
             child: PageView.builder(
               controller: _pageController,
               onPageChanged: (i) => setState(() => index = i),
               itemCount: lobbyCards.length,
               itemBuilder: (context, i) {
+                final GameLobbyCard(:game) = lobbyCards[i];
                 return Padding(
                   padding: const EdgeInsets.only(right: 12),
-                  child: switch (lobbyCards[i]) {
-                    GameLobbyCard(:final game) => GameTile(
-                      game: game,
-                      focused: i == index,
-                    ),
-                    BotsLobbyCard() => BotsGameTile(focused: i == index),
-                  },
+                  child: GameTile(game: game, focused: i == index),
                 );
               },
             ),
@@ -385,6 +515,7 @@ class _HomeScreenState extends State<HomeScreen>
         ],
       ),
     ];
+
     return DecoratedBox(
       decoration: const BoxDecoration(
         gradient: RadialGradient(
@@ -393,25 +524,108 @@ class _HomeScreenState extends State<HomeScreen>
           colors: [Color(0xff32224F), Color(0xff171429), Color(0xff10111E)],
         ),
       ),
-      child: large
-          ? RefreshIndicator(
-              onRefresh: widget.auth.refreshProfile,
-              child: ListView(children: [...discovery, actions]),
-            )
-          : Column(
-              children: [
-                Expanded(
-                  child: RefreshIndicator(
-                    onRefresh: widget.auth.refreshProfile,
-                    child: ListView(
-                      physics: const AlwaysScrollableScrollPhysics(),
-                      children: discovery,
+      child: Stack(
+        children: [
+          Positioned.fill(
+            child: NotificationListener<ScrollNotification>(
+              onNotification: _onScroll,
+              child: RefreshIndicator(
+                onRefresh: widget.auth.refreshProfile,
+                child: ListView(
+                  physics: const AlwaysScrollableScrollPhysics(),
+                  padding: const EdgeInsets.only(bottom: _bandHeight + 28),
+                  children: [
+                    ...discovery,
+                    const SizedBox(height: 12),
+                    Padding(
+                      key: _botsKey,
+                      padding: const EdgeInsets.fromLTRB(20, 0, 20, 0),
+                      child: SizedBox(
+                        height: tileHeight,
+                        child: const BotsGameTile(focused: true),
+                      ),
                     ),
-                  ),
+                    const SizedBox(height: 18),
+                    Padding(
+                      key: _howKey,
+                      padding: const EdgeInsets.fromLTRB(20, 0, 20, 0),
+                      child: SizedBox(
+                        height: tileHeight,
+                        child: const HowToPlayTile(),
+                      ),
+                    ),
+                  ],
                 ),
-                actions,
-              ],
+              ),
             ),
+          ),
+          Positioned(
+            key: _barKey,
+            left: 0,
+            right: 0,
+            bottom: 0,
+            child: ValueListenableBuilder<({double bots, double how})>(
+              valueListenable: _actionProgress,
+              builder: (context, p, _) {
+                final easeBots = Curves.easeOutCubic.transform(p.bots);
+                final easeHow = Curves.easeOutCubic.transform(p.how);
+                return SizedBox(
+                  height: _bandHeight,
+                  child: Stack(
+                    children: [
+                      // Games bar slides down out of view as the bots tile
+                      // pulls into the band slot.
+                      Transform.translate(
+                        offset: Offset(0, _bandHeight * easeBots),
+                        child: Align(
+                          alignment: Alignment.bottomCenter,
+                          child: gamesBar,
+                        ),
+                      ),
+                      // Bots bar pops up as the bots tile arrives, then
+                      // slides out as the How-to tile takes over.
+                      Transform.translate(
+                        offset: Offset(0, _bandHeight * easeHow),
+                        child: Align(
+                          alignment: Alignment.bottomCenter,
+                          child: Opacity(
+                            key: const Key('botsBar'),
+                            opacity: p.bots,
+                            child: Transform.scale(
+                              alignment: Alignment.bottomCenter,
+                              scale: .7 + .3 * easeBots,
+                              child: IgnorePointer(
+                                ignoring: p.bots < .01,
+                                child: botsBar,
+                              ),
+                            ),
+                          ),
+                        ),
+                      ),
+                      // How-to bar pops up as the How-to tile arrives.
+                      Align(
+                        alignment: Alignment.bottomCenter,
+                        child: Opacity(
+                          key: const Key('howBar'),
+                          opacity: p.how,
+                          child: Transform.scale(
+                            alignment: Alignment.bottomCenter,
+                            scale: .7 + .3 * easeHow,
+                            child: IgnorePointer(
+                              ignoring: p.how < .01,
+                              child: howBar,
+                            ),
+                          ),
+                        ),
+                      ),
+                    ],
+                  ),
+                );
+              },
+            ),
+          ),
+        ],
+      ),
     );
   }
 }

@@ -525,6 +525,9 @@ abstract final class Copy {
   static const practiceAgainstBots =
       'Practice against bots. Same table, real pool.';
   static const entryFeePerGame = 'Entry per game';
+  static const howToPlay = 'How to Play';
+  static const stepByStepLessonsForAllFour =
+      'Step-by-step lessons for all four games.';
   static const pickYourGame = 'Pick your game';
   static const botsHeading = 'A full table.\nAll yours.';
   static const botsSubtitle =
