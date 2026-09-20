@@ -64,8 +64,8 @@ class _HomeScreenState extends State<HomeScreen>
     _pulseController = AnimationController(
       vsync: this,
       duration: const Duration(milliseconds: 800),
-      lowerBound: 0.9,
-      upperBound: 1.15,
+      lowerBound: 0.97,
+      upperBound: 1.03,
     )..repeat(reverse: true);
     _scheduleReveal();
   }
@@ -174,7 +174,11 @@ class _HomeScreenState extends State<HomeScreen>
     };
     final large = MediaQuery.textScalerOf(context).scale(1) > 1.4;
     final short = MediaQuery.sizeOf(context).height < 720;
-    final tileHeight = large ? 460.0 : short ? 254.0 : 310.0;
+    final tileHeight = large
+        ? 460.0
+        : short
+        ? 254.0
+        : 310.0;
 
     // Bots action: single distinct teal "Play VS Bots" button.
     final gamesBar = Container(
@@ -190,18 +194,21 @@ class _HomeScreenState extends State<HomeScreen>
           SizedBox(
             width: double.infinity,
             height: 48,
-            child: FilledButton.icon(
-              key: const Key('lobbyPlayButton'),
-              style: FilledButton.styleFrom(
-                backgroundColor: T.ochre,
-                foregroundColor: const Color(0xff2B1B35),
-                side: const BorderSide(color: Color(0xffFFE7A0)),
-                elevation: 5,
-                shadowColor: const Color(0xff090812),
+            child: ScaleTransition(
+              scale: _pulseController,
+              child: FilledButton.icon(
+                key: const Key('lobbyPlayButton'),
+                style: FilledButton.styleFrom(
+                  backgroundColor: T.ochre,
+                  foregroundColor: const Color(0xff2B1B35),
+                  side: const BorderSide(color: Color(0xffFFE7A0)),
+                  elevation: 5,
+                  shadowColor: const Color(0xff090812),
+                ),
+                onPressed: () => _onPlay(game),
+                icon: const Icon(Icons.play_arrow_rounded),
+                label: Text('Play ${game.label} · ${game.entryFee} coins'),
               ),
-              onPressed: () => _onPlay(game),
-              icon: const Icon(Icons.play_arrow_rounded),
-              label: Text('Play ${game.label} · ${game.entryFee} coins'),
             ),
           ),
           const SizedBox(height: 8),
@@ -262,21 +269,24 @@ class _HomeScreenState extends State<HomeScreen>
           SizedBox(
             width: double.infinity,
             height: 48,
-            child: FilledButton.icon(
-              key: const Key('botsPlayButton'),
-              style: FilledButton.styleFrom(
-                backgroundColor: const Color(0xff0E9F8E),
-                foregroundColor: Colors.white,
-                side: const BorderSide(color: Color(0xff7FF3E4)),
-                elevation: 5,
-                shadowColor: const Color(0xff090812),
+            child: ScaleTransition(
+              scale: _pulseController,
+              child: FilledButton.icon(
+                key: const Key('botsPlayButton'),
+                style: FilledButton.styleFrom(
+                  backgroundColor: const Color(0xff0E9F8E),
+                  foregroundColor: Colors.white,
+                  side: const BorderSide(color: Color(0xff7FF3E4)),
+                  elevation: 5,
+                  shadowColor: const Color(0xff090812),
+                ),
+                onPressed: () {
+                  audio.playSfx('generic_button_press');
+                  widget.onPlayBots();
+                },
+                icon: const Icon(Icons.smart_toy_outlined),
+                label: const Text(Copy.playVSBots),
               ),
-              onPressed: () {
-                audio.playSfx('generic_button_press');
-                widget.onPlayBots();
-              },
-              icon: const Icon(Icons.smart_toy_outlined),
-              label: const Text(Copy.playVSBots),
             ),
           ),
         ],
@@ -303,21 +313,24 @@ class _HomeScreenState extends State<HomeScreen>
           SizedBox(
             width: double.infinity,
             height: 48,
-            child: FilledButton.icon(
-              key: const Key('howToPlayButton'),
-              style: FilledButton.styleFrom(
-                backgroundColor: const Color(0xffA581FF),
-                foregroundColor: const Color(0xff24164A),
-                side: const BorderSide(color: Color(0xffD9CBFF)),
-                elevation: 5,
-                shadowColor: const Color(0xff090812),
+            child: ScaleTransition(
+              scale: _pulseController,
+              child: FilledButton.icon(
+                key: const Key('howToPlayButton'),
+                style: FilledButton.styleFrom(
+                  backgroundColor: const Color(0xffA581FF),
+                  foregroundColor: const Color(0xff24164A),
+                  side: const BorderSide(color: Color(0xffD9CBFF)),
+                  elevation: 5,
+                  shadowColor: const Color(0xff090812),
+                ),
+                onPressed: () {
+                  audio.playSfx('generic_button_press');
+                  widget.onLearn();
+                },
+                icon: const Icon(Icons.auto_stories_outlined),
+                label: const Text(Copy.howToPlay),
               ),
-              onPressed: () {
-                audio.playSfx('generic_button_press');
-                widget.onLearn();
-              },
-              icon: const Icon(Icons.auto_stories_outlined),
-              label: const Text(Copy.howToPlay),
             ),
           ),
         ],
@@ -463,7 +476,8 @@ class _HomeScreenState extends State<HomeScreen>
       Padding(
         padding: const EdgeInsets.only(left: 18),
         child: Semantics(
-          label: '${game.label}. ${gameDescription(game)}. '
+          label:
+              '${game.label}. ${gameDescription(game)}. '
               'Game ${index + 1} of ${lobbyCards.length}',
           onIncrease: index < lobbyCards.length - 1 ? () => advance(1) : null,
           onDecrease: index > 0 ? () => advance(-1) : null,

@@ -66,6 +66,10 @@ class AppFailure implements Exception {
         'game_not_active' => 'This game is not active right now.',
         'conflict' =>
           'The room just changed. Check the latest room before trying again.',
+        'friend_request_conflict' =>
+          'A friend request is already pending, or you are already friends.',
+        'friend_limit_reached' =>
+          'You or this player already has the maximum of 15 friends.',
         'already_unlocked' => 'You already own this avatar.',
         'pfp_not_unlocked' => 'Unlock this avatar before selecting it.',
         'rate_limited' => 'A little too fast. Wait a moment and try again.',

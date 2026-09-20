@@ -69,6 +69,24 @@ mixin _GameMenus on State<GameScreen> {
                 widget.onPlayerProfile?.call(p.id);
               },
             ),
+          if (!p.isBot && p.id != session.playerId)
+            ListTile(
+              leading: Icon(
+                widget.friendRequestSent.contains(p.id)
+                    ? Icons.check_circle_outline
+                    : Icons.person_add_alt_1_outlined,
+              ),
+              title: Text(
+                widget.friendRequestSent.contains(p.id)
+                    ? 'Request Sent'
+                    : 'Add Friend',
+              ),
+              enabled: !widget.friendRequestSent.contains(p.id),
+              onTap: () async {
+                Navigator.pop(context);
+                await widget.onAddFriend?.call(p.id);
+              },
+            ),
           if (p.isBot)
             const ListTile(
               leading: Icon(Icons.smart_toy_outlined),

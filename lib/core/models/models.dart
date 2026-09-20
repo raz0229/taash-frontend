@@ -41,10 +41,8 @@ List<String> cardList(Object? value) => jsonList(value, (card) {
   return id;
 });
 
-List<List<String>> cardGroups(Object? value) => jsonList(
-  value,
-  (group) => cardList(group),
-);
+List<List<String>> cardGroups(Object? value) =>
+    jsonList(value, (group) => cardList(group));
 
 class PlayerProfile {
   PlayerProfile({
@@ -96,6 +94,134 @@ class PlayerStats {
   final int gamesPlayed, gamesWon, points, winStreakCount;
   int get gamesLost => (gamesPlayed - gamesWon).clamp(0, gamesPlayed);
   double get winRate => gamesPlayed == 0 ? 0 : gamesWon / gamesPlayed;
+}
+
+class FriendProfile {
+  FriendProfile({
+    required this.id,
+    required this.displayName,
+    this.country = '',
+    this.selectedPfp = 0,
+    this.online = false,
+  });
+  factory FriendProfile.fromJson(Map<String, dynamic> json) => FriendProfile(
+    id: jsonString(json['id']),
+    displayName: jsonString(json['display_name']),
+    country: jsonString(json['country']),
+    selectedPfp: jsonInt(json['selected_pfp']),
+    online: json['online'] == true,
+  );
+  final String id, displayName, country;
+  final int selectedPfp;
+  final bool online;
+}
+
+class FriendRequestModel {
+  FriendRequestModel({
+    required this.id,
+    required this.requesterId,
+    required this.displayName,
+    this.country = '',
+    this.selectedPfp = 0,
+    required this.createdAt,
+  });
+  factory FriendRequestModel.fromJson(Map<String, dynamic> json) =>
+      FriendRequestModel(
+        id: jsonString(json['id']),
+        requesterId: jsonString(json['requester_id']),
+        displayName: jsonString(json['display_name']),
+        country: jsonString(json['country']),
+        selectedPfp: jsonInt(json['selected_pfp']),
+        createdAt: jsonDate(json['created_at']),
+      );
+  final String id, requesterId, displayName, country;
+  final int selectedPfp;
+  final DateTime createdAt;
+}
+
+class ChallengeInvite {
+  const ChallengeInvite({
+    required this.playerId,
+    required this.displayName,
+    required this.selectedPfp,
+    required this.status,
+  });
+  factory ChallengeInvite.fromJson(Map<String, dynamic> json) =>
+      ChallengeInvite(
+        playerId: jsonString(json['player_id']),
+        displayName: jsonString(json['display_name']),
+        selectedPfp: jsonInt(json['selected_pfp']),
+        status: jsonString(json['status']),
+      );
+  final String playerId, displayName, status;
+  final int selectedPfp;
+}
+
+class Challenge {
+  Challenge({
+    required this.id,
+    required this.creatorId,
+    required this.creatorName,
+    required this.game,
+    required this.maxPlayers,
+    required this.status,
+    this.roomId = '',
+    required List<ChallengeInvite> invites,
+    this.room,
+  }) : invites = List.unmodifiable(invites);
+  factory Challenge.fromJson(Map<String, dynamic> json) => Challenge(
+    id: jsonString(json['id']),
+    creatorId: jsonString(json['creator_id']),
+    creatorName: jsonString(json['creator_name']),
+    game: GameType.parse(json['game_type']),
+    maxPlayers: jsonInt(json['max_players']),
+    status: jsonString(json['status']),
+    roomId: jsonString(json['room_id']),
+    invites: jsonList(
+      json['invites'],
+      (v) => ChallengeInvite.fromJson(jsonObject(v)),
+    ),
+    room: json['room'] is Map
+        ? RoomSummary.fromJson(jsonObject(json['room']))
+        : null,
+  );
+  final String id, creatorId, creatorName, status, roomId;
+  final GameType game;
+  final int maxPlayers;
+  final List<ChallengeInvite> invites;
+  final RoomSummary? room;
+  bool get allAccepted => invites.every((i) => i.status == 'accepted');
+}
+
+class SocialView {
+  SocialView({
+    required List<FriendProfile> friends,
+    required List<FriendRequestModel> requests,
+    required List<String> sentRequestIds,
+    required List<Challenge> challenges,
+  }) : friends = List.unmodifiable(friends),
+       requests = List.unmodifiable(requests),
+       sentRequestIds = List.unmodifiable(sentRequestIds),
+       challenges = List.unmodifiable(challenges);
+  factory SocialView.fromJson(Map<String, dynamic> json) => SocialView(
+    friends: jsonList(
+      json['friends'],
+      (v) => FriendProfile.fromJson(jsonObject(v)),
+    ),
+    requests: jsonList(
+      json['requests'],
+      (v) => FriendRequestModel.fromJson(jsonObject(v)),
+    ),
+    sentRequestIds: jsonList(json['sent_requests'], (v) => jsonString(v)),
+    challenges: jsonList(
+      json['challenges'],
+      (v) => Challenge.fromJson(jsonObject(v)),
+    ),
+  );
+  final List<FriendProfile> friends;
+  final List<FriendRequestModel> requests;
+  final List<String> sentRequestIds;
+  final List<Challenge> challenges;
 }
 
 class LeaderboardEntry {
@@ -395,7 +521,10 @@ class BluffChallengeEvent {
     final challenged = jsonString(fields['challenged']);
     final pileGoesTo = jsonString(fields['pile_goes_to']);
     final declaredRank = jsonString(fields['declared_rank']);
-    final lastPlayCards = jsonList(fields['last_play_cards'], (v) => v is String ? v : '').toList();
+    final lastPlayCards = jsonList(
+      fields['last_play_cards'],
+      (v) => v is String ? v : '',
+    ).toList();
     if (challenger.isEmpty ||
         challenged.isEmpty ||
         pileGoesTo.isEmpty ||
@@ -460,7 +589,11 @@ CardPlayedInfo detectCardPlay(RoomSnapshot previous, RoomSnapshot next) {
           cardCount: max(1, n.lastPlayCount),
         );
       case (BhabhiState _, BhabhiState n) when n.trick.isNotEmpty:
-        return CardPlayedInfo(playerId: n.trick.last.playerId, cardCount: 1, card: n.trick.last.card);
+        return CardPlayedInfo(
+          playerId: n.trick.last.playerId,
+          cardCount: 1,
+          card: n.trick.last.card,
+        );
       default:
         return const CardPlayedInfo(playerId: '', cardCount: 0);
     }

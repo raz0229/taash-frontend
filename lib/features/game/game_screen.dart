@@ -38,23 +38,23 @@ class GameScreen extends StatefulWidget {
     required this.onExit,
     this.coinBalance,
     this.onPlayerProfile,
+    this.onAddFriend,
+    this.friendRequestSent = const {},
     this.preferences,
   });
   final RoomSession session;
   final VoidCallback onExit;
   final int Function()? coinBalance;
   final ValueChanged<String>? onPlayerProfile;
+  final Future<void> Function(String)? onAddFriend;
+  final Set<String> friendRequestSent;
   final Preferences? preferences;
   @override
   State<GameScreen> createState() => _GameScreenState();
 }
 
 class _GameScreenState extends State<GameScreen>
-    with
-        TickerProviderStateMixin,
-        _GameMenus,
-        _GameStatus,
-        _GameActions {
+    with TickerProviderStateMixin, _GameMenus, _GameStatus, _GameActions {
   @override
   final hand = HandOrder();
   @override
@@ -387,7 +387,11 @@ class _GameScreenState extends State<GameScreen>
         game: s.room.game,
         playerStripKey: _playerStripKey,
         targetKey: targetKey,
-        fromSeat: self ? -1 : seat < 0 ? 0 : seat,
+        fromSeat: self
+            ? -1
+            : seat < 0
+            ? 0
+            : seat,
         handKey: _handKey,
         cardCount: info.cardCount,
         card: info.card,
@@ -574,7 +578,8 @@ class _GameScreenState extends State<GameScreen>
       // A player with an empty hand is in Spectator Mode: leaving is safe and
       // their winning share is paid when the game finishes.
       final spectator =
-          (snapshot?.room.isActive ?? false) && (snapshot?.you.hand.isEmpty ?? true);
+          (snapshot?.room.isActive ?? false) &&
+          (snapshot?.you.hand.isEmpty ?? true);
       if (!await confirmAction(
             context,
             title: GameCopy.leaveTitle,
@@ -957,6 +962,8 @@ class _GameScreenState extends State<GameScreen>
                         snapshot: s,
                         session: session,
                         onHome: () => leave(),
+                        onAddFriend: widget.onAddFriend,
+                        friendRequestSent: widget.friendRequestSent,
                       ),
                     )
                   else
@@ -1002,8 +1009,7 @@ class _GameScreenState extends State<GameScreen>
                                   allowSort:
                                       s.room.game == GameType.bhabhi ||
                                       s.room.game == GameType.bluff,
-                                  sortByRank:
-                                      s.room.game == GameType.bluff,
+                                  sortByRank: s.room.game == GameType.bluff,
                                 ),
                               if (active)
                                 ConstrainedBox(
@@ -1061,18 +1067,20 @@ class _GameScreenState extends State<GameScreen>
                                         ),
                                       ),
                                     ),
-if (session.busy || working)
-                                       Padding(
-                                         padding: const EdgeInsets.only(left: 10),
-                                         child: SizedBox(
-                                           width: 17,
-                                           height: 17,
-                                           child: CircularProgressIndicator(
-                                             strokeWidth: 2,
-                                             color: GameTint(s.room.game).accent,
-                                           ),
-                                         ),
-                                       ),
+                                    if (session.busy || working)
+                                      Padding(
+                                        padding: const EdgeInsets.only(
+                                          left: 10,
+                                        ),
+                                        child: SizedBox(
+                                          width: 17,
+                                          height: 17,
+                                          child: CircularProgressIndicator(
+                                            strokeWidth: 2,
+                                            color: GameTint(s.room.game).accent,
+                                          ),
+                                        ),
+                                      ),
                                   ],
                                 ),
                               ),

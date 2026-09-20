@@ -16,7 +16,7 @@ import '../config/app_config.dart';
 /// disabled, in mock mode, or when Firebase could not be configured (in which
 /// case the backend's ENABLE_APP_CHECK gate determines what happens).
 Future<bool> bootstrapFirebase(AppConfig config) async {
-  if (!config.enableAppCheck || config.mock) {
+  if (config.mock) {
     return false;
   }
   final options = _firebaseOptions(config);
@@ -27,12 +27,14 @@ Future<bool> bootstrapFirebase(AppConfig config) async {
     if (Firebase.apps.isEmpty) {
       await Firebase.initializeApp(options: options);
     }
-    await FirebaseAppCheck.instance.activate(
-      providerAndroid: config.appCheckDebugToken.isEmpty
-          ? const AndroidPlayIntegrityProvider()
-          : AndroidDebugProvider(debugToken: config.appCheckDebugToken),
-    );
-    FirebaseAppCheck.instance.setTokenAutoRefreshEnabled(true);
+    if (config.enableAppCheck) {
+      await FirebaseAppCheck.instance.activate(
+        providerAndroid: config.appCheckDebugToken.isEmpty
+            ? const AndroidPlayIntegrityProvider()
+            : AndroidDebugProvider(debugToken: config.appCheckDebugToken),
+      );
+      FirebaseAppCheck.instance.setTokenAutoRefreshEnabled(true);
+    }
     return true;
   } on FirebaseException catch (e) {
     // The environment could not initialize Firebase (e.g. tests without a
@@ -52,17 +54,21 @@ Future<bool> bootstrapFirebase(AppConfig config) async {
 Future<String?> appCheckTokenProvider() async {
   try {
     if (Firebase.apps.isEmpty) {
-      debugPrint('[app_check] Firebase not initialized; App Check header omitted');
+      debugPrint(
+        '[app_check] Firebase not initialized; App Check header omitted',
+      );
       return null;
     }
     return await FirebaseAppCheck.instance.getToken();
     //print('========== APP CHECK ==========');
     //print('TOKEN: $token');
     //print('================================');
-    
+
     //return token;
   } on FirebaseException catch (e) {
-    debugPrint('[app_check] getToken FirebaseException: ${e.code} ${e.message}');
+    debugPrint(
+      '[app_check] getToken FirebaseException: ${e.code} ${e.message}',
+    );
   } on Exception catch (e) {
     debugPrint('[app_check] getToken failed: $e');
   } catch (e) {

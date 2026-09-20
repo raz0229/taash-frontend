@@ -14,6 +14,7 @@ import 'core/auth/google_auth.dart';
 import 'core/config/app_config.dart';
 import 'core/errors/app_failure.dart';
 import 'core/firebase/firebase_bootstrap.dart';
+import 'core/firebase/push_notifications.dart';
 import 'core/models/models.dart';
 import 'core/network/api_client.dart';
 import 'core/preferences/preferences.dart';
@@ -29,6 +30,7 @@ import 'features/home/home_screen.dart';
 import 'features/how_to_play/learn_screen.dart';
 import 'features/leaderboard/leaderboard_screen.dart';
 import 'features/profile/profile_screen.dart';
+import 'features/friends/friends_screen.dart';
 import 'features/rooms/room_flow.dart';
 import 'features/settings/settings_screen.dart';
 import 'features/shop/shop_screen.dart';
@@ -446,11 +448,120 @@ class _LobbyShellState extends State<LobbyShell> {
   int tab = 2;
   RoomSession? room;
   bool joining = false;
+  int friendRequestCount = 0;
+  final Set<String> roomFriendRequestIds = {};
+  RoomSummary? queuedChallengeRoom;
+  String? pendingChallengeId;
+  bool challengePromptOpen = false;
+  Timer? friendBadgeTimer;
 
   @override
   void initState() {
     super.initState();
     if (widget.preferences.music) audio.playBgm();
+    unawaited(_refreshFriendRequestCount());
+    friendBadgeTimer = Timer.periodic(
+      const Duration(seconds: 30),
+      (_) => unawaited(_refreshFriendRequestCount()),
+    );
+    unawaited(
+      registerPushNotifications(
+        widget.api,
+        onChallenge: _receiveChallengeNotification,
+      ),
+    );
+  }
+
+  Future<void> _refreshFriendRequestCount() async {
+    try {
+      final social = await widget.api.getSocial();
+      if (mounted) {
+        setState(() {
+          friendRequestCount = social.requests.length;
+          roomFriendRequestIds
+            ..clear()
+            ..addAll(social.sentRequestIds);
+        });
+      }
+    } catch (_) {
+      // The Friends screen will show the full error and retry action.
+    }
+  }
+
+  void _receiveChallengeNotification(String challengeId) {
+    if (!mounted) return;
+    pendingChallengeId = challengeId;
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (mounted) unawaited(_presentPendingChallenge());
+    });
+  }
+
+  Future<void> _presentPendingChallenge() async {
+    if (challengePromptOpen || pendingChallengeId == null || !mounted) return;
+    challengePromptOpen = true;
+    final challengeId = pendingChallengeId!;
+    try {
+      final challenge = await widget.api.getChallenge(challengeId);
+      if (!mounted) return;
+      if (challenge.status != 'waiting' && challenge.room == null) {
+        showNotice(context, 'This challenge is no longer open.');
+        return;
+      }
+      final accept = await showDialog<bool>(
+        context: context,
+        builder: (dialogContext) => AlertDialog(
+          title: Text('${challenge.creatorName} invited you'),
+          content: Text(
+            'You have been invited by ${challenge.creatorName} to play '
+            '${challenge.game.label}.\n\n'
+            'Players: ${challenge.invites.map((i) => i.displayName).join(', ')}',
+          ),
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.pop(dialogContext, false),
+              child: const Text('Later'),
+            ),
+            FilledButton(
+              onPressed: () => Navigator.pop(dialogContext, true),
+              child: const Text('Accept'),
+            ),
+          ],
+        ),
+      );
+      if (accept != true || !mounted) return;
+      final updated = await widget.api.acceptChallenge(challengeId);
+      if (!mounted) return;
+      if (updated.room != null) {
+        _queueOrJoinChallenge(updated.room!);
+      } else {
+        await Navigator.push(
+          context,
+          MaterialPageRoute(
+            builder: (_) => ChallengeWaitScreen(
+              api: widget.api,
+              challengeId: challengeId,
+              ownId: widget.auth.profile!.id,
+              onRoom: _queueOrJoinChallenge,
+            ),
+          ),
+        );
+      }
+    } on AppFailure catch (e) {
+      if (mounted) showNotice(context, e.message);
+    } finally {
+      challengePromptOpen = false;
+      pendingChallengeId = null;
+      unawaited(_refreshFriendRequestCount());
+    }
+  }
+
+  void _queueOrJoinChallenge(RoomSummary summary) {
+    if (room != null || joining) {
+      setState(() => queuedChallengeRoom = summary);
+      showNotice(context, 'Challenge ready. Finish your current game to join.');
+    } else {
+      unawaited(join(summary));
+    }
   }
 
   Future<V?> panel<V>(Widget Function(BuildContext) builder) =>
@@ -475,23 +586,23 @@ class _LobbyShellState extends State<LobbyShell> {
     ),
   );
   void profile(String id) => panel<void>(
-        (sheetContext) => ProfileScreen(
-          api: widget.api,
-          playerId: id,
-          own: id == widget.auth.profile?.id,
-          // Shortcut to the Avatars tab from your own profile. Hidden while
-          // inside a room and never wired for other players' profiles.
-          onAvatarTap: id == widget.auth.profile?.id && room == null
-              ? () {
-                  audio.playSfx('generic_button_press');
-                  // Popping the sheet through its own context targets the
-                  // ModalBottomSheetRoute directly(grids handled in tests).
-                  Navigator.of(context).pop();
-                  setState(() => tab = 1);
-                }
-              : null,
-        ),
-      );
+    (sheetContext) => ProfileScreen(
+      api: widget.api,
+      playerId: id,
+      own: id == widget.auth.profile?.id,
+      // Shortcut to the Avatars tab from your own profile. Hidden while
+      // inside a room and never wired for other players' profiles.
+      onAvatarTap: id == widget.auth.profile?.id && room == null
+          ? () {
+              audio.playSfx('generic_button_press');
+              // Popping the sheet through its own context targets the
+              // ModalBottomSheetRoute directly(grids handled in tests).
+              Navigator.of(context).pop();
+              setState(() => tab = 1);
+            }
+          : null,
+    ),
+  );
 
   Future<void> openRoom(
     RoomFlowMode mode, [
@@ -564,6 +675,11 @@ class _LobbyShellState extends State<LobbyShell> {
     } on AppFailure catch (e) {
       if (mounted) showNotice(context, e.message);
     }
+    final nextChallenge = queuedChallengeRoom;
+    if (nextChallenge != null && mounted) {
+      setState(() => queuedChallengeRoom = null);
+      await join(nextChallenge);
+    }
   }
 
   /// Attempts to show an interstitial ad. If the ad hasn't loaded yet, waits
@@ -591,6 +707,7 @@ class _LobbyShellState extends State<LobbyShell> {
 
   @override
   void dispose() {
+    friendBadgeTimer?.cancel();
     room?.dispose();
     super.dispose();
   }
@@ -603,11 +720,31 @@ class _LobbyShellState extends State<LobbyShell> {
         preferences: widget.preferences,
         onExit: exitRoom,
         coinBalance: () => widget.auth.profile?.coins ?? 0,
+        friendRequestSent: roomFriendRequestIds,
         onPlayerProfile: profile,
+        onAddFriend: (playerId) async {
+          try {
+            await widget.api.addFriend(playerId);
+            if (mounted) setState(() => roomFriendRequestIds.add(playerId));
+            if (mounted) showNotice(context, 'Friend request sent.');
+          } on AppFailure catch (e) {
+            if (mounted) showNotice(context, e.message);
+          }
+        },
       );
     }
     final child = switch (tab) {
-      0 => const LearnScreen(),
+      0 => FriendsScreen(
+        auth: widget.auth,
+        api: widget.api,
+        onFriendProfile: profile,
+        onRoom: (summary) => join(summary),
+        onRequestCountChanged: (count) {
+          if (mounted && count != friendRequestCount) {
+            setState(() => friendRequestCount = count);
+          }
+        },
+      ),
       1 => ShopScreen(auth: widget.auth, api: widget.api),
       3 => LeaderboardScreen(api: widget.api),
       4 => const AboutScreen(),
@@ -640,25 +777,37 @@ class _LobbyShellState extends State<LobbyShell> {
         height: 74,
         backgroundColor: T.surface,
         indicatorColor: T.coral.withValues(alpha: .3),
-        destinations: const [
+        destinations: [
           NavigationDestination(
-            icon: Icon(Icons.auto_stories_outlined),
-            label: S.learn,
+            icon: Badge(
+              isLabelVisible: friendRequestCount > 0,
+              label: Text('$friendRequestCount'),
+              child: const Icon(Icons.people_outline),
+            ),
+            selectedIcon: Badge(
+              isLabelVisible: friendRequestCount > 0,
+              label: Text('$friendRequestCount'),
+              child: const Icon(Icons.people_alt_rounded),
+            ),
+            label: 'Friends',
           ),
-          NavigationDestination(
+          const NavigationDestination(
             icon: Icon(Icons.face_retouching_natural),
             label: S.shop,
           ),
-          NavigationDestination(
+          const NavigationDestination(
             icon: Icon(Icons.home_outlined),
             selectedIcon: Icon(Icons.home_rounded),
             label: S.home,
           ),
-          NavigationDestination(
+          const NavigationDestination(
             icon: Icon(Icons.emoji_events_outlined),
             label: S.leaders,
           ),
-          NavigationDestination(icon: Icon(Icons.info_outline), label: S.about),
+          const NavigationDestination(
+            icon: Icon(Icons.info_outline),
+            label: S.about,
+          ),
         ],
       ),
     );

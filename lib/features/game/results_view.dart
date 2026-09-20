@@ -15,10 +15,14 @@ class ResultsView extends StatefulWidget {
     required this.snapshot,
     required this.session,
     required this.onHome,
+    this.onAddFriend,
+    this.friendRequestSent = const {},
   });
   final RoomSnapshot snapshot;
   final RoomSession session;
   final VoidCallback onHome;
+  final Future<void> Function(String)? onAddFriend;
+  final Set<String> friendRequestSent;
   @override
   State<ResultsView> createState() => _ResultsViewState();
 }
@@ -97,15 +101,12 @@ class _ResultsViewState extends State<ResultsView> {
 
   Widget _chatRow() {
     final unread = (widget.session.chat.length - readCount).clamp(0, 200);
-    final last = widget.session.chat.isEmpty
-        ? null
-        : widget.session.chat.last;
+    final last = widget.session.chat.isEmpty ? null : widget.session.chat.last;
     return TextButton.icon(
       onPressed: _openChat,
       icon: Badge(
         label: Text('$unread'),
-        isLabelVisible:
-            !muted && widget.session.chat.length > readCount,
+        isLabelVisible: !muted && widget.session.chat.length > readCount,
         child: const Icon(Icons.chat_bubble_outline, size: 19),
       ),
       label: Text(
@@ -248,10 +249,7 @@ class _ResultsViewState extends State<ResultsView> {
                               ),
                             ),
                             const SizedBox(width: 12),
-                            TaashAvatar(
-                              id: player?.selectedPfp ?? 0,
-                              size: 46,
-                            ),
+                            TaashAvatar(id: player?.selectedPfp ?? 0, size: 46),
                             const SizedBox(width: 12),
                             Expanded(
                               child: Column(
@@ -278,6 +276,29 @@ class _ResultsViewState extends State<ResultsView> {
                                 ],
                               ),
                             ),
+                            if (player != null &&
+                                !player.isBot &&
+                                player.id != s.you.id)
+                              IconButton(
+                                tooltip:
+                                    widget.friendRequestSent.contains(player.id)
+                                    ? 'Request sent'
+                                    : 'Add friend',
+                                onPressed:
+                                    widget.friendRequestSent.contains(player.id)
+                                    ? null
+                                    : () async {
+                                        await widget.onAddFriend?.call(
+                                          player.id,
+                                        );
+                                        if (mounted) setState(() {});
+                                      },
+                                icon: Icon(
+                                  widget.friendRequestSent.contains(player.id)
+                                      ? Icons.check_circle_outline
+                                      : Icons.person_add_alt_1_outlined,
+                                ),
+                              ),
                           ],
                         ),
                       ),

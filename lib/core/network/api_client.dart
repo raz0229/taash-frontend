@@ -294,6 +294,81 @@ class ApiClient {
     return PlayerProfile.fromJson(await request('GET', '/v1/players/$id'));
   }
 
+  Future<SocialView> getSocial() async {
+    if (config.mock) {
+      return SocialView(
+        friends: const [],
+        requests: const [],
+        sentRequestIds: const [],
+        challenges: const [],
+      );
+    }
+    return SocialView.fromJson(
+      await request('GET', '/v1/friends', retryRead: true),
+    );
+  }
+
+  Future<void> addFriend(String playerId) async {
+    await request(
+      'POST',
+      '/v1/friends/requests',
+      body: {'player_id': playerId},
+    );
+  }
+
+  Future<void> unfriend(String playerId) async {
+    await request('DELETE', '/v1/friends/${Uri.encodeComponent(playerId)}');
+  }
+
+  Future<void> respondFriend(String requestId, {required bool accept}) async {
+    await request(
+      'POST',
+      '/v1/friends/requests/${Uri.encodeComponent(requestId)}',
+      body: {'accept': accept},
+    );
+  }
+
+  Future<void> registerPushToken(String token) async {
+    await request('POST', '/v1/push-tokens', body: {'token': token});
+  }
+
+  Future<Challenge> createChallenge({
+    required GameType game,
+    required List<String> friendIds,
+  }) async {
+    final json = await request(
+      'POST',
+      '/v1/challenges',
+      body: {'game_type': game.name, 'friend_ids': friendIds},
+    );
+    return Challenge.fromJson(jsonObject(json['challenge']));
+  }
+
+  Future<Challenge> getChallenge(String id) async {
+    final json = await request(
+      'GET',
+      '/v1/challenges/${Uri.encodeComponent(id)}',
+      retryRead: true,
+    );
+    final raw = Map<String, dynamic>.from(jsonObject(json['challenge']));
+    if (json['room'] is Map) raw['room'] = json['room'];
+    return Challenge.fromJson(raw);
+  }
+
+  Future<Challenge> acceptChallenge(String id) async {
+    final json = await request(
+      'POST',
+      '/v1/challenges/${Uri.encodeComponent(id)}/accept',
+    );
+    final raw = Map<String, dynamic>.from(jsonObject(json['challenge']));
+    if (json['room'] is Map) raw['room'] = json['room'];
+    return Challenge.fromJson(raw);
+  }
+
+  Future<void> declineChallenge(String id) async {
+    await request('POST', '/v1/challenges/${Uri.encodeComponent(id)}/decline');
+  }
+
   Future<List<PlayerStats>> getStats(String id) async {
     if (config.mock) {
       return GameType.values
