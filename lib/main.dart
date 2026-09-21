@@ -477,7 +477,17 @@ class _LobbyShellState extends State<LobbyShell> {
       final social = await widget.api.getSocial();
       if (mounted) {
         setState(() {
-          friendRequestCount = social.requests.length;
+          friendRequestCount =
+              social.requests.length +
+              social.challenges.where((challenge) {
+                final accepted =
+                    challenge.invites
+                        .where((invite) => invite.status == 'accepted')
+                        .length +
+                    1;
+                return challenge.status == 'waiting' &&
+                    accepted < challenge.maxPlayers;
+              }).length;
           roomFriendRequestIds
             ..clear()
             ..addAll(social.sentRequestIds);

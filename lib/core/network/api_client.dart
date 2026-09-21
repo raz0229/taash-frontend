@@ -316,6 +316,14 @@ class ApiClient {
     );
   }
 
+  Future<void> addFriendByEmail(String email) async {
+    await request(
+      'POST',
+      '/v1/friends/requests/email',
+      body: {'email': email.trim()},
+    );
+  }
+
   Future<void> unfriend(String playerId) async {
     await request('DELETE', '/v1/friends/${Uri.encodeComponent(playerId)}');
   }
@@ -367,6 +375,20 @@ class ApiClient {
 
   Future<void> declineChallenge(String id) async {
     await request('POST', '/v1/challenges/${Uri.encodeComponent(id)}/decline');
+  }
+
+  Future<void> leaveChallenge(String id) async {
+    await request('POST', '/v1/challenges/${Uri.encodeComponent(id)}/leave');
+  }
+
+  Future<Challenge> startChallenge(String id) async {
+    final json = await request(
+      'POST',
+      '/v1/challenges/${Uri.encodeComponent(id)}/start',
+    );
+    final raw = Map<String, dynamic>.from(jsonObject(json['challenge']));
+    if (json['room'] is Map) raw['room'] = json['room'];
+    return Challenge.fromJson(raw);
   }
 
   Future<List<PlayerStats>> getStats(String id) async {

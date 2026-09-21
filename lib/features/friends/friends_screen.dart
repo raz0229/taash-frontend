@@ -28,6 +28,7 @@ class FriendsScreen extends StatefulWidget {
 
 class _FriendsScreenState extends State<FriendsScreen> {
   SocialView? _social;
+  final Set<String> _emailRequests = {};
   String? _error;
   bool _loading = true;
   @override
@@ -45,7 +46,10 @@ class _FriendsScreenState extends State<FriendsScreen> {
       final value = await widget.api.getSocial();
       if (mounted) {
         setState(() => _social = value);
-        widget.onRequestCountChanged?.call(value.requests.length);
+        widget.onRequestCountChanged?.call(
+          value.requests.length +
+              value.challenges.where(_isPendingChallenge).length,
+        );
       }
     } on AppFailure catch (e) {
       if (mounted) setState(() => _error = e.message);
@@ -201,6 +205,64 @@ class _FriendsScreenState extends State<FriendsScreen> {
     }
   }
 
+  bool _isPendingChallenge(Challenge challenge) {
+    final accepted =
+        challenge.invites
+            .where((invite) => invite.status == 'accepted')
+            .length +
+        1;
+    return challenge.status == 'waiting' && accepted < challenge.maxPlayers;
+  }
+
+  Future<void> _addFriendByEmail() async {
+    final controller = TextEditingController();
+    final email = await showDialog<String>(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: const Text('Add a friend'),
+        content: TextField(
+          controller: controller,
+          autofocus: true,
+          keyboardType: TextInputType.emailAddress,
+          textInputAction: TextInputAction.done,
+          decoration: const InputDecoration(
+            labelText: 'Email address',
+            hintText: 'friend@example.com',
+          ),
+          onSubmitted: (_) => Navigator.pop(context, controller.text),
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(context),
+            child: const Text('Cancel'),
+          ),
+          FilledButton(
+            onPressed: () => Navigator.pop(context, controller.text),
+            child: const Text('Send'),
+          ),
+        ],
+      ),
+    );
+    controller.dispose();
+    final normalized = email?.trim().toLowerCase() ?? '';
+    if (normalized.isEmpty || !mounted) return;
+    if (_emailRequests.contains(normalized)) {
+      showNotice(context, 'A request has already been sent for that email.');
+      return;
+    }
+    try {
+      await widget.api.addFriendByEmail(normalized);
+      if (!mounted) return;
+      setState(() => _emailRequests.add(normalized));
+      showNotice(
+        context,
+        'If that email belongs to a player, a request was sent.',
+      );
+    } on AppFailure catch (e) {
+      if (mounted) showNotice(context, e.message);
+    }
+  }
+
   Future<void> _openChallenge(Challenge challenge) async {
     try {
       final current = await widget.api.getChallenge(challenge.id);
@@ -213,14 +275,9 @@ class _FriendsScreenState extends State<FriendsScreen> {
   @override
   Widget build(BuildContext context) {
     final social = _social;
-    final visibleChallenges = social?.challenges.where((challenge) {
-      final accepted =
-          challenge.invites
-              .where((invite) => invite.status == 'accepted')
-              .length +
-          1;
-      return accepted < challenge.maxPlayers;
-    }).toList();
+    final visibleChallenges = social?.challenges
+        .where(_isPendingChallenge)
+        .toList();
     return Column(
       children: [
         Expanded(
@@ -236,6 +293,11 @@ class _FriendsScreenState extends State<FriendsScreen> {
                         'Friends',
                         style: Theme.of(context).textTheme.titleLarge,
                       ),
+                    ),
+                    IconButton(
+                      tooltip: 'Add friend by email',
+                      onPressed: _addFriendByEmail,
+                      icon: const Icon(Icons.person_add_alt_1_outlined),
                     ),
                   ],
                 ),
@@ -272,8 +334,7 @@ class _FriendsScreenState extends State<FriendsScreen> {
                         scrollDirection: Axis.horizontal,
                         itemCount: social.requests.length,
                         separatorBuilder: (_, _) => const SizedBox(width: 10),
-                        itemBuilder: (_, i) =>
-                            _requestCard(social.requests[i]),
+                        itemBuilder: (_, i) => _requestCard(social.requests[i]),
                       ),
                     ),
                   ],
@@ -559,6 +620,7 @@ class _ChallengeWaitScreenState extends State<ChallengeWaitScreen> {
   Timer? _timer;
   String? _error;
   bool _opening = false;
+  bool _leaving = false;
   @override
   void initState() {
     super.initState();
@@ -593,7 +655,12 @@ class _ChallengeWaitScreenState extends State<ChallengeWaitScreen> {
         }
       }
     } on AppFailure catch (e) {
-      if (mounted) setState(() => _error = e.message);
+      if (e.code == 'challenge_not_found') {
+        _timer?.cancel();
+        if (mounted) Navigator.pop(context);
+      } else if (mounted) {
+        setState(() => _error = e.message);
+      }
     }
   }
 
@@ -602,6 +669,7 @@ class _ChallengeWaitScreenState extends State<ChallengeWaitScreen> {
       final c = await widget.api.acceptChallenge(widget.challengeId);
       if (c.room != null && mounted) {
         widget.onRoom(c.room!);
+        Navigator.pop(context);
       } else if (mounted) {
         setState(() => _challenge = c);
       }
@@ -610,69 +678,146 @@ class _ChallengeWaitScreenState extends State<ChallengeWaitScreen> {
     }
   }
 
+  Future<void> _startEarly() async {
+    try {
+      final c = await widget.api.startChallenge(widget.challengeId);
+      if (!mounted || c.room == null) return;
+      _opening = true;
+      _timer?.cancel();
+      widget.onRoom(c.room!);
+      Navigator.pop(context);
+    } on AppFailure catch (e) {
+      if (mounted) setState(() => _error = e.message);
+    }
+  }
+
+  Future<void> _leave() async {
+    if (_leaving) return;
+    final creator = _challenge?.creatorId == widget.ownId;
+    final confirmed = await showDialog<bool>(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: const Text('Are you sure?'),
+        content: Text(
+          creator
+              ? 'This will end the challenge for everyone.'
+              : 'If you leave, you cannot join this challenge again.',
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(context, false),
+            child: const Text('Stay'),
+          ),
+          FilledButton(
+            onPressed: () => Navigator.pop(context, true),
+            child: const Text('Leave'),
+          ),
+        ],
+      ),
+    );
+    if (confirmed != true) return;
+    setState(() => _leaving = true);
+    try {
+      await widget.api.leaveChallenge(widget.challengeId);
+      if (mounted) Navigator.pop(context);
+    } on AppFailure catch (e) {
+      if (mounted) {
+        setState(() => _leaving = false);
+        showNotice(context, e.message);
+      }
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     final c = _challenge;
-    return Scaffold(
-      appBar: AppBar(title: const Text('Challenge friends')),
-      body: c == null
-          ? Center(
-              child: _error == null
-                  ? const CircularProgressIndicator()
-                  : Text(_error!),
-            )
-          : ListView(
-              padding: const EdgeInsets.all(24),
-              children: [
-                const Icon(
-                  Icons.hourglass_top_rounded,
-                  size: 58,
-                  color: T.ochre,
-                ),
-                const SizedBox(height: 16),
-                Text(
-                  c.creatorId == widget.ownId
-                      ? '${c.game.label} challenge'
-                      : '${c.creatorName} invited you to ${c.game.label}',
-                  textAlign: TextAlign.center,
-                  style: Theme.of(context).textTheme.headlineMedium,
-                ),
-                const SizedBox(height: 8),
-                const Text(
-                  'Waiting for everyone to accept…',
-                  textAlign: TextAlign.center,
-                  style: TextStyle(color: T.muted),
-                ),
-                const SizedBox(height: 28),
-                ...c.invites.map(
-                  (invite) => ListTile(
-                    leading: TaashAvatar(id: invite.selectedPfp, size: 42),
-                    title: Text(invite.displayName),
-                    trailing: Text(
-                      invite.status == 'accepted' ? 'Ready' : 'Waiting',
-                      style: TextStyle(
-                        color: invite.status == 'accepted' ? T.mint : T.muted,
+    final creator = c?.creatorId == widget.ownId;
+    final accepted = c == null
+        ? 0
+        : c.invites.where((invite) => invite.status == 'accepted').length + 1;
+    return PopScope(
+      canPop: false,
+      onPopInvokedWithResult: (didPop, _) {
+        if (!didPop) _leave();
+      },
+      child: Scaffold(
+        appBar: AppBar(
+          automaticallyImplyLeading: false,
+          title: const Text('Challenge friends'),
+          actions: [
+            TextButton(
+              onPressed: _leaving ? null : _leave,
+              child: const Text('Leave'),
+            ),
+          ],
+        ),
+        body: c == null
+            ? Center(
+                child: _error == null
+                    ? const CircularProgressIndicator()
+                    : Text(_error!),
+              )
+            : ListView(
+                padding: const EdgeInsets.all(24),
+                children: [
+                  const Icon(
+                    Icons.hourglass_top_rounded,
+                    size: 58,
+                    color: T.ochre,
+                  ),
+                  const SizedBox(height: 16),
+                  Text(
+                    c.creatorId == widget.ownId
+                        ? '${c.game.label} challenge'
+                        : '${c.creatorName} invited you to ${c.game.label}',
+                    textAlign: TextAlign.center,
+                    style: Theme.of(context).textTheme.headlineMedium,
+                  ),
+                  const SizedBox(height: 8),
+                  const Text(
+                    'Waiting for everyone to accept…',
+                    textAlign: TextAlign.center,
+                    style: TextStyle(color: T.muted),
+                  ),
+                  const SizedBox(height: 28),
+                  ...c.invites.map(
+                    (invite) => ListTile(
+                      leading: TaashAvatar(id: invite.selectedPfp, size: 42),
+                      title: Text(invite.displayName),
+                      trailing: Text(
+                        invite.status == 'accepted' ? 'Ready' : 'Waiting',
+                        style: TextStyle(
+                          color: invite.status == 'accepted' ? T.mint : T.muted,
+                        ),
                       ),
                     ),
                   ),
-                ),
-                if (c.creatorId != widget.ownId &&
-                    c.invites
-                        .where(
-                          (i) =>
-                              i.playerId == widget.ownId &&
-                              i.status == 'pending',
-                        )
-                        .isNotEmpty)
-                  Padding(
-                    padding: const EdgeInsets.only(top: 5),
-                    child: FilledButton(
-                      onPressed: _accept,
-                      child: const Text('Accept challenge'),
+                  if (c.creatorId != widget.ownId &&
+                      c.invites
+                          .where(
+                            (i) =>
+                                i.playerId == widget.ownId &&
+                                i.status == 'pending',
+                          )
+                          .isNotEmpty)
+                    Padding(
+                      padding: const EdgeInsets.only(top: 5),
+                      child: FilledButton(
+                        onPressed: _accept,
+                        child: const Text('Accept challenge'),
+                      ),
                     ),
-                  ),
-              ],
-            ),
+                  if (creator && accepted >= 2 && c.status == 'waiting')
+                    Padding(
+                      padding: const EdgeInsets.only(top: 12),
+                      child: OutlinedButton(
+                        onPressed: _startEarly,
+                        child: const Text('Start Challenge Anyway'),
+                      ),
+                    ),
+                ],
+              ),
+      ),
     );
   }
 }
