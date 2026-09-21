@@ -17,6 +17,7 @@ abstract final class GameCopy {
   static const mutationPending = Copy.checkingYourMove;
   static const leaveTitle = Copy.leaveThisRoom;
   static const leaveMessage = Copy.yourPlaceMayBeLostAndThe;
+  static const leaveMessageWaiting = Copy.leavingWaitingRoomRefundsEntryFee;
   static const leaveMessageSafe = Copy.youCanSafelyLeaveThisRoom;
   static const localTimer = Copy.localTurnGuide;
   static const localTimerDetail = Copy.thisDeviceAllows60SecondsPerTurn;

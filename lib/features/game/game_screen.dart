@@ -583,9 +583,11 @@ class _GameScreenState extends State<GameScreen>
       if (!await confirmAction(
             context,
             title: GameCopy.leaveTitle,
-            message: spectator
-                ? GameCopy.leaveMessageSafe
-                : GameCopy.leaveMessage,
+            message: (snapshot?.room.isWaiting ?? false)
+                ? GameCopy.leaveMessageWaiting
+                : spectator
+                    ? GameCopy.leaveMessageSafe
+                    : GameCopy.leaveMessage,
             confirmLabel: Copy.leaveRoom,
           ) ||
           !mounted) {

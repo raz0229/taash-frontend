@@ -736,6 +736,10 @@ class AppLocalizationsEn extends AppLocalizations {
       'Your place may be lost and the entry fee is not refunded. The remaining players can continue.';
 
   @override
+  String get leavingWaitingRoomRefundsEntryFee =>
+      'You are leaving before the game starts. Your entry fee will be refunded.';
+
+  @override
   String get youCanSafelyLeaveThisRoom =>
       'You can safely leave this room. Your winning share will be deposited to your account when the game finishes.';
 
