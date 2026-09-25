@@ -103,22 +103,9 @@ class _FriendsScreenState extends State<FriendsScreen> {
                         child: Stack(
                           fit: StackFit.expand,
                           children: [
-                            Transform.translate(
-                              offset: const Offset(0, -58),
-                              child: GameArt(game: game),
-                            ),
+                            GameArt(game: game),
                             ColoredBox(
-                              color: gameColor(game).withValues(alpha: .28),
-                            ),
-                            DecoratedBox(
-                              decoration: BoxDecoration(
-                                gradient: LinearGradient(
-                                  colors: [
-                                    Colors.black.withValues(alpha: .75),
-                                    Colors.transparent,
-                                  ],
-                                ),
-                              ),
+                              color: gameColor(game).withValues(alpha: .22),
                             ),
                             Align(
                               alignment: Alignment.bottomLeft,
@@ -132,8 +119,20 @@ class _FriendsScreenState extends State<FriendsScreen> {
                                 child: Text(
                                   game.label,
                                   style: const TextStyle(
+                                    color: T.ink,
                                     fontWeight: FontWeight.w800,
                                     fontSize: 17,
+                                    shadows: [
+                                      Shadow(
+                                        color: Color(0xCC000000),
+                                        blurRadius: 5,
+                                        offset: Offset(0, 1),
+                                      ),
+                                      Shadow(
+                                        color: Color(0x66000000),
+                                        blurRadius: 2,
+                                      ),
+                                    ],
                                   ),
                                 ),
                               ),

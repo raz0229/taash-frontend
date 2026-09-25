@@ -257,7 +257,7 @@ mixin _GameMenus on State<GameScreen> {
                   setSheet(() {});
                 },
                 title: const Text(Copy.soundEffects),
-                subtitle: const Text(Copy.audioPackUnavailableInThisBuild),
+                subtitle: const Text(Copy.toggleSoundEffectsOnOff),
               ),
               SwitchListTile(
                 value: widget.preferences!.music,

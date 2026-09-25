@@ -460,11 +460,29 @@ abstract class AppLocalizations {
   /// **'Haptic feedback'**
   String get hapticFeedback;
 
-  /// No description provided for @yourPreferenceIsSavedForFutureAudio.
+  /// No description provided for @latestFromTaash.
   ///
   /// In en, this message translates to:
-  /// **'Your preference is saved for future audio.'**
-  String get yourPreferenceIsSavedForFutureAudio;
+  /// **'Latest from Taash'**
+  String get latestFromTaash;
+
+  /// No description provided for @closeNews.
+  ///
+  /// In en, this message translates to:
+  /// **'Close news'**
+  String get closeNews;
+
+  /// No description provided for @dismissNews.
+  ///
+  /// In en, this message translates to:
+  /// **'Dismiss news'**
+  String get dismissNews;
+
+  /// No description provided for @toggleBackgroundMusicOnOff.
+  ///
+  /// In en, this message translates to:
+  /// **'Toggle Background Music On/Off'**
+  String get toggleBackgroundMusicOnOff;
 
   /// No description provided for @music.
   ///
@@ -472,11 +490,11 @@ abstract class AppLocalizations {
   /// **'Music'**
   String get music;
 
-  /// No description provided for @audioAssetsAreNotAvailableInThis.
+  /// No description provided for @toggleSoundEffectsOnOff.
   ///
   /// In en, this message translates to:
-  /// **'Audio assets are not available in this build.'**
-  String get audioAssetsAreNotAvailableInThis;
+  /// **'Toggle Sound Effects On/Off'**
+  String get toggleSoundEffectsOnOff;
 
   /// No description provided for @soundEffects.
   ///
@@ -1893,12 +1911,6 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Haptics'**
   String get haptics;
-
-  /// No description provided for @audioPackUnavailableInThisBuild.
-  ///
-  /// In en, this message translates to:
-  /// **'Audio pack unavailable in this build'**
-  String get audioPackUnavailableInThisBuild;
 
   /// No description provided for @room.
   ///

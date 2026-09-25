@@ -1,6 +1,7 @@
 class AppConfig {
   const AppConfig({
     required this.backendUrl,
+    this.inGameNewsJson = '',
     this.firebaseApiKey = '',
     this.allowInsecure = false,
     this.adMobAppId = '',
@@ -18,6 +19,7 @@ class AppConfig {
 
   factory AppConfig.fromEnvironment() => const AppConfig(
     backendUrl: String.fromEnvironment('TAASH_API_URL'),
+    inGameNewsJson: String.fromEnvironment('IN_GAME_NEWS_JSON'),
     firebaseApiKey: String.fromEnvironment('FIREBASE_API_KEY'),
     allowInsecure: bool.fromEnvironment('ALLOW_INSECURE_API'),
     adMobAppId: String.fromEnvironment('ADMOB_APP_ID'),
@@ -38,6 +40,7 @@ class AppConfig {
   );
 
   final String backendUrl;
+  final String inGameNewsJson;
   final String firebaseApiKey;
   final bool allowInsecure;
   final String adMobAppId;
@@ -64,6 +67,17 @@ class AppConfig {
         uri.query.isEmpty &&
         uri.fragment.isEmpty &&
         (uri.scheme == 'https' || (allowInsecure && uri.scheme == 'http'));
+  }
+
+  Uri? get inGameNewsUri {
+    final uri = Uri.tryParse(inGameNewsJson);
+    return uri != null &&
+            uri.hasAuthority &&
+            uri.userInfo.isEmpty &&
+            uri.fragment.isEmpty &&
+            (uri.scheme == 'https' || (allowInsecure && uri.scheme == 'http'))
+        ? uri
+        : null;
   }
 
   Uri endpoint(String path, [Map<String, String>? query]) {

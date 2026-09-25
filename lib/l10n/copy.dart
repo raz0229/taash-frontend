@@ -80,11 +80,12 @@ abstract final class Copy {
       'Keep the feedback. Simplify the movement.';
   static const reduceMotion = 'Reduce motion';
   static const hapticFeedback = 'Haptic feedback';
-  static const yourPreferenceIsSavedForFutureAudio =
-      'Your preference is saved for future audio.';
+  static const latestFromTaash = 'Latest from Taash';
+  static const closeNews = 'Close news';
+  static const dismissNews = 'Dismiss news';
+  static const toggleBackgroundMusicOnOff = 'Toggle Background Music On/Off';
   static const music = 'Music';
-  static const audioAssetsAreNotAvailableInThis =
-      'Audio assets are not available in this build.';
+  static const toggleSoundEffectsOnOff = 'Toggle Sound Effects On/Off';
   static const soundEffects = 'Sound effects';
   static const taashonlineAccount = 'TaashOnline account';
   static const yourCARDNIGHT = 'YOUR CARD NIGHT';
@@ -408,8 +409,6 @@ abstract final class Copy {
   static String playCards(Object? value0) => 'Play $value0 cards';
   static const playCard = 'Play card';
   static const haptics = 'Haptics';
-  static const audioPackUnavailableInThisBuild =
-      'Audio pack unavailable in this build';
   static String room(Object? value0) => 'Room $value0';
   static const yourRoom = 'Your room';
   static String sendCoins(Object? value0) => 'Send · $value0 coins';

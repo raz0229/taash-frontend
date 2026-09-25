@@ -116,7 +116,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
           SwitchListTile.adaptive(
             contentPadding: EdgeInsets.zero,
             title: const Text(Copy.soundEffects),
-            subtitle: const Text(Copy.audioAssetsAreNotAvailableInThis),
+            subtitle: const Text(Copy.toggleSoundEffectsOnOff),
             value: widget.preferences.sfx,
             onChanged: (v) {
               widget.preferences.set('sfx', v);
@@ -126,7 +126,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
           SwitchListTile.adaptive(
             contentPadding: EdgeInsets.zero,
             title: const Text(Copy.music),
-            subtitle: const Text(Copy.yourPreferenceIsSavedForFutureAudio),
+            subtitle: const Text(Copy.toggleBackgroundMusicOnOff),
             value: widget.preferences.music,
             onChanged: (v) {
               widget.preferences.set('music', v);

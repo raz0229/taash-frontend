@@ -1,6 +1,7 @@
 {
   "MOCK_BACKEND": "false",
   "TAASH_API_URL": "https://api.taashserver.online",
+  "IN_GAME_NEWS_JSON": "https://github.com/raz0229/taashonline-news/raw/refs/heads/main/news.json",
   "FIREBASE_API_KEY": "AIzaSyBBWR8sWqpyk0dyhh6E3nF0TCFyISrUbwQ",
   "FIREBASE_APP_ID": "1:425933145706:android:f3fe0c0c48654ee1732c13",
   "FIREBASE_PROJECT_ID": "river-bruin-423311-v3",

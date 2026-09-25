@@ -68,9 +68,12 @@
   "keepTheFeedbackSimplifyTheMovement": "Keep the feedback. Simplify the movement.",
   "reduceMotion": "Reduce motion",
   "hapticFeedback": "Haptic feedback",
-  "yourPreferenceIsSavedForFutureAudio": "Your preference is saved for future audio.",
+  "latestFromTaash": "Latest from Taash",
+  "closeNews": "Close news",
+  "dismissNews": "Dismiss news",
+  "toggleBackgroundMusicOnOff": "Toggle Background Music On/Off",
   "music": "Music",
-  "audioAssetsAreNotAvailableInThis": "Audio assets are not available in this build.",
+  "toggleSoundEffectsOnOff": "Toggle Sound Effects On/Off",
   "soundEffects": "Sound effects",
   "taashonlineAccount": "TaashOnline account",
   "yourCARDNIGHT": "YOUR CARD NIGHT",
@@ -468,7 +471,6 @@
   },
   "playCard": "Play card",
   "haptics": "Haptics",
-  "audioPackUnavailableInThisBuild": "Audio pack unavailable in this build",
   "room": "Room {value0}",
   "@room": {
     "placeholders": {

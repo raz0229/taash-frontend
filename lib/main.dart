@@ -17,12 +17,14 @@ import 'core/firebase/firebase_bootstrap.dart';
 import 'core/firebase/push_notifications.dart';
 import 'core/models/models.dart';
 import 'core/network/api_client.dart';
+import 'core/news/in_game_news_service.dart';
 import 'core/preferences/preferences.dart';
 import 'core/theme/taash_theme.dart';
 import 'core/websocket/room_session.dart';
 import 'core/widgets/taash_widgets.dart';
 import 'core/update/app_update_service.dart';
 import 'core/widgets/app_update_banner.dart';
+import 'core/widgets/in_game_news.dart';
 import 'features/about/about_screen.dart';
 import 'features/auth/auth_screen.dart';
 import 'features/game/game_screen.dart';
@@ -62,12 +64,14 @@ class TaashApp extends StatefulWidget {
     this.auth,
     this.googleAuth,
     this.preferences,
+    this.newsService,
   });
   final AppConfig config;
   final Future<void>? admobInitialization;
   final AuthController? auth;
   final GoogleAuth? googleAuth;
   final Preferences? preferences;
+  final InGameNewsService? newsService;
   @override
   State<TaashApp> createState() => _TaashAppState();
 }
@@ -87,6 +91,8 @@ class _TaashAppState extends State<TaashApp> with WidgetsBindingObserver {
       widget.auth ?? AuthController(api: api, googleAuth: googleAuth);
   late final preferences = widget.preferences ?? Preferences();
   late final updateService = InAppUpdateService();
+  late final newsService =
+      widget.newsService ?? InGameNewsService(config: widget.config);
   late final adService =
       widget.config.adMobRewardedAdUnitId.isNotEmpty ||
           widget.config.adMobInterstitialAdUnitId.isNotEmpty
@@ -126,6 +132,7 @@ class _TaashAppState extends State<TaashApp> with WidgetsBindingObserver {
     }
     audio.sfxEnabled = preferences.sfx;
     unawaited(updateService.checkForUpdate());
+    unawaited(newsService.load());
     await Future.wait([
       auth.restore(),
       Future<void>.delayed(const Duration(milliseconds: 650)),
@@ -141,6 +148,7 @@ class _TaashAppState extends State<TaashApp> with WidgetsBindingObserver {
       api.close();
     }
     if (widget.preferences == null) preferences.dispose();
+    if (widget.newsService == null) newsService.dispose();
     adService?.dispose();
     updateService.dispose();
     super.dispose();
@@ -178,6 +186,7 @@ class _TaashAppState extends State<TaashApp> with WidgetsBindingObserver {
               api: api,
               preferences: preferences,
               adService: adService,
+              newsService: newsService,
             ),
     ),
   );
@@ -354,12 +363,14 @@ class _AppGate extends StatelessWidget {
     required this.auth,
     required this.api,
     required this.preferences,
+    required this.newsService,
     this.adService,
   });
   final AuthController auth;
   final ApiClient api;
   final Preferences preferences;
   final AdService? adService;
+  final InGameNewsService newsService;
   void learn(BuildContext context) => Navigator.push(
     context,
     MaterialPageRoute(
@@ -404,6 +415,7 @@ class _AppGate extends StatelessWidget {
           api: api,
           preferences: preferences,
           adService: adService,
+          newsService: newsService,
         );
       }
       if (auth.status == AuthStatus.maintenance ||
@@ -423,7 +435,10 @@ class _AppGate extends StatelessWidget {
           ),
         );
       }
-      return AuthScreen(auth: auth, onLearn: () => learn(context));
+      return InGameNewsCoordinator(
+        service: newsService,
+        child: AuthScreen(auth: auth, onLearn: () => learn(context)),
+      );
     },
   );
 }
@@ -435,11 +450,13 @@ class LobbyShell extends StatefulWidget {
     required this.api,
     required this.preferences,
     this.adService,
+    this.newsService,
   });
   final AuthController auth;
   final ApiClient api;
   final Preferences preferences;
   final AdService? adService;
+  final InGameNewsService? newsService;
   @override
   State<LobbyShell> createState() => _LobbyShellState();
 }
@@ -736,9 +753,11 @@ class _LobbyShellState extends State<LobbyShell> {
           try {
             await widget.api.addFriend(playerId);
             if (mounted) setState(() => roomFriendRequestIds.add(playerId));
-            if (mounted) showNotice(context, 'Friend request sent.');
+            if (!context.mounted) return;
+            showNotice(context, 'Friend request sent.');
           } on AppFailure catch (e) {
-            if (mounted) showNotice(context, e.message);
+            if (!context.mounted) return;
+            showNotice(context, e.message);
           }
         },
       );
@@ -775,7 +794,7 @@ class _LobbyShellState extends State<LobbyShell> {
         onLearn: learn,
       ),
     };
-    return Scaffold(
+    final shell = Scaffold(
       body: SafeArea(bottom: false, child: child),
       bottomNavigationBar: NavigationBar(
         selectedIndex: tab,
@@ -821,5 +840,8 @@ class _LobbyShellState extends State<LobbyShell> {
         ],
       ),
     );
+    final newsService = widget.newsService;
+    if (tab != 2 || newsService == null) return shell;
+    return InGameNewsCoordinator(service: newsService, child: shell);
   }
 }

@@ -213,15 +213,22 @@ class AppLocalizationsEn extends AppLocalizations {
   String get hapticFeedback => 'Haptic feedback';
 
   @override
-  String get yourPreferenceIsSavedForFutureAudio =>
-      'Your preference is saved for future audio.';
+  String get latestFromTaash => 'Latest from Taash';
+
+  @override
+  String get closeNews => 'Close news';
+
+  @override
+  String get dismissNews => 'Dismiss news';
+
+  @override
+  String get toggleBackgroundMusicOnOff => 'Toggle Background Music On/Off';
 
   @override
   String get music => 'Music';
 
   @override
-  String get audioAssetsAreNotAvailableInThis =>
-      'Audio assets are not available in this build.';
+  String get toggleSoundEffectsOnOff => 'Toggle Sound Effects On/Off';
 
   @override
   String get soundEffects => 'Sound effects';
@@ -1036,10 +1043,6 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get haptics => 'Haptics';
-
-  @override
-  String get audioPackUnavailableInThisBuild =>
-      'Audio pack unavailable in this build';
 
   @override
   String room(Object value0) {
