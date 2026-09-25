@@ -8,6 +8,15 @@ import '../../core/theme/taash_theme.dart';
 import '../../core/widgets/taash_widgets.dart';
 import '../home/game_art.dart';
 
+const _friendNameMaxLength = 17;
+
+String _friendNameLabel(String value) {
+  final name = value.trim();
+  return name.length > _friendNameMaxLength
+      ? '${name.substring(0, _friendNameMaxLength - 1)}…'
+      : name;
+}
+
 class FriendsScreen extends StatefulWidget {
   const FriendsScreen({
     super.key,
@@ -103,7 +112,11 @@ class _FriendsScreenState extends State<FriendsScreen> {
                         child: Stack(
                           fit: StackFit.expand,
                           children: [
-                            GameArt(game: game),
+                            Transform.translate(
+                              key: ValueKey('choose-game-art-${game.name}'),
+                              offset: const Offset(0, -32),
+                              child: GameArt(game: game),
+                            ),
                             ColoredBox(
                               color: gameColor(game).withValues(alpha: .22),
                             ),
@@ -214,35 +227,10 @@ class _FriendsScreenState extends State<FriendsScreen> {
   }
 
   Future<void> _addFriendByEmail() async {
-    final controller = TextEditingController();
     final email = await showDialog<String>(
       context: context,
-      builder: (context) => AlertDialog(
-        title: const Text('Add a friend'),
-        content: TextField(
-          controller: controller,
-          autofocus: true,
-          keyboardType: TextInputType.emailAddress,
-          textInputAction: TextInputAction.done,
-          decoration: const InputDecoration(
-            labelText: 'Email address',
-            hintText: 'friend@example.com',
-          ),
-          onSubmitted: (_) => Navigator.pop(context, controller.text),
-        ),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.pop(context),
-            child: const Text('Cancel'),
-          ),
-          FilledButton(
-            onPressed: () => Navigator.pop(context, controller.text),
-            child: const Text('Send'),
-          ),
-        ],
-      ),
+      builder: (_) => const _AddFriendDialog(),
     );
-    controller.dispose();
     final normalized = email?.trim().toLowerCase() ?? '';
     if (normalized.isEmpty || !mounted) return;
     if (_emailRequests.contains(normalized)) {
@@ -379,7 +367,13 @@ class _FriendsScreenState extends State<FriendsScreen> {
     ),
     title: Row(
       children: [
-        Text(friend.displayName),
+        Expanded(
+          child: Text(
+            _friendNameLabel(friend.displayName),
+            maxLines: 1,
+            overflow: TextOverflow.ellipsis,
+          ),
+        ),
         if (friend.online) ...[
           const SizedBox(width: 8),
           const Text(
@@ -537,6 +531,48 @@ class _FriendsScreenState extends State<FriendsScreen> {
   }
 }
 
+class _AddFriendDialog extends StatefulWidget {
+  const _AddFriendDialog();
+
+  @override
+  State<_AddFriendDialog> createState() => _AddFriendDialogState();
+}
+
+class _AddFriendDialogState extends State<_AddFriendDialog> {
+  final _controller = TextEditingController();
+
+  @override
+  void dispose() {
+    _controller.dispose();
+    super.dispose();
+  }
+
+  void _submit() => Navigator.pop(context, _controller.text);
+
+  @override
+  Widget build(BuildContext context) => AlertDialog(
+    title: const Text('Add a friend'),
+    content: TextField(
+      controller: _controller,
+      autofocus: true,
+      keyboardType: TextInputType.emailAddress,
+      textInputAction: TextInputAction.done,
+      decoration: const InputDecoration(
+        labelText: 'Email address',
+        hintText: 'friend@example.com',
+      ),
+      onSubmitted: (_) => _submit(),
+    ),
+    actions: [
+      TextButton(
+        onPressed: () => Navigator.pop(context),
+        child: const Text('Cancel'),
+      ),
+      FilledButton(onPressed: _submit, child: const Text('Send')),
+    ],
+  );
+}
+
 class _Heading extends StatelessWidget {
   const _Heading(this.text);
   final String text;
@@ -575,7 +611,11 @@ class _FriendPickerState extends State<_FriendPicker> {
                   );
                 },
                 secondary: TaashAvatar(id: friend.selectedPfp, size: 38),
-                title: Text(friend.displayName),
+                title: Text(
+                  _friendNameLabel(friend.displayName),
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
+                ),
               ),
             )
             .toList(),

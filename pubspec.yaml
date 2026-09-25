@@ -19,6 +19,7 @@ dependencies:
   google_mobile_ads: ^9.1.0
   firebase_core: ^4.15.0
   firebase_app_check: ^0.4.8
+  firebase_messaging: ^16.0.0
   google_sign_in: ^7.2.0
   in_app_update: ^5.0.0
 dev_dependencies:
