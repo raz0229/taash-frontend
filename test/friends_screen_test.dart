@@ -7,6 +7,7 @@ import 'package:taash/core/config/app_config.dart';
 import 'package:taash/core/models/models.dart';
 import 'package:taash/core/network/api_client.dart';
 import 'package:taash/features/friends/friends_screen.dart';
+import 'package:taash/features/home/game_art.dart';
 
 void main() {
   Future<void> pumpFriends(
@@ -90,7 +91,7 @@ void main() {
     expect(tester.takeException(), isNull);
   });
 
-  testWidgets('Choose a game moves character artwork up by 2 rem', (
+  testWidgets('Choose a game crops artwork to show the character face', (
     tester,
   ) async {
     await pumpFriends(tester);
@@ -98,11 +99,19 @@ void main() {
     await tester.tap(find.text('Challenge Friends'));
     await tester.pumpAndSettle();
 
-    final transformFinder = find.byKey(
+    final fittedBoxFinder = find.byKey(
       const ValueKey('choose-game-art-bhabhi'),
     );
-    expect(transformFinder, findsOneWidget);
-    final transform = tester.widget<Transform>(transformFinder);
-    expect(transform.transform.getTranslation().y, -32);
+    expect(fittedBoxFinder, findsOneWidget);
+    final fittedBox = tester.widget<FittedBox>(fittedBoxFinder);
+    expect(fittedBox.fit, BoxFit.cover);
+    expect(tester.getSize(fittedBoxFinder).height, 82);
+
+    final artFinder = find.descendant(
+      of: fittedBoxFinder,
+      matching: find.byType(GameArt),
+    );
+    expect(artFinder, findsOneWidget);
+    expect(tester.getSize(artFinder), const Size(360, 360));
   });
 }

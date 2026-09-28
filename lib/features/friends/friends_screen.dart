@@ -112,10 +112,17 @@ class _FriendsScreenState extends State<FriendsScreen> {
                         child: Stack(
                           fit: StackFit.expand,
                           children: [
-                            Transform.translate(
+                            FittedBox(
                               key: ValueKey('choose-game-art-${game.name}'),
-                              offset: const Offset(0, -32),
-                              child: GameArt(game: game),
+                              fit: BoxFit.cover,
+                              alignment: Alignment.topCenter,
+                              child: Transform.translate(
+                                offset: const Offset(0, -32),
+                                child: SizedBox.square(
+                                  dimension: 360,
+                                  child: GameArt(game: game),
+                                ),
+                              ),
                             ),
                             ColoredBox(
                               color: gameColor(game).withValues(alpha: .22),
