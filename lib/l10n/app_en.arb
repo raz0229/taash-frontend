@@ -278,6 +278,14 @@
     }
   },
   "firstPlace": "First place",
+  "coinsEarned": "Coins Earned: {value0}",
+  "@coinsEarned": {
+    "placeholders": {
+      "value0": {
+        "type": "Object"
+      }
+    }
+  },
   "theServerHasNotProvidedFinalPlaces": "The server has not provided final places. Your profile will show settled statistics when available.",
   "viewFinalPlaces": "View final places",
   "theServerChecksYour433": "The server checks your 4 + 3 + 3 groups. An invalid claim leaves your hand unchanged.",

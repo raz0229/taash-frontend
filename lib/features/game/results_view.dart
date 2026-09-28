@@ -273,6 +273,29 @@ class _ResultsViewState extends State<ResultsView> {
                                         : Copy.place(w.place),
                                     style: const TextStyle(color: T.muted),
                                   ),
+                                  if (w.coinsEarned != null) ...[
+                                    const SizedBox(height: 4),
+                                    Row(
+                                      children: [
+                                        const Icon(
+                                          Icons.toll_rounded,
+                                          size: 14,
+                                          color: T.ochre,
+                                        ),
+                                        const SizedBox(width: 4),
+                                        Text(
+                                          Copy.coinsEarned(w.coinsEarned!),
+                                          style: const TextStyle(
+                                            color: T.ochre,
+                                            fontWeight: FontWeight.w700,
+                                            fontFeatures: [
+                                              FontFeature.tabularFigures(),
+                                            ],
+                                          ),
+                                        ),
+                                      ],
+                                    ),
+                                  ],
                                 ],
                               ),
                             ),

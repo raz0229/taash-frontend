@@ -1,0 +1,65 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg xmlns="http://www.w3.org/2000/svg" width="750" height="1050" viewBox="0 0 750 1050">
+
+    <defs>
+      <linearGradient id="bg" x1="0" y1="0" x2="1" y2="1">
+        <stop offset="0" stop-color="#07091b"/>
+        <stop offset="0.5" stop-color="#0b1030"/>
+        <stop offset="1" stop-color="#050612"/>
+      </linearGradient>
+      <linearGradient id="rim" x1="0" y1="0" x2="1" y2="1">
+        <stop offset="0" stop-color="#35f2ff"/>
+        <stop offset="0.48" stop-color="#b54cff"/>
+        <stop offset="1" stop-color="#ff3bd4"/>
+      </linearGradient>
+      <linearGradient id="face" x1="0" y1="0" x2="0" y2="1">
+        <stop offset="0" stop-color="#1b2257"/>
+        <stop offset="1" stop-color="#090b20"/>
+      </linearGradient>
+      <filter id="glow" x="-60%" y="-60%" width="220%" height="220%">
+        <feGaussianBlur stdDeviation="7" result="b"/>
+        <feMerge><feMergeNode in="b"/><feMergeNode in="SourceGraphic"/></feMerge>
+      </filter>
+      <filter id="softglow" x="-50%" y="-50%" width="200%" height="200%">
+        <feGaussianBlur stdDeviation="2.5" result="b"/>
+        <feMerge><feMergeNode in="b"/><feMergeNode in="SourceGraphic"/></feMerge>
+      </filter>
+      <pattern id="grid" width="40" height="40" patternUnits="userSpaceOnUse">
+        <path d="M40 0H0V40" fill="none" stroke="#2d3970" stroke-width="1" opacity=".28"/>
+        <circle cx="0" cy="0" r="1.4" fill="#6c7bce" opacity=".32"/>
+      </pattern>
+      <pattern id="scan" width="1" height="12" patternUnits="userSpaceOnUse">
+        <rect width="1" height="1" y="0" fill="#fff" opacity=".035"/>
+      </pattern>
+    </defs>
+<rect x="0" y="0" width="750" height="1050" rx="42" fill="url(#bg)"/>
+<rect x="14" y="14" width="722" height="1022" rx="34" fill="none" stroke="url(#rim)" stroke-width="4" opacity=".9" filter="url(#softglow)"/>
+<rect x="29" y="29" width="692" height="992" rx="25" fill="url(#grid)" opacity=".62"/>
+<rect x="29" y="29" width="692" height="992" rx="25" fill="url(#scan)"/>
+<path d="M60 86H210 M540 86H690 M60 964H210 M540 964H690" stroke="#9d7cff" stroke-width="3" opacity=".8" filter="url(#softglow)"/>
+<text x="375" y="77" text-anchor="middle" font-family="monospace" font-size="15" font-weight="700" letter-spacing="5" fill="#8fa4ff" opacity=".8">NEON // ARCADE</text>
+<g transform="translate(78 92) rotate(0)">
+      <text x="0" y="0" font-family="DejaVu Sans, Arial, sans-serif" font-size="150" font-weight="900" fill="#9d7cff" text-anchor="middle">K</text>
+      <text x="0" y="138" font-family="DejaVu Sans, Arial, sans-serif" font-size="125" fill="#9d7cff" text-anchor="middle" filter="url(#softglow)">♠</text>
+    </g><g transform="translate(672 958) rotate(180)">
+      <text x="0" y="0" font-family="DejaVu Sans, Arial, sans-serif" font-size="150" font-weight="900" fill="#9d7cff" text-anchor="middle">K</text>
+      <text x="0" y="138" font-family="DejaVu Sans, Arial, sans-serif" font-size="125" fill="#9d7cff" text-anchor="middle" filter="url(#softglow)">♠</text>
+    </g>
+    <g transform="translate(375 520)">
+      <circle r="215" fill="#090c24" stroke="#9d7cff" stroke-width="5" opacity=".96" filter="url(#softglow)"/>
+      <circle r="190" fill="none" stroke="#7c5cff" stroke-width="3" stroke-dasharray="9 13" opacity=".9"/>
+      <path d="M-165 145 L-115 58 L-65 84 L-35 28 L0 70 L35 28 L65 84 L115 58 L165 145" fill="none" stroke="#7c5cff" stroke-width="8" stroke-linecap="round" filter="url(#glow)"/>
+      <path d="M-130 128 Q-105 42 0 32 Q105 42 130 128 L88 184 L-88 184 Z" fill="url(#face)" stroke="#9d7cff" stroke-width="5"/>
+      <path d="M-105 10 Q-84 -116 0 -148 Q84 -116 105 10 L75 62 Q0 82 -75 62 Z" fill="#10153d" stroke="#9d7cff" stroke-width="6"/>
+      <path d="M-105 -55 L-70 -102 L-28 -80 L0 -118 L28 -80 L70 -102 L105 -55 L82 -30 L-82 -30 Z" fill="#7c5cff" stroke="#dce5ff" stroke-width="3" filter="url(#softglow)"/>
+      <path d="M-70 -5 H-20 M20 -5 H70" stroke="#dffcff" stroke-width="7" stroke-linecap="round"/>
+      <path d="M-43 94 Q0 120 43 94" fill="none" stroke="#7c5cff" stroke-width="6" stroke-linecap="round"/>
+      <path d="M-150 208 H150" stroke="#9d7cff" stroke-width="4" opacity=".9"/>
+      <text x="0" y="-177" text-anchor="middle" font-family="monospace" font-size="20" font-weight="700" letter-spacing="5" fill="#dce5ff">K // SPADE</text>
+      <text x="0" y="239" text-anchor="middle" font-family="monospace" font-size="14" letter-spacing="3" fill="#7f8bd0">KING MODE • READY</text>
+      <text x="0" y="73" text-anchor="middle" font-family="monospace" font-size="48" font-weight="900" fill="#9d7cff" filter="url(#softglow)">K</text>
+    </g>
+    <text x="92" y="520" transform="rotate(-90 92 520)" text-anchor="middle" font-family="monospace" font-size="13" letter-spacing="4" fill="#9d7cff" opacity=".8">HIGH SCORE</text>
+    <text x="658" y="520" transform="rotate(90 658 520)" text-anchor="middle" font-family="monospace" font-size="13" letter-spacing="4" fill="#7c5cff" opacity=".8">LEVEL 03</text>
+    <text x="375" y="1000" text-anchor="middle" font-family="monospace" font-size="12" letter-spacing="4" fill="#6f7bb5" opacity=".8">SPADES // K</text>
+</svg>

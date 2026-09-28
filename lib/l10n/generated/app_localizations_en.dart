@@ -679,6 +679,11 @@ class AppLocalizationsEn extends AppLocalizations {
   String get firstPlace => 'First place';
 
   @override
+  String coinsEarned(Object value0) {
+    return 'Coins Earned: $value0';
+  }
+
+  @override
   String get theServerHasNotProvidedFinalPlaces =>
       'The server has not provided final places. Your profile will show settled statistics when available.';
 

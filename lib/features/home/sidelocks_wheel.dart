@@ -22,7 +22,7 @@ Future<void> showSidelocksWheel(
   await showGeneralDialog<void>(
     context: context,
     barrierDismissible: true,
-    barrierLabel: 'Close Sidelocks Wheel',
+    barrierLabel: 'Close Lucky Chakkar',
     barrierColor: Colors.black.withValues(alpha: .6),
     transitionDuration: const Duration(milliseconds: 280),
     transitionBuilder: (_, animation, _, child) => FadeTransition(
@@ -230,7 +230,7 @@ class _SidelocksWheelDialogState extends State<SidelocksWheelDialog>
 
   Widget _header() {
     final title = Text(
-      'Sidelocks Wheel',
+      'Lucky Chakkar',
       style: const TextStyle(
         fontSize: 26,
         fontWeight: FontWeight.w900,

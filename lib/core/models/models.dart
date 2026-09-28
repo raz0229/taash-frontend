@@ -329,14 +329,27 @@ class PrivatePlayer {
 }
 
 class Winner {
-  const Winner({required this.playerId, required this.place, this.points = 0});
+  const Winner({
+    required this.playerId,
+    required this.place,
+    this.points = 0,
+    this.coinsEarned,
+  });
   factory Winner.fromJson(Map<String, dynamic> json) => Winner(
     playerId: jsonString(json['player_id']),
     place: jsonInt(json['place']),
     points: jsonInt(json['points']),
+    coinsEarned: json['coins_earned'] == null
+        ? null
+        : jsonInt(json['coins_earned']),
   );
   final String playerId;
   final int place, points;
+
+  /// Coins this placement took from the room pool. Bot placements and unpaid
+  /// places are a genuine zero, but `null` means the server reported no
+  /// earnings at all, so the UI can stay silent instead of claiming zero.
+  final int? coinsEarned;
 }
 
 class PlayedCard {

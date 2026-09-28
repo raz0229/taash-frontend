@@ -48,8 +48,8 @@ Map<String, dynamic> snapshotFixture({
   ],
   'winners': status == 'finished'
       ? [
-          {'player_id': 'player-b', 'place': 1},
-          {'player_id': 'player-a', 'place': 2},
+          {'player_id': 'player-b', 'place': 1, 'coins_earned': 640},
+          {'player_id': 'player-a', 'place': 2, 'coins_earned': 0},
         ]
       : null,
   'game_state': game == 'tc'
@@ -118,6 +118,24 @@ void main() {
     expect(
       () => snapshot.winners.add(const Winner(playerId: 'x', place: 1)),
       throwsUnsupportedError,
+    );
+  });
+
+  test('winner coins earned distinguish unpaid from unreported', () {
+    final snapshot = RoomSnapshot.fromJson(
+      snapshotFixture(status: 'finished'),
+    );
+    final paid = snapshot.winners.firstWhere((w) => w.place == 1);
+    final unpaid = snapshot.winners.firstWhere((w) => w.place == 2);
+    expect(paid.coinsEarned, 640);
+    // A server that reports earnings always sends the field, so a place that
+    // earned nothing is an explicit zero rather than a missing value.
+    expect(unpaid.coinsEarned, 0);
+    // An older server that never reports the field must not look like a zero
+    // payout, otherwise the results screen claims a win earned nothing.
+    expect(
+      const Winner(playerId: 'x', place: 1).coinsEarned,
+      isNull,
     );
   });
 

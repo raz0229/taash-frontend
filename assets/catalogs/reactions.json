@@ -10,4 +10,3 @@
     {"anim_id": 8, "anim_cost_in_coins": 100, "static": false, "contributor": "Tomato Splash by LottieFiles", "anim_href_in_frontend": "8.gif", "sfx_to_play": "audio/reactions/8.ogg" },
     {"anim_id": 9, "anim_cost_in_coins": 100, "static": false, "contributor": "Donkey Braying by LottieFiles", "anim_href_in_frontend": "9.gif", "sfx_to_play": "audio/reactions/9.ogg" }
 ]
-

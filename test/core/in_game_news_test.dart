@@ -1,6 +1,7 @@
 import 'dart:async';
 import 'dart:convert';
 
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:http/http.dart' as http;
@@ -11,6 +12,18 @@ import 'package:taash/core/theme/taash_theme.dart';
 import 'package:taash/core/widgets/in_game_news.dart';
 
 const newsUrl = 'https://news.example.test/news.json';
+
+final _png = Uint8List.fromList(const [
+  0x89, 0x50, 0x4E, 0x47, 0x0D, 0x0A, 0x1A, 0x0A, //
+  0x00, 0x00, 0x00, 0x0D, 0x49, 0x48, 0x44, 0x52,
+  0x00, 0x00, 0x00, 0x01, 0x00, 0x00, 0x00, 0x01,
+  0x08, 0x06, 0x00, 0x00, 0x00, 0x1F, 0x15, 0xC4,
+  0x89, 0x00, 0x00, 0x00, 0x0A, 0x49, 0x44, 0x41,
+  0x54, 0x78, 0x9C, 0x63, 0x00, 0x01, 0x00, 0x00,
+  0x05, 0x00, 0x01, 0x0D, 0x0A, 0x2D, 0xB4, 0x00,
+  0x00, 0x00, 0x00, 0x49, 0x45, 0x4E, 0x44, 0xAE,
+  0x42, 0x60, 0x82,
+]);
 
 Map<String, Object> newsJson() => {
   'headline': 'A fresh season begins',
@@ -130,6 +143,70 @@ void main() {
 
     expect(find.byKey(const ValueKey('inGameNewsDialog')), findsNothing);
   });
+
+  testWidgets('news image keeps its frame across rebuilds', (tester) async {
+    final news = InGameNews(
+      headline: 'A fresh season begins',
+      subtitle: 'Discover what is new in TaashOnline.',
+      image: Uri.parse('https://images.example.test/news.jpg'),
+    );
+    Widget tree() => MaterialApp(
+      theme: T.theme,
+      home: Scaffold(
+        body: InGameNewsDialog(news: news, imageProvider: MemoryImage(_png)),
+      ),
+    );
+
+    await tester.pumpWidget(tree());
+    await tester.runAsync(
+      () => precacheImage(MemoryImage(_png), tester.element(find.byType(Image))),
+    );
+    await tester.pump();
+    await tester.pump(const Duration(milliseconds: 400));
+
+    expect(tester.widget<RawImage>(find.byType(RawImage)).image, isNotNull);
+    final first = tester.widget<Image>(find.byType(Image)).image;
+
+    await tester.pumpWidget(tree());
+    await tester.pump();
+
+    expect(tester.widget<RawImage>(find.byType(RawImage)).image, isNotNull);
+    expect(identical(tester.widget<Image>(find.byType(Image)).image, first),
+        isTrue);
+  });
+
+  testWidgets('news image reports progress while downloading', (tester) async {
+    final news = InGameNews(
+      headline: 'A fresh season begins',
+      subtitle: 'Discover what is new in TaashOnline.',
+      image: Uri.parse('https://images.example.test/news.jpg'),
+    );
+    await tester.pumpWidget(
+      MaterialApp(
+        theme: T.theme,
+        home: Scaffold(
+          body: InGameNewsDialog(news: news, imageProvider: _PendingImage()),
+        ),
+      ),
+    );
+    await tester.pump();
+
+    expect(find.byType(CircularProgressIndicator), findsOneWidget);
+  });
+}
+
+class _PendingImage extends ImageProvider<_PendingImage> {
+  @override
+  Future<_PendingImage> obtainKey(ImageConfiguration configuration) =>
+      SynchronousFuture(_PendingImage());
+
+  @override
+  ImageStreamCompleter loadImage(
+    _PendingImage key,
+    ImageDecoderCallback decode,
+  ) => OneFrameImageStreamCompleter(
+    Completer<ImageInfo>().future,
+  );
 }
 
 String? _header(http.Request request, String name) {

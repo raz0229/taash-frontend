@@ -1,0 +1,63 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg xmlns="http://www.w3.org/2000/svg" width="750" height="1050" viewBox="0 0 750 1050">
+
+    <defs>
+      <linearGradient id="bg" x1="0" y1="0" x2="1" y2="1">
+        <stop offset="0" stop-color="#07091b"/>
+        <stop offset="0.5" stop-color="#0b1030"/>
+        <stop offset="1" stop-color="#050612"/>
+      </linearGradient>
+      <linearGradient id="rim" x1="0" y1="0" x2="1" y2="1">
+        <stop offset="0" stop-color="#35f2ff"/>
+        <stop offset="0.48" stop-color="#b54cff"/>
+        <stop offset="1" stop-color="#ff3bd4"/>
+      </linearGradient>
+      <linearGradient id="face" x1="0" y1="0" x2="0" y2="1">
+        <stop offset="0" stop-color="#1b2257"/>
+        <stop offset="1" stop-color="#090b20"/>
+      </linearGradient>
+      <filter id="glow" x="-60%" y="-60%" width="220%" height="220%">
+        <feGaussianBlur stdDeviation="7" result="b"/>
+        <feMerge><feMergeNode in="b"/><feMergeNode in="SourceGraphic"/></feMerge>
+      </filter>
+      <filter id="softglow" x="-50%" y="-50%" width="200%" height="200%">
+        <feGaussianBlur stdDeviation="2.5" result="b"/>
+        <feMerge><feMergeNode in="b"/><feMergeNode in="SourceGraphic"/></feMerge>
+      </filter>
+      <pattern id="grid" width="40" height="40" patternUnits="userSpaceOnUse">
+        <path d="M40 0H0V40" fill="none" stroke="#2d3970" stroke-width="1" opacity=".28"/>
+        <circle cx="0" cy="0" r="1.4" fill="#6c7bce" opacity=".32"/>
+      </pattern>
+      <pattern id="scan" width="1" height="12" patternUnits="userSpaceOnUse">
+        <rect width="1" height="1" y="0" fill="#fff" opacity=".035"/>
+      </pattern>
+    </defs>
+<rect x="0" y="0" width="750" height="1050" rx="42" fill="url(#bg)"/>
+<rect x="14" y="14" width="722" height="1022" rx="34" fill="none" stroke="url(#rim)" stroke-width="4" opacity=".9" filter="url(#softglow)"/>
+<rect x="29" y="29" width="692" height="992" rx="25" fill="url(#grid)" opacity=".62"/>
+<rect x="29" y="29" width="692" height="992" rx="25" fill="url(#scan)"/>
+<path d="M60 86H210 M540 86H690 M60 964H210 M540 964H690" stroke="#35f2ff" stroke-width="3" opacity=".8" filter="url(#softglow)"/>
+<text x="375" y="77" text-anchor="middle" font-family="monospace" font-size="15" font-weight="700" letter-spacing="5" fill="#8fa4ff" opacity=".8">NEON // ARCADE</text>
+
+      <rect x="57" y="112" width="636" height="826" rx="24" fill="#07091c" stroke="#35f2ff" stroke-width="3" filter="url(#softglow)"/>
+      <path d="M78 133H672V917H78Z" fill="none" stroke="#9d7cff" stroke-width="2" opacity=".75"/>
+      <g opacity=".95">
+        <path d="M120 175H630V875H120Z" fill="none" stroke="#35f2ff" stroke-width="2"/>
+        <path d="M120 175L630 875 M630 175L120 875" stroke="#9d7cff" stroke-width="2" opacity=".75"/>
+        <path d="M120 525H630 M375 175V875" stroke="#35f2ff" stroke-width="2" opacity=".55"/>
+        <rect x="150" y="205" width="450" height="640" fill="url(#grid)" opacity=".45"/>
+        <circle cx="375" cy="525" r="165" fill="#0a0e2a" stroke="#35f2ff" stroke-width="5" filter="url(#glow)"/>
+        <circle cx="375" cy="525" r="130" fill="none" stroke="#9d7cff" stroke-width="3" stroke-dasharray="7 12"/>
+        <circle cx="375" cy="525" r="82" fill="none" stroke="#35f2ff" stroke-width="2"/>
+        <path d="M295 525H455 M375 445V605" stroke="#9d7cff" stroke-width="3"/>
+        <text x="375" y="515" text-anchor="middle" font-family="monospace" font-size="24" font-weight="900" letter-spacing="6" fill="#eef2ff">ARCADE</text>
+        <text x="375" y="550" text-anchor="middle" font-family="monospace" font-size="15" letter-spacing="4" fill="#35f2ff">PLAY DECK</text>
+        <text x="375" y="650" text-anchor="middle" font-family="monospace" font-size="12" letter-spacing="4" fill="#8997d8">INSERT • PLAY • REPEAT</text>
+      </g>
+      <g fill="#9d7cff" filter="url(#softglow)">
+        <circle cx="105" cy="160" r="5"/><circle cx="645" cy="160" r="5"/>
+        <circle cx="105" cy="890" r="5"/><circle cx="645" cy="890" r="5"/>
+      </g>
+    
+<text x="375" y="1000" text-anchor="middle" font-family="monospace" font-size="12" letter-spacing="4" fill="#6f7bb5" opacity=".8">NEON ARCADE // CYAN</text>
+</svg>

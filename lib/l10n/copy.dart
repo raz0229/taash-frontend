@@ -267,6 +267,7 @@ abstract final class Copy {
   static const backToTheLobby = 'Back to the lobby';
   static String place(Object? value0) => 'Place $value0';
   static const firstPlace = 'First place';
+  static String coinsEarned(Object? value0) => 'Coins Earned: $value0';
   static const theServerHasNotProvidedFinalPlaces =
       'The server has not provided final places. Your profile will show settled statistics when available.';
   static const viewFinalPlaces = 'View final places';

@@ -1288,6 +1288,12 @@ abstract class AppLocalizations {
   /// **'First place'**
   String get firstPlace;
 
+  /// No description provided for @coinsEarned.
+  ///
+  /// In en, this message translates to:
+  /// **'Coins Earned: {value0}'**
+  String coinsEarned(Object value0);
+
   /// No description provided for @theServerHasNotProvidedFinalPlaces.
   ///
   /// In en, this message translates to:

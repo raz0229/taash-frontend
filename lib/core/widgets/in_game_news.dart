@@ -173,11 +173,27 @@ class InGameNewsDialog extends StatelessWidget {
   );
 }
 
-class _NewsImage extends StatelessWidget {
+class _NewsImage extends StatefulWidget {
   const _NewsImage({required this.news, required this.imageProvider});
 
   final InGameNews news;
   final ImageProvider<Object>? imageProvider;
+
+  @override
+  State<_NewsImage> createState() => _NewsImageState();
+}
+
+class _NewsImageState extends State<_NewsImage> {
+  /// Built once and reused: handing `Image` a freshly constructed provider on
+  /// every rebuild makes it drop the decoded frame and start the download over,
+  /// so a remote image can never settle on screen.
+  late final ImageProvider<Object> _image =
+      widget.imageProvider ?? NetworkImage(widget.news.image.toString());
+
+  /// Mirrors whether the image has produced a decoded frame yet. `Image` only
+  /// exposes loading progress while bytes are still streaming in, so a stalled
+  /// or failed request would otherwise look like an empty card.
+  bool _hasFrame = false;
 
   @override
   Widget build(BuildContext context) => SizedBox(
@@ -196,20 +212,32 @@ class _NewsImage extends StatelessWidget {
           ),
         ),
         Image(
-          image: imageProvider ?? NetworkImage(news.image.toString()),
+          image: _image,
           fit: BoxFit.cover,
-          semanticLabel: news.headline,
+          gaplessPlayback: true,
+          semanticLabel: widget.news.headline,
           frameBuilder: (context, child, frame, wasSynchronouslyLoaded) {
-            if (wasSynchronouslyLoaded) return child;
-            return AnimatedOpacity(
-              opacity: frame == null ? 0 : 1,
-              duration: T.standard,
-              child: child,
+            _hasFrame = frame != null;
+            return child;
+          },
+          loadingBuilder: (context, child, progress) => _hasFrame
+              ? child
+              : const Center(
+                  child: SizedBox(
+                    width: 22,
+                    height: 22,
+                    child: CircularProgressIndicator(
+                      strokeWidth: 2.4,
+                      color: T.white,
+                    ),
+                  ),
+                ),
+          errorBuilder: (context, error, stackTrace) {
+            debugPrint('In-game news image failed: $error');
+            return const Center(
+              child: Icon(Icons.campaign_rounded, color: T.white, size: 40),
             );
           },
-          errorBuilder: (context, error, stackTrace) => const Center(
-            child: Icon(Icons.campaign_rounded, color: T.white, size: 40),
-          ),
         ),
         const DecoratedBox(
           decoration: BoxDecoration(
