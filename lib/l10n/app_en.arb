@@ -48,6 +48,7 @@
   "signInIsAlreadyInProgress": "Sign-in is already in progress.",
   "weCouldNotRestoreYourSavedSession": "We could not restore your saved session. Please sign in again.",
   "cancel": "Cancel",
+  "done": "Done",
   "avatar": "Avatar {value0}",
   "@avatar": {
     "placeholders": {
@@ -205,6 +206,55 @@
   "loadingAvatars": "Loading avatars",
   "refreshCollectionAndBalance": "Refresh collection and balance",
   "avatarCollection": "Avatar collection",
+  "shop": "Shop",
+  "avatarsTab": "Avatars",
+  "thulluSfxTab": "Thulla SFX",
+  "invalidThulluSfxCatalog": "Invalid Thulla SFX catalog",
+  "duplicateThulluSfxIDs": "Duplicate Thulla SFX IDs",
+  "missingDefaultThulluSfx": "The Thulla SFX catalog is missing its default sound",
+  "loadingThulluSfx": "Loading Thulla SFX",
+  "weCouldNotLoadTheThulluSfx": "We could not load the Thulla soundboard. Please try again.",
+  "thulluSfxIntro": "Hand over the Thullu? This is the sound the whole room hears.",
+  "thulluSfxUnavailable": "Thulla SFX unavailable",
+  "noThulluSfxYet": "No sounds match this filter yet.",
+  "soundsOwned": "sounds owned",
+  "yourThulluSound": "Your Thullu sound",
+  "stopPreview": "Stop",
+  "preview": "Preview",
+  "alreadyUnlocked": "Already unlocked",
+  "weCouldNotChangeYourThulluSoundPlease": "We could not change your Thullu sound. Please try again.",
+  "yourThulluActionMayHaveCompletedRefresh": "Your Thullu SFX action may have completed. Refresh your balance and soundboard before making another change.",
+  "unlockThulluSoundFor": "Unlock for {value0}",
+  "@unlockThulluSoundFor": {
+    "placeholders": {
+      "value0": {
+        "type": "Object"
+      }
+    }
+  },
+  "unlockThulluSoundForFree": "Unlock for free",
+  "unlockThulluSound": "Unlock {value0}?",
+  "@unlockThulluSound": {
+    "placeholders": {
+      "value0": {
+        "type": "Object"
+      }
+    }
+  },
+  "yourBalanceCoinsThisUnlocksTheSound": "{value0} virtual coins\nYour balance: {value1} coins\n\nThis unlocks the sound. You can select it afterward.",
+  "@yourBalanceCoinsThisUnlocksTheSound": {
+    "placeholders": {
+      "value0": {
+        "type": "Object"
+      },
+      "value1": {
+        "type": "Object"
+      }
+    }
+  },
+  "thulluSoundInUse": "In use",
+  "filterAll": "All",
+  "filterOwned": "Owned",
   "weCouldNotChangeYourAvatarPlease": "We could not change your avatar. Please try again.",
   "yourAvatarActionMayHaveCompletedRefresh": "Your avatar action may have completed. Refresh your balance and collection before making another change.",
   "unlockFor": "Unlock for {value0}",

@@ -171,6 +171,9 @@ class AppLocalizationsEn extends AppLocalizations {
   String get cancel => 'Cancel';
 
   @override
+  String get done => 'Done';
+
+  @override
   String avatar(Object value0) {
     return 'Avatar $value0';
   }
@@ -563,6 +566,92 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get avatarCollection => 'Avatar collection';
+
+  @override
+  String get shop => 'Shop';
+
+  @override
+  String get avatarsTab => 'Avatars';
+
+  @override
+  String get thulluSfxTab => 'Thulla SFX';
+
+  @override
+  String get invalidThulluSfxCatalog => 'Invalid Thulla SFX catalog';
+
+  @override
+  String get duplicateThulluSfxIDs => 'Duplicate Thulla SFX IDs';
+
+  @override
+  String get missingDefaultThulluSfx =>
+      'The Thulla SFX catalog is missing its default sound';
+
+  @override
+  String get loadingThulluSfx => 'Loading Thulla SFX';
+
+  @override
+  String get weCouldNotLoadTheThulluSfx =>
+      'We could not load the Thulla soundboard. Please try again.';
+
+  @override
+  String get thulluSfxIntro =>
+      'Hand over the Thullu? This is the sound the whole room hears.';
+
+  @override
+  String get thulluSfxUnavailable => 'Thulla SFX unavailable';
+
+  @override
+  String get noThulluSfxYet => 'No sounds match this filter yet.';
+
+  @override
+  String get soundsOwned => 'sounds owned';
+
+  @override
+  String get yourThulluSound => 'Your Thullu sound';
+
+  @override
+  String get stopPreview => 'Stop';
+
+  @override
+  String get preview => 'Preview';
+
+  @override
+  String get alreadyUnlocked => 'Already unlocked';
+
+  @override
+  String get weCouldNotChangeYourThulluSoundPlease =>
+      'We could not change your Thullu sound. Please try again.';
+
+  @override
+  String get yourThulluActionMayHaveCompletedRefresh =>
+      'Your Thullu SFX action may have completed. Refresh your balance and soundboard before making another change.';
+
+  @override
+  String unlockThulluSoundFor(Object value0) {
+    return 'Unlock for $value0';
+  }
+
+  @override
+  String get unlockThulluSoundForFree => 'Unlock for free';
+
+  @override
+  String unlockThulluSound(Object value0) {
+    return 'Unlock $value0?';
+  }
+
+  @override
+  String yourBalanceCoinsThisUnlocksTheSound(Object value0, Object value1) {
+    return '$value0 virtual coins\nYour balance: $value1 coins\n\nThis unlocks the sound. You can select it afterward.';
+  }
+
+  @override
+  String get thulluSoundInUse => 'In use';
+
+  @override
+  String get filterAll => 'All';
+
+  @override
+  String get filterOwned => 'Owned';
 
   @override
   String get weCouldNotChangeYourAvatarPlease =>

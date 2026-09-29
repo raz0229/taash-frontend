@@ -28,6 +28,8 @@ const profileJson = {
   'xp': 780,
   'selected_pfp': 1,
   'unlocked_pfps': [0, 1, 2],
+  'selected_thullu_sfx': 2,
+  'unlocked_thullu_sfx': [0, 2],
   'created_at': '2026-09-01T12:00:00Z',
 };
 void main() {
@@ -202,5 +204,62 @@ void main() {
         api.close();
       });
     }
+  }
+
+  // The Shop opens on Avatars, so the Thulla SFX half needs its own render
+  // check at both text scales.
+  for (final scale in [1.0, 2.0]) {
+    testWidgets('shop thullu sfx at ${scale}x text', (tester) async {
+      rootBundle.evict('assets/catalogs/thullu_soundboard.json');
+      tester.view.devicePixelRatio = 1;
+      tester.view.physicalSize = const Size(390, 844);
+      addTearDown(tester.view.resetPhysicalSize);
+      addTearDown(tester.view.resetDevicePixelRatio);
+      final api = ApiClient(
+        config: const AppConfig(backendUrl: 'https://example.test'),
+        client: MockClient(
+          (request) async => http.Response(jsonEncode(profileJson), 200),
+        ),
+      );
+      final auth = AuthController(api: api)
+        ..profile = PlayerProfile.fromJson(profileJson)
+        ..status = AuthStatus.authenticated;
+      api.tokenProvider = () async => 'test-token';
+      await tester.pumpWidget(
+        MaterialApp(
+          theme: T.theme,
+          localizationsDelegates: GlobalMaterialLocalizations.delegates,
+          builder: (context, child) => MediaQuery(
+            data: MediaQuery.of(context).copyWith(
+              textScaler: TextScaler.linear(scale),
+              disableAnimations: true,
+            ),
+            child: child!,
+          ),
+          home: Scaffold(
+            body: SafeArea(child: ShopScreen(auth: auth, api: api)),
+          ),
+        ),
+      );
+      await tester.tap(find.text('Thulla SFX'));
+      await tester.pump();
+      await tester.runAsync(() async => Future<void>.delayed(
+        const Duration(milliseconds: 100),
+      ));
+      await tester.pump(const Duration(milliseconds: 500));
+      expect(tester.takeException(), isNull);
+      expect(find.byType(CircularProgressIndicator), findsNothing);
+      // The soundboard loaded: the owned clip is named in the header.
+      expect(find.text('Bhola Meme'), findsWidgets);
+      await expectLater(
+        find.byType(Scaffold).first,
+        matchesGoldenFile(
+          'goldens/shop_thullu_sfx_${scale == 1 ? 'normal' : 'large_text'}.png',
+        ),
+      );
+      await tester.pumpWidget(const SizedBox());
+      auth.dispose();
+      api.close();
+    });
   }
 }

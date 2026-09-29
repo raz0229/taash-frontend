@@ -555,6 +555,25 @@ class ApiClient {
     );
   }
 
+  /// Unlocks a thullu sound. The coin price is resolved server-side from the
+  /// soundboard catalog, so no amount is sent from here.
+  Future<void> buyThulluSfx(String playerId, int thulluId) async {
+    await request(
+      'POST',
+      '/v1/thullu-sfx/buy',
+      body: {'player_id': playerId, 'thullu_id': thulluId},
+    );
+  }
+
+  /// Picks which clip plays when this player is the one who gives the Thullu.
+  Future<void> selectThulluSfx(String playerId, int thulluId) async {
+    await request(
+      'POST',
+      '/v1/thullu-sfx/select',
+      body: {'player_id': playerId, 'thullu_id': thulluId},
+    );
+  }
+
   Future<void> logout(String token) async {
     await request('POST', '/v1/auth/logout', explicitToken: token);
   }

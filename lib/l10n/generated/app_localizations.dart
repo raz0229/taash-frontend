@@ -382,6 +382,12 @@ abstract class AppLocalizations {
   /// **'Cancel'**
   String get cancel;
 
+  /// No description provided for @done.
+  ///
+  /// In en, this message translates to:
+  /// **'Done'**
+  String get done;
+
   /// No description provided for @avatar.
   ///
   /// In en, this message translates to:
@@ -1095,6 +1101,156 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Avatar collection'**
   String get avatarCollection;
+
+  /// No description provided for @shop.
+  ///
+  /// In en, this message translates to:
+  /// **'Shop'**
+  String get shop;
+
+  /// No description provided for @avatarsTab.
+  ///
+  /// In en, this message translates to:
+  /// **'Avatars'**
+  String get avatarsTab;
+
+  /// No description provided for @thulluSfxTab.
+  ///
+  /// In en, this message translates to:
+  /// **'Thulla SFX'**
+  String get thulluSfxTab;
+
+  /// No description provided for @invalidThulluSfxCatalog.
+  ///
+  /// In en, this message translates to:
+  /// **'Invalid Thulla SFX catalog'**
+  String get invalidThulluSfxCatalog;
+
+  /// No description provided for @duplicateThulluSfxIDs.
+  ///
+  /// In en, this message translates to:
+  /// **'Duplicate Thulla SFX IDs'**
+  String get duplicateThulluSfxIDs;
+
+  /// No description provided for @missingDefaultThulluSfx.
+  ///
+  /// In en, this message translates to:
+  /// **'The Thulla SFX catalog is missing its default sound'**
+  String get missingDefaultThulluSfx;
+
+  /// No description provided for @loadingThulluSfx.
+  ///
+  /// In en, this message translates to:
+  /// **'Loading Thulla SFX'**
+  String get loadingThulluSfx;
+
+  /// No description provided for @weCouldNotLoadTheThulluSfx.
+  ///
+  /// In en, this message translates to:
+  /// **'We could not load the Thulla soundboard. Please try again.'**
+  String get weCouldNotLoadTheThulluSfx;
+
+  /// No description provided for @thulluSfxIntro.
+  ///
+  /// In en, this message translates to:
+  /// **'Hand over the Thullu? This is the sound the whole room hears.'**
+  String get thulluSfxIntro;
+
+  /// No description provided for @thulluSfxUnavailable.
+  ///
+  /// In en, this message translates to:
+  /// **'Thulla SFX unavailable'**
+  String get thulluSfxUnavailable;
+
+  /// No description provided for @noThulluSfxYet.
+  ///
+  /// In en, this message translates to:
+  /// **'No sounds match this filter yet.'**
+  String get noThulluSfxYet;
+
+  /// No description provided for @soundsOwned.
+  ///
+  /// In en, this message translates to:
+  /// **'sounds owned'**
+  String get soundsOwned;
+
+  /// No description provided for @yourThulluSound.
+  ///
+  /// In en, this message translates to:
+  /// **'Your Thullu sound'**
+  String get yourThulluSound;
+
+  /// No description provided for @stopPreview.
+  ///
+  /// In en, this message translates to:
+  /// **'Stop'**
+  String get stopPreview;
+
+  /// No description provided for @preview.
+  ///
+  /// In en, this message translates to:
+  /// **'Preview'**
+  String get preview;
+
+  /// No description provided for @alreadyUnlocked.
+  ///
+  /// In en, this message translates to:
+  /// **'Already unlocked'**
+  String get alreadyUnlocked;
+
+  /// No description provided for @weCouldNotChangeYourThulluSoundPlease.
+  ///
+  /// In en, this message translates to:
+  /// **'We could not change your Thullu sound. Please try again.'**
+  String get weCouldNotChangeYourThulluSoundPlease;
+
+  /// No description provided for @yourThulluActionMayHaveCompletedRefresh.
+  ///
+  /// In en, this message translates to:
+  /// **'Your Thullu SFX action may have completed. Refresh your balance and soundboard before making another change.'**
+  String get yourThulluActionMayHaveCompletedRefresh;
+
+  /// No description provided for @unlockThulluSoundFor.
+  ///
+  /// In en, this message translates to:
+  /// **'Unlock for {value0}'**
+  String unlockThulluSoundFor(Object value0);
+
+  /// No description provided for @unlockThulluSoundForFree.
+  ///
+  /// In en, this message translates to:
+  /// **'Unlock for free'**
+  String get unlockThulluSoundForFree;
+
+  /// No description provided for @unlockThulluSound.
+  ///
+  /// In en, this message translates to:
+  /// **'Unlock {value0}?'**
+  String unlockThulluSound(Object value0);
+
+  /// No description provided for @yourBalanceCoinsThisUnlocksTheSound.
+  ///
+  /// In en, this message translates to:
+  /// **'{value0} virtual coins\nYour balance: {value1} coins\n\nThis unlocks the sound. You can select it afterward.'**
+  String yourBalanceCoinsThisUnlocksTheSound(Object value0, Object value1);
+
+  /// No description provided for @thulluSoundInUse.
+  ///
+  /// In en, this message translates to:
+  /// **'In use'**
+  String get thulluSoundInUse;
+
+  /// No description provided for @filterAll.
+  ///
+  /// In en, this message translates to:
+  /// **'All'**
+  String get filterAll;
+
+  /// No description provided for @filterOwned.
+  ///
+  /// In en, this message translates to:
+  /// **'Owned'**
+  String get filterOwned;
 
   /// No description provided for @weCouldNotChangeYourAvatarPlease.
   ///

@@ -24,7 +24,7 @@ class S {
   static const country = Copy.country;
   static const home = Copy.home;
   static const learn = Copy.learn;
-  static const shop = Copy.avatars;
+  static const shop = Copy.shop;
   static const leaders = Copy.leaders;
   static const about = Copy.about;
   static const quickMatch = Copy.findARoom;

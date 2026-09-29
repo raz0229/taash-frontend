@@ -748,6 +748,9 @@ class _LobbyShellState extends State<LobbyShell> {
         onExit: exitRoom,
         coinBalance: () => widget.auth.profile?.coins ?? 0,
         friendRequestSent: roomFriendRequestIds,
+        // Enables the in-room Thullu sound picker in the room options sheet.
+        auth: widget.auth,
+        api: widget.api,
         onPlayerProfile: profile,
         onAddFriend: (playerId) async {
           try {
@@ -821,7 +824,7 @@ class _LobbyShellState extends State<LobbyShell> {
             label: 'Friends',
           ),
           const NavigationDestination(
-            icon: Icon(Icons.face_retouching_natural),
+            icon: Icon(Icons.shopping_bag_outlined),
             label: S.shop,
           ),
           const NavigationDestination(

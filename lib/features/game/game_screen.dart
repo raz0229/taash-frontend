@@ -4,14 +4,18 @@ import 'package:taash/l10n/copy.dart';
 import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import '../../core/auth/auth_controller.dart';
 import '../../core/errors/app_failure.dart';
 import '../../core/models/models.dart';
+import '../../core/network/api_client.dart';
 import '../../core/preferences/preferences.dart';
 import '../../core/theme/taash_theme.dart';
 import '../../core/websocket/room_session.dart';
 import '../../core/widgets/taash_widgets.dart';
 import '../chat/chat_sheet.dart';
 import '../chat/reactions.dart';
+import '../shop/thullu_sfx_catalog.dart';
+import '../shop/thullu_sfx_sheet.dart';
 import 'game_copy.dart';
 import 'game_surfaces.dart';
 import 'results_view.dart';
@@ -41,6 +45,8 @@ class GameScreen extends StatefulWidget {
     this.onAddFriend,
     this.friendRequestSent = const {},
     this.preferences,
+    this.auth,
+    this.api,
   });
   final RoomSession session;
   final VoidCallback onExit;
@@ -49,6 +55,10 @@ class GameScreen extends StatefulWidget {
   final Future<void> Function(String)? onAddFriend;
   final Set<String> friendRequestSent;
   final Preferences? preferences;
+  // Only needed for the in-room Thullu sound picker; leaving them null simply
+  // hides that row, which keeps existing callers and tests working.
+  final AuthController? auth;
+  final ApiClient? api;
   @override
   State<GameScreen> createState() => _GameScreenState();
 }
@@ -504,26 +514,29 @@ class _GameScreenState extends State<GameScreen>
     }
   }
 
-  // A6: Bhabhi Thullu reveal. The giver is the player who played the off-suit
-  // card; the taker (`lastPickupPlayerId`) picks up the whole trick.
+  // A6: Bhabhi Thullu reveal. The server names the giver and resolves which of
+  // their sounds the room hears, so every seat hears the same clip. The local
+  // trick scan is only a fallback for rooms broadcast by an older server.
   void _showBhabhiThulluAnimation(RoomSnapshot s, BhabhiState bhabhi) {
-    String giverId = '';
-    for (final played in bhabhi.trick) {
-      final identity = CardIdentity.parse(played.card);
-      if (identity.valid && identity.suit != bhabhi.leadSuit) {
-        giverId = played.playerId;
+    var giverId = bhabhi.lastThulluGiverId;
+    if (giverId.isEmpty) {
+      for (final played in bhabhi.trick) {
+        final identity = CardIdentity.parse(played.card);
+        if (identity.valid && identity.suit != bhabhi.leadSuit) {
+          giverId = played.playerId;
+        }
       }
     }
     final receiverId = bhabhi.lastPickupPlayerId;
     if (giverId.isEmpty || receiverId.isEmpty || bhabhi.trick.isEmpty) {
       announce(Copy.thullu);
-      audio.playSfx('thullu_caught');
+      audio.playSfx(ThulluSfxItem.sfxKeyForId(bhabhi.lastThulluSfx));
       return;
     }
 
     if (_thulluAnimationActive) return;
     setState(() => _thulluAnimationActive = true);
-    audio.playSfx('thullu_caught');
+    audio.playSfx(ThulluSfxItem.sfxKeyForId(bhabhi.lastThulluSfx));
     _turnTimer.stop();
 
     final players = s.players;

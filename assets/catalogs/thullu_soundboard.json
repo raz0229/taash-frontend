@@ -1,0 +1,98 @@
+[
+    {
+        "thullu_id": 0,
+        "cost_in_coins": 0,
+        "name": "Default",
+        "sfx_to_play": "audio/thullu-soundboard/0.ogg"
+    },
+    {
+        "thullu_id": 1,
+        "cost_in_coins": 500,
+        "name": "Ye Le Meme",
+        "sfx_to_play": "audio/thullu-soundboard/1.ogg"
+    },
+    {
+        "thullu_id": 2,
+        "cost_in_coins": 5000,
+        "name": "Bhola Meme",
+        "sfx_to_play": "audio/thullu-soundboard/2.ogg"
+    },
+    {
+        "thullu_id": 3,
+        "cost_in_coins": 2000,
+        "name": "Baby Cry",
+        "sfx_to_play": "audio/thullu-soundboard/3.ogg"
+    },
+    {
+        "thullu_id": 4,
+        "cost_in_coins": 2000,
+        "name": "Baby Laugh",
+        "sfx_to_play": "audio/thullu-soundboard/4.ogg"
+    },
+    {
+        "thullu_id": 5,
+        "cost_in_coins": 1500,
+        "name": "Dog Whine",
+        "sfx_to_play": "audio/thullu-soundboard/5.ogg"
+    },
+    {
+        "thullu_id": 6,
+        "cost_in_coins": 2500,
+        "name": "Army Salute",
+        "sfx_to_play": "audio/thullu-soundboard/6.ogg"
+    },
+    {
+        "thullu_id": 7,
+        "cost_in_coins": 500,
+        "name": "Vine Boom",
+        "sfx_to_play": "audio/thullu-soundboard/7.ogg"
+    },
+    {
+        "thullu_id": 8,
+        "cost_in_coins": 1000,
+        "name": "Sad Trombone",
+        "sfx_to_play": "audio/thullu-soundboard/8.ogg"
+    },
+    {
+        "thullu_id": 9,
+        "cost_in_coins": 500,
+        "name": "Bruh",
+        "sfx_to_play": "audio/thullu-soundboard/9.ogg"
+    },
+    {
+        "thullu_id": 10,
+        "cost_in_coins": 4000,
+        "name": "Clown Horn",
+        "sfx_to_play": "audio/thullu-soundboard/10.ogg"
+    },
+    {
+        "thullu_id": 11,
+        "cost_in_coins": 5000,
+        "name": "Wasted",
+        "sfx_to_play": "audio/thullu-soundboard/11.ogg"
+    },
+    {
+        "thullu_id": 12,
+        "cost_in_coins": 1500,
+        "name": "Error",
+        "sfx_to_play": "audio/thullu-soundboard/12.ogg"
+    },
+    {
+        "thullu_id": 13,
+        "cost_in_coins": 4000,
+        "name": "Crickets",
+        "sfx_to_play": "audio/thullu-soundboard/13.ogg"
+    },
+    {
+        "thullu_id": 14,
+        "cost_in_coins": 5000,
+        "name": "Laugh Track",
+        "sfx_to_play": "audio/thullu-soundboard/14.ogg"
+    },
+    {
+        "thullu_id": 15,
+        "cost_in_coins": 6000,
+        "name": "Bhola Meme 2",
+        "sfx_to_play": "audio/thullu-soundboard/15.ogg"
+    }
+]

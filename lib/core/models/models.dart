@@ -54,8 +54,11 @@ class PlayerProfile {
     this.xp = 0,
     List<int> unlockedPfps = const [],
     this.selectedPfp = 0,
+    List<int> unlockedThulluSfx = const [0],
+    this.selectedThulluSfx = 0,
     required this.createdAt,
-  }) : unlockedPfps = List.unmodifiable(unlockedPfps);
+  })  : unlockedPfps = List.unmodifiable(unlockedPfps),
+        unlockedThulluSfx = List.unmodifiable(unlockedThulluSfx);
 
   factory PlayerProfile.fromJson(Map<String, dynamic> json) => PlayerProfile(
     id: jsonString(json['id']),
@@ -66,12 +69,18 @@ class PlayerProfile {
     xp: jsonInt(json['xp']),
     unlockedPfps: jsonList(json['unlocked_pfps'], (v) => jsonInt(v)),
     selectedPfp: jsonInt(json['selected_pfp']),
+    // Accounts created before the soundboard shipped have no thullu columns,
+    // so default to the one sound every account is guaranteed to own.
+    unlockedThulluSfx: json['unlocked_thullu_sfx'] == null
+        ? const [0]
+        : jsonList(json['unlocked_thullu_sfx'], (v) => jsonInt(v)),
+    selectedThulluSfx: jsonInt(json['selected_thullu_sfx']),
     createdAt: jsonDate(json['created_at']),
   );
 
   final String id, displayName, email, country;
-  final int coins, xp, selectedPfp;
-  final List<int> unlockedPfps;
+  final int coins, xp, selectedPfp, selectedThulluSfx;
+  final List<int> unlockedPfps, unlockedThulluSfx;
   final DateTime createdAt;
 }
 
@@ -298,6 +307,7 @@ class PublicPlayer {
     this.place = 0,
     this.points = 0,
     this.selectedPfp = 0,
+    this.selectedThulluSfx = 0,
     List<String> collection = const [],
   }) : collection = List.unmodifiable(collection);
   factory PublicPlayer.fromJson(Map<String, dynamic> json) => PublicPlayer(
@@ -310,10 +320,11 @@ class PublicPlayer {
     place: jsonInt(json['place']),
     points: jsonInt(json['points']),
     selectedPfp: jsonInt(json['selectedPfp']),
+    selectedThulluSfx: jsonInt(json['selectedThulluSfx']),
     collection: cardList(json['collection']),
   );
   final String id, displayName, country;
-  final int seat, handCount, place, points, selectedPfp;
+  final int seat, handCount, place, points, selectedPfp, selectedThulluSfx;
   final bool connected;
   final List<String> collection;
   bool get isBot => id.startsWith('bot-');
@@ -381,10 +392,17 @@ class BhabhiState extends PublicGameState {
       firstTrick = json['first_trick'] == true,
       leadSuit = jsonString(json['lead_suit']),
       lastPickupPlayerId = jsonString(json['last_pickup_player_id']),
-      lastThullu = json['last_thullu'] == true;
+      lastThullu = json['last_thullu'] == true,
+      lastThulluGiverId = jsonString(json['last_thullu_giver']),
+      lastThulluSfx = jsonInt(json['last_thullu_sfx']);
   final List<PlayedCard> trick;
   final bool firstTrick, lastThullu;
   final String leadSuit, lastPickupPlayerId;
+  /// Who handed over the Thullu, and which clip the server resolved for them.
+  /// Both default to the free sound so a room broadcast from an older server
+  /// still plays something.
+  final String lastThulluGiverId;
+  final int lastThulluSfx;
 }
 
 class BluffState extends PublicGameState {

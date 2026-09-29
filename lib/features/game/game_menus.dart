@@ -15,6 +15,31 @@ mixin _GameMenus on State<GameScreen> {
   // The "keep it friendly" consent is remembered for the whole room, so it is
   // only asked once even if the chat sheet is reopened.
   bool _chatAccepted = false;
+
+  // Name of the sound this room currently credits us with, shown as the
+  // subtitle of the picker row. Resolved from the shared catalog so it matches
+  // what the picker itself lists.
+  String _thulluSoundName = Copy.yourThulluSound;
+
+  bool get _isBhabhiRoom =>
+      session.snapshot?.room.game == GameType.bhabhi;
+
+  Future<void> _resolveThulluSoundName() async {
+    final snapshot = session.snapshot;
+    if (snapshot == null) return;
+    final me = snapshot.players
+        .where((p) => p.id == session.playerId)
+        .firstOrNull;
+    if (me == null) return;
+    try {
+      final name = await thulluSfxName(me.selectedThulluSfx);
+      if (!mounted || name == null) return;
+      setState(() => _thulluSoundName = name);
+    } catch (_) {
+      // A missing catalog must not take the room options down with it.
+    }
+  }
+
   Future<void> openChat() async {
     setState(() {
       chatOpen = true;
@@ -201,6 +226,8 @@ mixin _GameMenus on State<GameScreen> {
   }
 
   Future<void> options() async {
+    await _resolveThulluSoundName();
+    if (!mounted) return;
     await showTaashSheet<void>(
       context,
       StatefulBuilder(
@@ -279,6 +306,32 @@ mixin _GameMenus on State<GameScreen> {
                   setSheet(() {});
                 },
                 title: const Text(Copy.haptics),
+              ),
+            ],
+            // Thullu only happens in Bhabhi, so the picker is offered there and
+            // nowhere else. It sits below the preference switches so the sheet
+            // keeps a stable shape for every other game.
+            if (widget.auth != null && widget.api != null && _isBhabhiRoom)
+              ...[
+              const SizedBox(height: 6),
+              const Divider(),
+              const SizedBox(height: 6),
+              ListTile(
+                contentPadding: EdgeInsets.zero,
+                leading: const Icon(Icons.graphic_eq_rounded, color: T.muted),
+                title: const Text(Copy.yourThulluSound),
+                subtitle: Text(
+                  _thulluSoundName,
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
+                  style: const TextStyle(color: T.muted),
+                ),
+                trailing: const Icon(Icons.chevron_right_rounded, color: T.muted),
+                onTap: () => showThulluSfxSheet(
+                  context,
+                  auth: widget.auth!,
+                  api: widget.api!,
+                ),
               ),
             ],
             const SizedBox(height: 12),

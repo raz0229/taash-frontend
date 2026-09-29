@@ -176,5 +176,57 @@ void main() {
     }
     expect(find.byType(BottomSheet), findsNothing);
     expect(find.byType(ShopScreen), findsOneWidget);
+    // The shortcut must land on Avatars, not merely on the Shop.
+    expect(selectedShopTab(tester), Copy.avatarsTab);
   });
+
+  // Tapping the shop tab proves both tabs are reachable from the shortcut
+  // target, not just the default one.
+  testWidgets('shop tab bar switches to Thulla SFX', (tester) async {
+    final api = buildApi();
+    addTearDown(api.close);
+    final auth = AuthController(api: api)
+      ..profile = PlayerProfile.fromJson(profileJson)
+      ..status = AuthStatus.authenticated;
+    api.tokenProvider = () async => 'test-token';
+    addTearDown(auth.dispose);
+
+    await tester.pumpWidget(
+      MaterialApp(
+        theme: T.theme,
+        localizationsDelegates: GlobalMaterialLocalizations.delegates,
+        home: Scaffold(
+          body: SafeArea(child: ShopScreen(auth: auth, api: api)),
+        ),
+      ),
+    );
+    await tester.runAsync(
+      () => Future<void>.delayed(const Duration(milliseconds: 150)),
+    );
+    for (var i = 0; i < 20 && find.byType(CircularProgressIndicator).evaluate().isNotEmpty; i++) {
+      await tester.pump(const Duration(milliseconds: 100));
+    }
+    await tester.pump(const Duration(milliseconds: 500));
+    expect(selectedShopTab(tester), Copy.avatarsTab);
+
+    await tester.tap(find.text(Copy.thulluSfxTab));
+    await tester.pump(const Duration(milliseconds: 400));
+    expect(selectedShopTab(tester), Copy.thulluSfxTab);
+    expect(tester.takeException(), isNull);
+  });
+}
+
+/// The label of the shop tab currently marked selected in the semantics tree.
+String selectedShopTab(WidgetTester tester) {
+  String? selected;
+  for (final element in find.byType(Semantics).evaluate()) {
+    final widget = element.widget as Semantics;
+    final label = widget.properties.label;
+    if (widget.properties.selected == true &&
+        (label == Copy.avatarsTab || label == Copy.thulluSfxTab)) {
+      selected = label;
+    }
+  }
+  expect(selected, isNotNull, reason: 'expected a selected shop tab');
+  return selected!;
 }

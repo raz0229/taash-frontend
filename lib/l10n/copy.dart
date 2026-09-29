@@ -66,6 +66,7 @@ abstract final class Copy {
   static const weCouldNotRestoreYourSavedSession =
       'We could not restore your saved session. Please sign in again.';
   static const cancel = 'Cancel';
+  static const done = 'Done';
   static String avatar(Object? value0) => 'Avatar $value0';
   static const tryAgain = 'Try again';
   static const taashonline1001 = 'TaashOnline · 1.0.0 (1)';
@@ -221,6 +222,43 @@ abstract final class Copy {
   static const loadingAvatars = 'Loading avatars';
   static const refreshCollectionAndBalance = 'Refresh collection and balance';
   static const avatarCollection = 'Avatar collection';
+  // Shop tabs. The tab bar defaults to Avatars so the own-profile avatar
+  // shortcut always lands on the avatar picker.
+  static const shop = 'Shop';
+  static const avatarsTab = 'Avatars';
+  static const thulluSfxTab = 'Thulla SFX';
+  static const invalidThulluSfxCatalog = 'Invalid Thulla SFX catalog';
+  static const duplicateThulluSfxIDs = 'Duplicate Thulla SFX IDs';
+  static const missingDefaultThulluSfx =
+      'The Thulla SFX catalog is missing its default sound';
+  static const loadingThulluSfx = 'Loading Thulla SFX';
+  static const weCouldNotLoadTheThulluSfx =
+      'We could not load the Thulla soundboard. Please try again.';
+  static const thulluSfxIntro =
+      'Hand over the Thullu? This is the sound the whole room hears.';
+  static const thulluSfxUnavailable = 'Thulla SFX unavailable';
+  static const noThulluSfxYet = 'No sounds match this filter yet.';
+  static const soundsOwned = 'sounds owned';
+  static const yourThulluSound = 'Your Thullu sound';
+  static const stopPreview = 'Stop';
+  static const preview = 'Preview';
+  static const alreadyUnlocked = 'Already unlocked';
+  static const weCouldNotChangeYourThulluSoundPlease =
+      'We could not change your Thullu sound. Please try again.';
+  static const yourThulluActionMayHaveCompletedRefresh =
+      'Your Thullu SFX action may have completed. Refresh your balance and soundboard before making another change.';
+  static String unlockThulluSoundFor(Object? value0) =>
+      'Unlock for $value0';
+  static const unlockThulluSoundForFree = 'Unlock for free';
+  static String unlockThulluSound(Object? value0) => 'Unlock $value0?';
+  static String yourBalanceCoinsThisUnlocksTheSound(
+    Object? value0,
+    Object? value1,
+  ) =>
+      '$value0 coins\nYour balance: $value1 coins\n\nThis unlocks the sound. You can select it afterward.';
+  static const thulluSoundInUse = 'In use';
+  static const filterAll = 'All';
+  static const filterOwned = 'Owned';
   static const weCouldNotChangeYourAvatarPlease =
       'We could not change your avatar. Please try again.';
   static const yourAvatarActionMayHaveCompletedRefresh =

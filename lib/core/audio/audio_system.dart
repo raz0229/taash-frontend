@@ -9,6 +9,7 @@ class AudioSystem with WidgetsBindingObserver {
   late final AudioPlayer _bgmPlayer;
   final Set<AudioPlayer> _sfxPlayers = <AudioPlayer>{};
   AudioPlayer? _loopPlayer;
+  AudioPlayer? _previewPlayer;
 
   bool _bgmPlaying = false;
   bool _bgmPausedByLifecycle = false;
@@ -109,6 +110,52 @@ class AudioSystem with WidgetsBindingObserver {
       _sfxPlayers.remove(player);
       await player.dispose();
     }
+  }
+
+  /// Plays a clip as a shop preview and reports when it ends so the caller can
+  /// drop its playing indicator. Kept separate from [playSfx] so a preview can
+  /// be stopped early without cutting off gameplay sound.
+  Future<void> previewSfx(String name, {VoidCallback? onComplete}) async {
+    if (_isTest) return;
+    if (!sfxEnabled) return;
+    await stopPreviewSfx();
+    final player = AudioPlayer();
+    _previewPlayer = player;
+    var settled = false;
+    Future<void> settle() async {
+      if (settled) return;
+      settled = true;
+      if (identical(_previewPlayer, player)) _previewPlayer = null;
+      _sfxPlayers.remove(player);
+      try {
+        await player.dispose();
+      } catch (_) {}
+      onComplete?.call();
+    }
+
+    try {
+      await player.setAudioContext(_sfxContext);
+      player.onPlayerComplete.listen((_) => settle());
+      await player.play(AssetSource('audio/$name.ogg'));
+    } catch (_) {
+      await settle();
+    }
+  }
+
+  /// True while a preview clip is still playing.
+  bool get isPreviewing => _previewPlayer != null;
+
+  Future<void> stopPreviewSfx() async {
+    final player = _previewPlayer;
+    _previewPlayer = null;
+    if (player == null) return;
+    try {
+      await player.stop();
+    } catch (_) {}
+    _sfxPlayers.remove(player);
+    try {
+      await player.dispose();
+    } catch (_) {}
   }
 
   /// Plays a looping clip (e.g. a machine sound) until [stopLoopingSfx] is

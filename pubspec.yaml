@@ -41,6 +41,7 @@ flutter:
     - assets/reactions/
     - assets/audio/
     - assets/audio/reactions/
+    - assets/audio/thullu-soundboard/
     - assets/fonts/OFL.txt
   fonts:
     - family: DM Sans
