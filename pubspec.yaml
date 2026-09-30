@@ -53,6 +53,7 @@ flutter:
     - assets/cards/pixel_quest/
     - assets/cards/starfall/
     - assets/pfps/
+    - assets/purchases/
     - assets/reactions/
     - assets/audio/
     - assets/audio/reactions/

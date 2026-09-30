@@ -10,6 +10,7 @@ import '../../core/widgets/reward_sheet.dart';
 import '../../core/widgets/taash_widgets.dart';
 import '../../l10n/copy.dart';
 import '../../l10n/strings.dart';
+import 'discount_tab.dart';
 import 'game_art.dart';
 import 'game_tile.dart';
 import 'sidelocks_wheel.dart';
@@ -143,6 +144,10 @@ class _HomeScreenState extends State<HomeScreen>
     }
     widget.onQuickMatch(game);
   }
+
+  /// Opens the Coins Shop from the edge tab. The lobby owns the click sound, so
+  /// this only asks for the tab switch.
+  void _openCoinsShop() => widget.onPurchaseCoins?.call();
 
   /// Fraction (0–1) the tile under [key] has been pulled into the slot above
   /// the fixed action band. Rises to 1 while the tile is fully in view and the
@@ -595,6 +600,17 @@ class _HomeScreenState extends State<HomeScreen>
               ),
             ),
           ),
+          // Coin top-up, advertised without stealing any of the lobby's rows:
+          // the tab peeks out of the left edge and leads straight to the Coins
+          // Shop. It is left out entirely where the lobby cannot switch tabs, so
+          // it never offers a dead end.
+          if (widget.onPurchaseCoins != null)
+            Positioned.fill(
+              child: Align(
+                alignment: Alignment.centerLeft,
+                child: DiscountTab(onTap: _openCoinsShop),
+              ),
+            ),
           Positioned(
             key: _barKey,
             left: 0,

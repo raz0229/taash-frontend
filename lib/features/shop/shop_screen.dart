@@ -152,53 +152,107 @@ class _CoinsShopUnavailable extends StatelessWidget {
   );
 }
 
-class _ShopTabBar extends StatelessWidget {
+/// The four Shop tabs, always shown at their full label width.
+///
+/// Four labelled tabs are wider than a phone, so the bar scrolls instead of
+/// squeezing or ellipsing the labels. Selecting a tab slides it to the leading
+/// edge, which pulls its neighbour into view: that trailing sliver is what tells
+/// the player there are more tabs than fit.
+class _ShopTabBar extends StatefulWidget {
   const _ShopTabBar({required this.index, required this.onChanged});
 
   final int index;
   final ValueChanged<int> onChanged;
 
-  /// Every tab is shown and directly tappable, so a player never has to cycle
-  /// through tabs with arrows to reach the one they want. Four labels plus icons
-  /// do not fit side by side at large text scales, so the row switches to icons
-  /// only below a readable label width rather than clipping the labels.
+  @override
+  State<_ShopTabBar> createState() => _ShopTabBarState();
+}
+
+class _ShopTabBarState extends State<_ShopTabBar> {
+  final _controller = ScrollController();
+  final _tabKeys = List.generate(
+    ShopScreen.tabCount,
+    (_) => GlobalKey(debugLabel: 'shopTab'),
+  );
+
+  @override
+  void initState() {
+    super.initState();
+    // The tab the Shop opened on can start off-screen — the Coins Shop is last
+    // — so it is brought into view before the first frame is presented.
+    _scheduleReveal(animate: false);
+  }
+
+  @override
+  void didUpdateWidget(covariant _ShopTabBar oldWidget) {
+    super.didUpdateWidget(oldWidget);
+    if (oldWidget.index != widget.index) _scheduleReveal();
+  }
+
+  @override
+  void dispose() {
+    _controller.dispose();
+    super.dispose();
+  }
+
+  /// The reveal needs laid-out geometry, so it runs after the frame that
+  /// painted the newly selected tab.
+  void _scheduleReveal({bool animate = true}) {
+    WidgetsBinding.instance.addPostFrameCallback(
+      (_) => _revealSelected(animate: animate),
+    );
+  }
+
+  /// Pins the selected tab to the leading edge. Whatever fits after it comes
+  /// into view, and whatever was before it scrolls away — so stepping from tab
+  /// to tab always shows the neighbour still to come.
+  void _revealSelected({required bool animate}) {
+    if (!mounted) return;
+    final target = _tabKeys[widget.index].currentContext;
+    if (target == null) return;
+    final scrollable = Scrollable.maybeOf(target);
+    if (scrollable == null) return;
+    Scrollable.ensureVisible(
+      target,
+      alignment: 0,
+      duration: animate && !MediaQuery.disableAnimationsOf(context)
+          ? T.standard
+          : Duration.zero,
+      curve: Curves.easeOutCubic,
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
-    final textScale = MediaQuery.textScalerOf(context).scale(16) / 16;
-    Widget tab(int i) => _ShopTab(
-      label: _labelFor(i),
-      icon: _iconFor(i),
-      selected: index == i,
-      onTap: () => onChanged(i),
+    Widget tab(int i) => Padding(
+      // The gap lives on the tabs so it scrolls out with them and the
+      // leading-most tab still starts hard against the page margin.
+      padding: EdgeInsets.only(left: i == 0 ? 0 : 10),
+      child: _ShopTab(
+        // The key sits on the tab, not on this gap, so revealing a tab pins
+        // the tab itself against the edge instead of leaving the gap showing.
+        key: _tabKeys[i],
+        label: _labelFor(i),
+        icon: _iconFor(i),
+        selected: widget.index == i,
+        onTap: () => widget.onChanged(i),
+      ),
     );
 
-    // Four labelled tabs stop fitting side by side at large text scales. Rather
-    // than shrink the type further or clip the labels, the bar scrolls.
-    final scrollable = textScale > 1.3;
     return Padding(
       padding: const EdgeInsets.fromLTRB(20, 12, 20, 12),
-      child: switch (scrollable) {
-        true => SingleChildScrollView(
-          scrollDirection: Axis.horizontal,
-          child: Row(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              for (var i = 0; i < ShopScreen.tabCount; i++) ...[
-                if (i > 0) const SizedBox(width: 10),
-                tab(i),
-              ],
-            ],
-          ),
-        ),
-        false => Row(
+      child: SingleChildScrollView(
+        controller: _controller,
+        scrollDirection: Axis.horizontal,
+        // The tabs are direct children of the Shop body, so there is nothing
+        // off-screen for the keyboard or a screen reader to escape to.
+        child: Row(
+          mainAxisSize: MainAxisSize.min,
           children: [
-            for (var i = 0; i < ShopScreen.tabCount; i++) ...[
-              if (i > 0) const SizedBox(width: 10),
-              Expanded(child: tab(i)),
-            ],
+            for (var i = 0; i < ShopScreen.tabCount; i++) tab(i),
           ],
         ),
-      },
+      ),
     );
   }
 
@@ -219,6 +273,7 @@ class _ShopTabBar extends StatelessWidget {
 
 class _ShopTab extends StatelessWidget {
   const _ShopTab({
+    super.key,
     required this.label,
     required this.icon,
     required this.selected,
@@ -233,14 +288,17 @@ class _ShopTab extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final textScale = MediaQuery.textScalerOf(context).scale(16) / 16;
-    // Past a 1.4x text scale the icon and label no longer fit side by side, so
-    // stack them rather than ellipsing the label away.
+    // Past a 1.4x text scale the icon and label no longer sit comfortably side
+    // by side, so they stack. Stacking narrows the tab, which keeps more of the
+    // bar readable at the sizes where labels need the most room.
     final stacked = textScale > 1.4;
     final labelStyle = TextStyle(
       fontSize: stacked ? 13 : 14,
       fontWeight: FontWeight.w800,
       color: Colors.white,
     );
+    // The bar scrolls, so a tab is never squeezed and the label is never
+    // truncated: it wraps onto as many lines as the text scale needs.
     return Semantics(
       selected: selected,
       button: true,
@@ -255,7 +313,7 @@ class _ShopTab extends StatelessWidget {
           borderRadius: BorderRadius.circular(18),
           onTap: onTap,
           child: Container(
-            padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 12),
+            padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 12),
             decoration: BoxDecoration(
               borderRadius: BorderRadius.circular(18),
               border: Border.all(
@@ -272,25 +330,16 @@ class _ShopTab extends StatelessWidget {
                       Text(
                         label,
                         textAlign: TextAlign.center,
-                        maxLines: 1,
-                        overflow: TextOverflow.ellipsis,
                         style: labelStyle,
                       ),
                     ],
                   )
                 : Row(
-                    mainAxisAlignment: MainAxisAlignment.center,
+                    mainAxisSize: MainAxisSize.min,
                     children: [
                       Icon(icon, size: 18, color: T.ochre),
                       const SizedBox(width: 7),
-                      Flexible(
-                        child: Text(
-                          label,
-                          maxLines: 1,
-                          overflow: TextOverflow.ellipsis,
-                          style: labelStyle,
-                        ),
-                      ),
+                      Text(label, style: labelStyle),
                     ],
                   ),
           ),

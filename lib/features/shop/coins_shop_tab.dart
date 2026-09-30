@@ -161,25 +161,20 @@ class _CoinsShopTabState extends State<CoinsShopTab> {
   }
 }
 
+/// One line of context above the packs.
+///
+/// The tab bar already names the section, so repeating "Coins Shop" under it
+/// only pushed the bundles down; the sentence that explains what buying coins
+/// gets you is the part worth the space.
 class _ShopHeader extends StatelessWidget {
   const _ShopHeader();
 
   @override
   Widget build(BuildContext context) => Padding(
-    padding: const EdgeInsets.fromLTRB(20, 8, 20, 14),
-    child: Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        Text(
-          Copy.coinsShopTitle,
-          style: Theme.of(context).textTheme.headlineSmall,
-        ),
-        const SizedBox(height: 4),
-        Text(
-          Copy.coinsShopSubtitle,
-          style: const TextStyle(color: T.muted),
-        ),
-      ],
+    padding: const EdgeInsets.fromLTRB(20, 4, 20, 14),
+    child: Text(
+      Copy.coinsShopSubtitle,
+      style: const TextStyle(color: T.muted, fontSize: 13, height: 1.35),
     ),
   );
 }
@@ -234,89 +229,97 @@ class _CoinPackCard extends StatelessWidget {
     // shipping a build, but a pack without one must still look deliberate.
     final badge = pack.badge;
     final coins = _formatCoins(pack.coins);
+    final savings = pack.savingsPercent;
+    final name = pack.title.isEmpty ? coins : pack.title;
     return Semantics(
       container: true,
       label:
-          '${pack.title}, $coins, ${pack.displayPrice}'
+          '$name, $coins, ${pack.displayPrice}'
           '${badge.isEmpty ? '' : ', $badge'}',
       excludeSemantics: true,
-      child: Container(
-        decoration: BoxDecoration(
-          color: T.surface,
-          borderRadius: BorderRadius.circular(20),
-          border: Border.all(
-            color: highlighted ? T.ochre : T.outline,
-            width: highlighted ? 1.6 : 1,
-          ),
-          gradient: highlighted
-              ? LinearGradient(
-                  begin: Alignment.topLeft,
-                  end: Alignment.bottomRight,
-                  colors: [
-                    T.ochre.withValues(alpha: .16),
-                    T.surface,
-                  ],
-                )
-              : null,
-        ),
-        padding: const EdgeInsets.fromLTRB(16, 14, 16, 14),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Row(
-              children: [
-                Expanded(
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Text(
-                        pack.title.isEmpty ? coins : pack.title,
-                        style: const TextStyle(
-                          fontSize: 17,
-                          fontWeight: FontWeight.w800,
-                          color: T.white,
-                        ),
-                      ),
-                      if (pack.tagline.isNotEmpty) ...[
-                        const SizedBox(height: 2),
-                        Text(
-                          pack.tagline,
-                          style: const TextStyle(
-                            fontSize: 12.5,
-                            color: T.muted,
-                          ),
-                        ),
+      // The saving tag hangs off the corner over the top of the content, so the
+      // tile is a Stack: the tag rides above everything without costing the
+      // bundle a row of its own.
+      child: Stack(
+        children: [
+          Container(
+            decoration: BoxDecoration(
+              color: T.surface,
+              borderRadius: BorderRadius.circular(20),
+              border: Border.all(
+                color: highlighted ? T.ochre : T.outline,
+                width: highlighted ? 1.6 : 1,
+              ),
+              gradient: highlighted
+                  ? LinearGradient(
+                      begin: Alignment.topLeft,
+                      end: Alignment.bottomRight,
+                      colors: [
+                        T.ochre.withValues(alpha: .16),
+                        T.surface,
                       ],
-                    ],
-                  ),
-                ),
-                if (badge.isNotEmpty)
-                  Container(
-                    padding: const EdgeInsets.symmetric(
-                      horizontal: 9,
-                      vertical: 4,
-                    ),
-                    decoration: BoxDecoration(
-                      color: accent.withValues(alpha: .2),
-                      borderRadius: BorderRadius.circular(999),
-                      border: Border.all(color: accent.withValues(alpha: .7)),
-                    ),
-                    child: Text(
-                      badge,
-                      style: TextStyle(
-                        fontSize: 10,
-                        fontWeight: FontWeight.w900,
-                        letterSpacing: .6,
-                        color: accent,
+                    )
+                  : null,
+            ),
+            // A hung tag needs clear air above the content, so the packs that
+            // advertise a saving reserve the header band it hangs in.
+            padding: EdgeInsets.fromLTRB(
+              16,
+              savings > 0 ? _SaveTag.bandHeight : 14,
+              16,
+              14,
+            ),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                // The marketing tag leads the tile, so the bundle name and its
+                // artwork get the full width of the tile underneath it.
+                if (badge.isNotEmpty) _PackBadge(label: badge, accent: accent),
+                if (badge.isNotEmpty) const SizedBox(height: 10),
+                // The artwork is inset on every side and the name block is
+                // squeezed beside it, so a long name and its tagline wrap
+                // around the art rather than running under it.
+                Row(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Expanded(
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Text(
+                            name,
+                            style: const TextStyle(
+                              fontSize: 17,
+                              height: 1.2,
+                              fontWeight: FontWeight.w800,
+                              color: T.white,
+                            ),
+                          ),
+                          if (pack.tagline.isNotEmpty) ...[
+                            const SizedBox(height: 3),
+                            Text(
+                              pack.tagline,
+                              style: const TextStyle(
+                                fontSize: 12.5,
+                                height: 1.3,
+                                color: T.muted,
+                              ),
+                            ),
+                          ],
+                        ],
                       ),
                     ),
-                  ),
-              ],
-            ),
-            const SizedBox(height: 12),
-            Row(
-              crossAxisAlignment: CrossAxisAlignment.end,
-              children: [
+                    const SizedBox(width: 6),
+                    Padding(
+                      padding: const EdgeInsets.fromLTRB(6, 4, 0, 4),
+                      child: _PackArtwork(
+                        productId: pack.productId,
+                        accent: accent,
+                      ),
+                    ),
+                  ],
+                ),
+                const SizedBox(height: 12),
                 Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
@@ -356,34 +359,31 @@ class _CoinPackCard extends StatelessWidget {
                     ),
                   ],
                 ),
-                const Spacer(),
-                if (pack.savingsPercent > 0) ...[
-                  Padding(
-                    padding: const EdgeInsets.only(bottom: 4, right: 10),
-                    child: Text(
-                      Copy.savePercent(pack.savingsPercent),
-                      style: const TextStyle(
-                        fontSize: 11,
-                        fontWeight: FontWeight.w900,
-                        color: T.mint,
-                      ),
-                    ),
+                const SizedBox(height: 14),
+                // Full width and the only saturated block on the tile, so the
+                // buy target is unmissable and easy to hit with one thumb.
+                SizedBox(
+                  width: double.infinity,
+                  child: TaashButton(
+                    label: Copy.buy,
+                    icon: Icons.shopping_bag_outlined,
+                    fill: accent,
+                    onFill: const Color(0xff2A193A),
+                    // A pack whose price Play has not confirmed is not buyable:
+                    // selling it would mean charging an unknown amount.
+                    onPressed: busy || !pack.isAvailable ? null : onBuy,
                   ),
-                ],
-                TaashButton(
-                  label: Copy.buy,
-                  icon: Icons.shopping_bag_outlined,
-                  compact: true,
-                  fill: accent,
-                  onFill: const Color(0xff2A193A),
-                  // A pack whose price Play has not confirmed is not buyable:
-                  // selling it would mean charging an unknown amount.
-                  onPressed: busy || !pack.isAvailable ? null : onBuy,
                 ),
               ],
             ),
-          ],
-        ),
+          ),
+          if (savings > 0)
+            Positioned(
+              top: _SaveTag.inset,
+              right: _SaveTag.inset,
+              child: _SaveTag(percent: savings),
+            ),
+        ],
       ),
     );
   }
@@ -399,6 +399,181 @@ class _CoinPackCard extends StatelessWidget {
     }
     return buffer.toString();
   }
+}
+
+/// The "Popular" / "Great Value" / "Hot Deal" chip that leads a tile.
+class _PackBadge extends StatelessWidget {
+  const _PackBadge({required this.label, required this.accent});
+
+  final String label;
+  final Color accent;
+
+  @override
+  Widget build(BuildContext context) => Container(
+    padding: const EdgeInsets.symmetric(horizontal: 9, vertical: 4),
+    decoration: BoxDecoration(
+      color: accent.withValues(alpha: .2),
+      borderRadius: BorderRadius.circular(999),
+      border: Border.all(color: accent.withValues(alpha: .7)),
+    ),
+    child: Text(
+      label,
+      style: TextStyle(
+        fontSize: 10,
+        fontWeight: FontWeight.w900,
+        letterSpacing: .6,
+        color: accent,
+      ),
+    ),
+  );
+}
+
+/// The transparent bundle art, shipped one file per purchasable pack.
+///
+/// The file name is the pack's product id, so the artwork follows whatever the
+/// catalog sells. A pack whose art is missing still renders — it falls back to
+/// the tile's own coin mark rather than a broken image.
+class _PackArtwork extends StatelessWidget {
+  const _PackArtwork({required this.productId, required this.accent});
+
+  final String productId;
+  final Color accent;
+
+  /// Art box. The bundles are drawn wide, so the artwork keeps its aspect ratio
+  /// inside this square instead of being stretched to fill it.
+  static const double size = 72;
+
+  @override
+  Widget build(BuildContext context) {
+    // A product id is an opaque server string; never let one become a path that
+    // reaches outside assets/purchases.
+    final asset = RegExp(r'^[A-Za-z0-9_]+$').hasMatch(productId)
+        ? 'assets/purchases/$productId.png'
+        : null;
+    return SizedBox(
+      width: size,
+      height: size,
+      child: asset == null
+          ? _fallback()
+          : Image.asset(
+              asset,
+              fit: BoxFit.contain,
+              cacheWidth: (size * MediaQuery.devicePixelRatioOf(context))
+                  .ceil()
+                  .clamp(64, 400),
+              errorBuilder: (_, _, _) => _fallback(),
+            ),
+    );
+  }
+
+  Widget _fallback() => DecoratedBox(
+    decoration: BoxDecoration(
+      color: accent.withValues(alpha: .12),
+      shape: BoxShape.circle,
+      border: Border.all(color: accent.withValues(alpha: .35)),
+    ),
+    child: Icon(Icons.toll_rounded, size: 30, color: accent),
+  );
+}
+
+/// The "Save X%" label, hung off the tile's top-right corner.
+///
+/// A price tag is a tilted label with a punched eyelet, so it is drawn that way
+/// rather than set as plain text. It hangs *inwards*: [inset] is wide enough
+/// that the rotation's bounding box — taller and wider than the tag itself —
+/// still lands inside the tile instead of spilling over its border.
+class _SaveTag extends StatelessWidget {
+  const _SaveTag({required this.percent});
+
+  final int percent;
+
+  /// Distance from the corner the tag hangs off.
+  static const double inset = 10;
+
+  /// Vertical room the tilted tag needs, plus the air that keeps it clear of
+  /// the tile's content.
+  static const double bandHeight = 46;
+
+  static const double _height = 24;
+  static const Color _ink = Color(0xff3A2606);
+
+  @override
+  Widget build(BuildContext context) => Transform.rotate(
+    angle: -.11,
+    child: DecoratedBox(
+      decoration: BoxDecoration(
+        gradient: const LinearGradient(
+          begin: Alignment.bottomLeft,
+          end: Alignment.topRight,
+          colors: [Color(0xffFFB020), Color(0xffffE39A)],
+        ),
+        borderRadius: BorderRadius.circular(5),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withValues(alpha: .45),
+            blurRadius: 7,
+            offset: const Offset(0, 2),
+          ),
+        ],
+      ),
+      child: ClipRRect(
+        borderRadius: BorderRadius.circular(5),
+        child: CustomPaint(
+          painter: const _SaveTagPainter(),
+          child: Padding(
+            // The right inset clears the eyelet the painter punches out.
+            padding: const EdgeInsets.fromLTRB(10, 0, 20, 0),
+            child: SizedBox(
+              height: _height,
+              child: Row(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  const Icon(Icons.sell_outlined, size: 12, color: _ink),
+                  const SizedBox(width: 4),
+                  Text(
+                    Copy.savePercent(percent),
+                    style: const TextStyle(
+                      fontSize: 10.5,
+                      fontWeight: FontWeight.w900,
+                      letterSpacing: .4,
+                      height: 1,
+                      color: _ink,
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          ),
+        ),
+      ),
+    ),
+  );
+}
+
+/// Punches the eyelet and its tie line, so the saving reads as a tag hung from
+/// the corner rather than a chip pasted over the tile.
+class _SaveTagPainter extends CustomPainter {
+  const _SaveTagPainter();
+
+  @override
+  void paint(Canvas canvas, Size size) {
+    final eyelet = Offset(size.width - 9, size.height / 2);
+    // Ties the eyelet back to the corner the tag hangs from.
+    final tie = Paint()
+      ..color = const Color(0xff3A2606).withValues(alpha: .55)
+      ..strokeWidth = 1.4
+      ..strokeCap = StrokeCap.round;
+    canvas.drawLine(
+      Offset(eyelet.dx + 3, eyelet.dy - 3),
+      Offset(size.width - 0.5, 1.5),
+      tie,
+    );
+    canvas.drawCircle(eyelet, 3.2, Paint()..color = const Color(0xff6B4A12));
+    canvas.drawCircle(eyelet, 1.5, Paint()..color = const Color(0xffffF0C6));
+  }
+
+  @override
+  bool shouldRepaint(covariant _SaveTagPainter oldDelegate) => false;
 }
 
 class _SecurePaymentFooter extends StatelessWidget {

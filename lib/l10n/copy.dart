@@ -233,12 +233,12 @@ abstract final class Copy {
   // whatever Google returns rather than a bundled string.
   static const skinsTab = 'Skins';
   static const coinsShopTab = 'Coins Shop';
-  static const coinsShopTitle = 'Coins Shop';
   static const coinsShopSubtitle =
       'Buy coins once, spend them on avatars, skins and sounds.';
   static const loadingCoinPacks = 'Loading coin packs';
   static const coinShopUnavailableTitle = 'Coins Shop unavailable';
   static const buy = 'Buy';
+  static const getDiscounts = 'Get Discounts';
   static String savePercent(Object? value0) => 'SAVE $value0%';
   static String packCoins(Object? value0) => '$value0 coins';
   static const purchaseCompleteTitle = 'Purchase complete';
