@@ -21,8 +21,7 @@ mixin _GameMenus on State<GameScreen> {
   // what the picker itself lists.
   String _thulluSoundName = Copy.yourThulluSound;
 
-  bool get _isBhabhiRoom =>
-      session.snapshot?.room.game == GameType.bhabhi;
+  bool get _isBhabhiRoom => session.snapshot?.room.game == GameType.bhabhi;
 
   Future<void> _resolveThulluSoundName() async {
     final snapshot = session.snapshot;
@@ -178,7 +177,7 @@ mixin _GameMenus on State<GameScreen> {
                         padding: const EdgeInsets.all(8),
                         child: Column(
                           children: [
-                            ReactionArt(id: r.id),
+                            ReactionArt(id: r.id, label: r.label),
                             const SizedBox(height: 8),
                             Text(r.label, textAlign: TextAlign.center),
                             Text(
@@ -311,8 +310,7 @@ mixin _GameMenus on State<GameScreen> {
             // Thullu only happens in Bhabhi, so the picker is offered there and
             // nowhere else. It sits below the preference switches so the sheet
             // keeps a stable shape for every other game.
-            if (widget.auth != null && widget.api != null && _isBhabhiRoom)
-              ...[
+            if (widget.auth != null && widget.api != null && _isBhabhiRoom) ...[
               const SizedBox(height: 6),
               const Divider(),
               const SizedBox(height: 6),
@@ -326,7 +324,10 @@ mixin _GameMenus on State<GameScreen> {
                   overflow: TextOverflow.ellipsis,
                   style: const TextStyle(color: T.muted),
                 ),
-                trailing: const Icon(Icons.chevron_right_rounded, color: T.muted),
+                trailing: const Icon(
+                  Icons.chevron_right_rounded,
+                  color: T.muted,
+                ),
                 onTap: () => showThulluSfxSheet(
                   context,
                   auth: widget.auth!,

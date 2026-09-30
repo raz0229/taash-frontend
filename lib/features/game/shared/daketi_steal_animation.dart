@@ -20,6 +20,7 @@ class DaketiStealAnimation extends StatefulWidget {
     required this.areaCapture,
     required this.areaCardCount,
     required this.victimCardCount,
+    this.skinId = 0,
     this.onComplete,
   });
 
@@ -39,6 +40,7 @@ class DaketiStealAnimation extends StatefulWidget {
   final bool areaCapture;
   final int areaCardCount;
   final int victimCardCount;
+  final int skinId;
   final VoidCallback? onComplete;
 
   @override
@@ -368,7 +370,11 @@ class _DaketiStealAnimationState extends State<DaketiStealAnimation>
                         for (var i = cards; i > 0; i--)
                           Transform.translate(
                             offset: Offset((i - 2) * 5.0, (i - 2) * -4),
-                            child: PlayingCard(faceDown: true, width: 26),
+                            child: PlayingCard(
+                              faceDown: true,
+                              width: 26,
+                              skinId: widget.skinId,
+                            ),
                           ),
                       ],
                     ),

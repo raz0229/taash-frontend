@@ -574,7 +574,76 @@ class AppLocalizationsEn extends AppLocalizations {
   String get avatarsTab => 'Avatars';
 
   @override
+  String get skinsTab => 'Skins';
+
+  @override
   String get thulluSfxTab => 'Thulla SFX';
+
+  @override
+  String get coinsShopTab => 'Coins Shop';
+
+  @override
+  String get coinsShopTitle => 'Coins Shop';
+
+  @override
+  String get coinsShopSubtitle =>
+      'Buy coins once, spend them on avatars, skins and sounds.';
+
+  @override
+  String get loadingCoinPacks => 'Loading coin packs';
+
+  @override
+  String get coinShopUnavailableTitle => 'Coins Shop unavailable';
+
+  @override
+  String get buy => 'Buy';
+
+  @override
+  String savePercent(int value0) {
+    return 'SAVE $value0%';
+  }
+
+  @override
+  String packCoins(int value0) {
+    return '$value0 coins';
+  }
+
+  @override
+  String get purchaseCompleteTitle => 'Purchase complete';
+
+  @override
+  String coinsAdded(int value0) {
+    return '$value0 coins added to your balance';
+  }
+
+  @override
+  String get alreadyProcessedTitle => 'Already in your account';
+
+  @override
+  String get alreadyProcessedBody =>
+      'This purchase was already credited, so nothing was charged twice.';
+
+  @override
+  String newBalance(int value0) {
+    return 'New balance: $value0 coins';
+  }
+
+  @override
+  String get continueLabel => 'Continue';
+
+  @override
+  String get securePaymentNote =>
+      'Payments are handled by Google Play. Coins are added once your purchase is verified.';
+
+  @override
+  String get viewPurchaseHistory => 'Purchase history';
+
+  @override
+  String get noPurchasesYet => 'No coin purchases yet.';
+
+  @override
+  String get coinsShopUnavailableBody =>
+      'Coin purchases are not available right now. Please try again later.';
 
   @override
   String get invalidThulluSfxCatalog => 'Invalid Thulla SFX catalog';

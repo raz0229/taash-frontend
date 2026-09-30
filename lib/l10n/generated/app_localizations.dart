@@ -1114,11 +1114,125 @@ abstract class AppLocalizations {
   /// **'Avatars'**
   String get avatarsTab;
 
+  /// No description provided for @skinsTab.
+  ///
+  /// In en, this message translates to:
+  /// **'Skins'**
+  String get skinsTab;
+
   /// No description provided for @thulluSfxTab.
   ///
   /// In en, this message translates to:
   /// **'Thulla SFX'**
   String get thulluSfxTab;
+
+  /// No description provided for @coinsShopTab.
+  ///
+  /// In en, this message translates to:
+  /// **'Coins Shop'**
+  String get coinsShopTab;
+
+  /// No description provided for @coinsShopTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Coins Shop'**
+  String get coinsShopTitle;
+
+  /// No description provided for @coinsShopSubtitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Buy coins once, spend them on avatars, skins and sounds.'**
+  String get coinsShopSubtitle;
+
+  /// No description provided for @loadingCoinPacks.
+  ///
+  /// In en, this message translates to:
+  /// **'Loading coin packs'**
+  String get loadingCoinPacks;
+
+  /// No description provided for @coinShopUnavailableTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Coins Shop unavailable'**
+  String get coinShopUnavailableTitle;
+
+  /// No description provided for @buy.
+  ///
+  /// In en, this message translates to:
+  /// **'Buy'**
+  String get buy;
+
+  /// No description provided for @savePercent.
+  ///
+  /// In en, this message translates to:
+  /// **'SAVE {value0}%'**
+  String savePercent(int value0);
+
+  /// No description provided for @packCoins.
+  ///
+  /// In en, this message translates to:
+  /// **'{value0} coins'**
+  String packCoins(int value0);
+
+  /// No description provided for @purchaseCompleteTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Purchase complete'**
+  String get purchaseCompleteTitle;
+
+  /// No description provided for @coinsAdded.
+  ///
+  /// In en, this message translates to:
+  /// **'{value0} coins added to your balance'**
+  String coinsAdded(int value0);
+
+  /// No description provided for @alreadyProcessedTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Already in your account'**
+  String get alreadyProcessedTitle;
+
+  /// No description provided for @alreadyProcessedBody.
+  ///
+  /// In en, this message translates to:
+  /// **'This purchase was already credited, so nothing was charged twice.'**
+  String get alreadyProcessedBody;
+
+  /// No description provided for @newBalance.
+  ///
+  /// In en, this message translates to:
+  /// **'New balance: {value0} coins'**
+  String newBalance(int value0);
+
+  /// No description provided for @continueLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'Continue'**
+  String get continueLabel;
+
+  /// No description provided for @securePaymentNote.
+  ///
+  /// In en, this message translates to:
+  /// **'Payments are handled by Google Play. Coins are added once your purchase is verified.'**
+  String get securePaymentNote;
+
+  /// No description provided for @viewPurchaseHistory.
+  ///
+  /// In en, this message translates to:
+  /// **'Purchase history'**
+  String get viewPurchaseHistory;
+
+  /// No description provided for @noPurchasesYet.
+  ///
+  /// In en, this message translates to:
+  /// **'No coin purchases yet.'**
+  String get noPurchasesYet;
+
+  /// No description provided for @coinsShopUnavailableBody.
+  ///
+  /// In en, this message translates to:
+  /// **'Coin purchases are not available right now. Please try again later.'**
+  String get coinsShopUnavailableBody;
 
   /// No description provided for @invalidThulluSfxCatalog.
   ///

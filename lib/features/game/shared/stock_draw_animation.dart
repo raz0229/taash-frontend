@@ -14,11 +14,13 @@ class StockDrawAnimation extends StatefulWidget {
     required this.playerStripKey,
     required this.stockKey,
     required this.drawerSeat,
+    this.skinId = 0,
     this.onComplete,
   });
   final GlobalKey playerStripKey;
   final GlobalKey stockKey;
   final int drawerSeat;
+  final int skinId;
   final VoidCallback? onComplete;
   @override
   State<StockDrawAnimation> createState() => _StockDrawAnimationState();
@@ -198,7 +200,11 @@ class _StockDrawAnimationState extends State<StockDrawAnimation>
               offset: const Offset(0, -11),
               child: Transform.rotate(
                 angle: -angle * .6,
-                child: PlayingCard(faceDown: true, width: 26),
+                child: PlayingCard(
+                  faceDown: true,
+                  width: 26,
+                  skinId: widget.skinId,
+                ),
               ),
             ),
           ),

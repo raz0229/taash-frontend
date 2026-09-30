@@ -6,6 +6,8 @@ import '../../core/models/models.dart';
 import '../../core/network/api_client.dart';
 import '../../core/theme/taash_theme.dart';
 import '../../core/widgets/taash_widgets.dart';
+import '../game/shared/playing_card.dart';
+import '../shop/card_skin_catalog.dart';
 import 'presentation.dart';
 import 'rank.dart';
 
@@ -16,6 +18,7 @@ class ProfileScreen extends StatefulWidget {
     required this.playerId,
     this.own = false,
     this.onAvatarTap,
+    this.onSkinTap,
   });
   final ApiClient api;
   final String playerId;
@@ -25,6 +28,7 @@ class ProfileScreen extends StatefulWidget {
   /// for the signed-in player outside a room, so other players' avatars and
   /// in-room profiles never navigate away.
   final VoidCallback? onAvatarTap;
+  final VoidCallback? onSkinTap;
   @override
   State<ProfileScreen> createState() => _ProfileScreenState();
 }
@@ -33,6 +37,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
   PlayerProfile? _profile;
   List<PlayerStats>? _stats;
   CountryLabels? _countries;
+  List<CardSkinItem>? _skins;
   String? _error;
   GameType _game = GameType.bhabhi;
   bool _loading = true;
@@ -69,12 +74,14 @@ class _ProfileScreenState extends State<ProfileScreen> {
         widget.api.getPlayer(widget.playerId),
         widget.api.getStats(widget.playerId),
         CountryLabels.load(),
+        CardSkinItem.load(),
       ]);
       if (!mounted || generation != _loadGeneration) return;
       setState(() {
         _profile = results[0] as PlayerProfile;
         _stats = results[1] as List<PlayerStats>;
         _countries = results[2] as CountryLabels;
+        _skins = results[3] as List<CardSkinItem>;
       });
     } catch (e) {
       if (mounted && generation == _loadGeneration) {
@@ -141,7 +148,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
                     TaashPanel(
                       child: Column(
                         children: [
-                          _avatar(profile),
+                          _profileCosmetics(profile),
                           const SizedBox(height: 16),
                           Text(
                             profile.displayName,
@@ -248,7 +255,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
         shape: BoxShape.circle,
         border: Border.all(color: T.ochre, width: 2),
       ),
-      child: TaashAvatar(id: profile.selectedPfp, size: 88),
+      child: TaashAvatar(id: profile.selectedPfp, size: 110),
     );
     if (!widget.own || widget.onAvatarTap == null) {
       return avatar;
@@ -259,6 +266,65 @@ class _ProfileScreenState extends State<ProfileScreen> {
         label: Copy.avatars,
         button: true,
         child: GestureDetector(onTap: widget.onAvatarTap, child: avatar),
+      ),
+    );
+  }
+
+  Widget _profileCosmetics(PlayerProfile profile) => Row(
+    mainAxisAlignment: MainAxisAlignment.center,
+    crossAxisAlignment: CrossAxisAlignment.start,
+    children: [
+      Expanded(child: Center(child: _avatar(profile))),
+      const SizedBox(width: 22),
+      Expanded(child: Center(child: _skinPreview(profile))),
+    ],
+  );
+
+  Widget _skinPreview(PlayerProfile profile) {
+    final skin = _skins
+        ?.where((item) => item.id == profile.selectedSkin)
+        .firstOrNull;
+    final name = skin?.name ?? 'Card skin';
+    final rarity = skin?.rarity ?? 'common';
+    final preview = Column(
+      mainAxisSize: MainAxisSize.min,
+      children: [
+        PlayingCard(card: 'h-y', width: 72, skinId: profile.selectedSkin),
+        const SizedBox(height: 7),
+        Text(
+          name,
+          textAlign: TextAlign.center,
+          maxLines: 1,
+          overflow: TextOverflow.ellipsis,
+          style: const TextStyle(fontWeight: FontWeight.w800, fontSize: 13),
+        ),
+        const SizedBox(height: 5),
+        Container(
+          padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
+          decoration: BoxDecoration(
+            color: T.ochre.withValues(alpha: .16),
+            borderRadius: BorderRadius.circular(10),
+            border: Border.all(color: T.ochre.withValues(alpha: .65)),
+          ),
+          child: Text(
+            rarity.toUpperCase(),
+            style: const TextStyle(
+              color: T.ochre,
+              fontSize: 9,
+              fontWeight: FontWeight.w800,
+              letterSpacing: .8,
+            ),
+          ),
+        ),
+      ],
+    );
+    if (!widget.own || widget.onSkinTap == null) return preview;
+    return Tooltip(
+      message: 'Card skins',
+      child: Semantics(
+        label: '$name card skin, ${rarity.toLowerCase()}',
+        button: true,
+        child: GestureDetector(onTap: widget.onSkinTap, child: preview),
       ),
     );
   }

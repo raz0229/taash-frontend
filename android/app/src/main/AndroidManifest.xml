@@ -1,5 +1,12 @@
 <manifest xmlns:android="http://schemas.android.com/apk/res/android">
     <uses-permission android:name="android.permission.INTERNET"/>
+    <!-- Required to talk to Google Play Billing for the Coins Shop. -->
+    <uses-permission android:name="com.android.vending.BILLING"/>
+    <!-- Package visibility (Android 11+): without this the Billing client
+         cannot see the Play Store, so every purchase call fails. -->
+    <queries>
+        <package android:name="com.android.vending"/>
+    </queries>
     <application
         android:label="TaashOnline"
         android:appCategory="game"

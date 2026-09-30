@@ -2,6 +2,7 @@ import 'package:taash/l10n/copy.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:flutter/material.dart';
 import 'hand_order.dart';
+import '../../shop/card_skin_catalog.dart';
 
 /// Supplied deck artwork, with wire identity and local-language semantics kept separate.
 class PlayingCard extends StatelessWidget {
@@ -14,10 +15,12 @@ class PlayingCard extends StatelessWidget {
     this.onTap,
     this.semanticLabel,
     this.faceDown = false,
+    this.skinId = 0,
   });
   final String? card;
   final double width;
   final bool selected, available, faceDown;
+  final int skinId;
   final VoidCallback? onTap;
   final String? semanticLabel;
 
@@ -60,8 +63,8 @@ class PlayingCard extends StatelessWidget {
                 child: back || identity.valid
                     ? SvgPicture.asset(
                         back
-                            ? 'assets/cards/back-blue.svg'
-                            : 'assets/cards/$card.svg',
+                            ? 'assets/${cardSkinDirectory(skinId)}/back-blue.svg'
+                            : 'assets/${cardSkinDirectory(skinId)}/$card.svg',
                         fit: BoxFit.contain,
                         excludeFromSemantics: true,
                       )

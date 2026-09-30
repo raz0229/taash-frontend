@@ -11,6 +11,7 @@ import 'package:google_mobile_ads/google_mobile_ads.dart';
 import 'core/ads/ad_service.dart';
 import 'core/auth/auth_controller.dart';
 import 'core/auth/google_auth.dart';
+import 'core/billing/billing_service.dart';
 import 'core/config/app_config.dart';
 import 'core/errors/app_failure.dart';
 import 'core/firebase/firebase_bootstrap.dart';
@@ -106,6 +107,18 @@ class _TaashAppState extends State<TaashApp> with WidgetsBindingObserver {
               _noopAdmobInit(),
         )
       : null;
+  /// The Coins Shop's Google Play client. It is created only when the build
+  /// actually has products to sell, so a build without IAP never touches the
+  /// Play Store.
+  late final billing = widget.config.iapReady
+      ? BillingService(
+          config: widget.config,
+          api: api,
+          // Resolved per use, not captured: a purchase must bind to whoever is
+          // signed in when it is made, not to whoever signed in at startup.
+          playerId: () => auth.playerId,
+        )
+      : null;
   bool ready = false;
   @override
   void initState() {
@@ -150,6 +163,7 @@ class _TaashAppState extends State<TaashApp> with WidgetsBindingObserver {
     if (widget.preferences == null) preferences.dispose();
     if (widget.newsService == null) newsService.dispose();
     adService?.dispose();
+    billing?.dispose();
     updateService.dispose();
     super.dispose();
   }
@@ -187,6 +201,7 @@ class _TaashAppState extends State<TaashApp> with WidgetsBindingObserver {
               preferences: preferences,
               adService: adService,
               newsService: newsService,
+              billing: billing,
             ),
     ),
   );
@@ -365,12 +380,14 @@ class _AppGate extends StatelessWidget {
     required this.preferences,
     required this.newsService,
     this.adService,
+    this.billing,
   });
   final AuthController auth;
   final ApiClient api;
   final Preferences preferences;
   final AdService? adService;
   final InGameNewsService newsService;
+  final BillingService? billing;
   void learn(BuildContext context) => Navigator.push(
     context,
     MaterialPageRoute(
@@ -416,6 +433,7 @@ class _AppGate extends StatelessWidget {
           preferences: preferences,
           adService: adService,
           newsService: newsService,
+          billing: billing,
         );
       }
       if (auth.status == AuthStatus.maintenance ||
@@ -451,18 +469,21 @@ class LobbyShell extends StatefulWidget {
     required this.preferences,
     this.adService,
     this.newsService,
+    this.billing,
   });
   final AuthController auth;
   final ApiClient api;
   final Preferences preferences;
   final AdService? adService;
   final InGameNewsService? newsService;
+  final BillingService? billing;
   @override
   State<LobbyShell> createState() => _LobbyShellState();
 }
 
 class _LobbyShellState extends State<LobbyShell> {
   int tab = 2;
+  int shopTab = 0;
   RoomSession? room;
   bool joining = false;
   int friendRequestCount = 0;
@@ -617,7 +638,7 @@ class _LobbyShellState extends State<LobbyShell> {
       api: widget.api,
       playerId: id,
       own: id == widget.auth.profile?.id,
-      // Shortcut to the Avatars tab from your own profile. Hidden while
+      // Shortcuts to cosmetic tabs from your own profile. Hidden while
       // inside a room and never wired for other players' profiles.
       onAvatarTap: id == widget.auth.profile?.id && room == null
           ? () {
@@ -625,11 +646,40 @@ class _LobbyShellState extends State<LobbyShell> {
               // Popping the sheet through its own context targets the
               // ModalBottomSheetRoute directly(grids handled in tests).
               Navigator.of(context).pop();
-              setState(() => tab = 1);
+              setState(() {
+                tab = 1;
+                shopTab = 0;
+              });
+            }
+          : null,
+      onSkinTap: id == widget.auth.profile?.id && room == null
+          ? () {
+              audio.playSfx('generic_button_press');
+              Navigator.of(context).pop();
+              setState(() {
+                tab = 1;
+                shopTab = 1;
+              });
             }
           : null,
     ),
   );
+
+  /// Switches the lobby to the Coins Shop tab.
+  ///
+  /// Null when this build has no billing service, and the reward sheets then hide
+  /// their Purchase Coins button rather than navigating somewhere useless.
+  VoidCallback? get openCoinsShop {
+    if (widget.billing == null) return null;
+    return () {
+      if (!mounted) return;
+      audio.playSfx('generic_button_press');
+      setState(() {
+        tab = 1;
+        shopTab = ShopScreen.coinsShopTabIndex;
+      });
+    };
+  }
 
   Future<void> openRoom(
     RoomFlowMode mode, [
@@ -657,6 +707,7 @@ class _LobbyShellState extends State<LobbyShell> {
         api: widget.api,
         auth: widget.auth,
         adService: widget.adService,
+        onPurchaseCoins: openCoinsShop,
         onJoin: (summary) => Navigator.pop(flowContext, summary),
       ),
     );
@@ -777,7 +828,12 @@ class _LobbyShellState extends State<LobbyShell> {
           }
         },
       ),
-      1 => ShopScreen(auth: widget.auth, api: widget.api),
+      1 => ShopScreen(
+        auth: widget.auth,
+        api: widget.api,
+        billing: widget.billing,
+        initialTab: shopTab,
+      ),
       3 => LeaderboardScreen(api: widget.api),
       4 => const AboutScreen(),
       _ => HomeScreen(
@@ -794,6 +850,7 @@ class _LobbyShellState extends State<LobbyShell> {
         onCreate: (g) => openRoom(RoomFlowMode.create, g),
         onJoin: () => openRoom(RoomFlowMode.join),
         onPlayBots: () => openBotsRoom(),
+        onPurchaseCoins: openCoinsShop,
         onLearn: learn,
       ),
     };

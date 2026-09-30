@@ -6,11 +6,28 @@ import '../theme/taash_theme.dart';
 
 /// Slide-up "Need more coins?" sheet. Reused by the home quick-match gate and
 /// the VS-bots room flow so every low-coins moment offers the same path to
-/// earn coins with a rewarded ad.
+/// earn coins.
+///
+/// Two ways to top up sit side by side: the rewarded ad, and the Coins Shop.
+/// They are deliberately separated so the free option is not buried, but the
+/// purchase path stays available even when no ad can be served, which is the
+/// moment a player is most likely to want it.
 class RewardSheet extends StatefulWidget {
-  const RewardSheet({super.key, required this.adService, required this.auth});
+  const RewardSheet({
+    super.key,
+    required this.adService,
+    required this.auth,
+    this.onPurchaseCoins,
+  });
+
   final AdService adService;
   final AuthController auth;
+
+  /// Navigates to the Coins Shop. Omitted where the caller cannot switch tabs,
+  /// in which case the purchase button is not offered at all.
+  final VoidCallback? onPurchaseCoins;
+
+  bool get canPurchase => onPurchaseCoins != null;
 
   @override
   State<RewardSheet> createState() => _RewardSheetState();
@@ -201,6 +218,28 @@ class _RewardSheetState extends State<RewardSheet> {
                 'No ad available right now. Try again shortly.',
                 style: TextStyle(color: T.muted, fontSize: 13),
                 textAlign: TextAlign.center,
+              ),
+            ],
+            if (widget.canPurchase) ...[
+              // A separator above the purchase path keeps "earn free" and "spend
+              // money" as two clearly different choices rather than two buttons
+              // that look like the same decision.
+              const Padding(
+                padding: EdgeInsets.symmetric(vertical: 20),
+                child: Divider(color: T.outline, height: 1),
+              ),
+              SizedBox(
+                width: double.infinity,
+                child: FilledButton.icon(
+                  style: FilledButton.styleFrom(
+                    backgroundColor: T.coral,
+                    foregroundColor: Colors.white,
+                    padding: const EdgeInsets.symmetric(vertical: 16),
+                  ),
+                  onPressed: _loading ? null : widget.onPurchaseCoins,
+                  icon: const Icon(Icons.shopping_bag_outlined),
+                  label: const Text('Purchase Coins'),
+                ),
               ),
             ],
           ],

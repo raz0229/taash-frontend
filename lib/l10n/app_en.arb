@@ -208,7 +208,38 @@
   "avatarCollection": "Avatar collection",
   "shop": "Shop",
   "avatarsTab": "Avatars",
+  "skinsTab": "Skins",
   "thulluSfxTab": "Thulla SFX",
+  "coinsShopTab": "Coins Shop",
+  "coinsShopTitle": "Coins Shop",
+  "coinsShopSubtitle": "Buy coins once, spend them on avatars, skins and sounds.",
+  "loadingCoinPacks": "Loading coin packs",
+  "coinShopUnavailableTitle": "Coins Shop unavailable",
+  "buy": "Buy",
+  "savePercent": "SAVE {value0}%",
+  "@savePercent": {
+    "placeholders": { "value0": { "type": "int" } }
+  },
+  "packCoins": "{value0} coins",
+  "@packCoins": {
+    "placeholders": { "value0": { "type": "int" } }
+  },
+  "purchaseCompleteTitle": "Purchase complete",
+  "coinsAdded": "{value0} coins added to your balance",
+  "@coinsAdded": {
+    "placeholders": { "value0": { "type": "int" } }
+  },
+  "alreadyProcessedTitle": "Already in your account",
+  "alreadyProcessedBody": "This purchase was already credited, so nothing was charged twice.",
+  "newBalance": "New balance: {value0} coins",
+  "@newBalance": {
+    "placeholders": { "value0": { "type": "int" } }
+  },
+  "continueLabel": "Continue",
+  "securePaymentNote": "Payments are handled by Google Play. Coins are added once your purchase is verified.",
+  "viewPurchaseHistory": "Purchase history",
+  "noPurchasesYet": "No coin purchases yet.",
+  "coinsShopUnavailableBody": "Coin purchases are not available right now. Please try again later.",
   "invalidThulluSfxCatalog": "Invalid Thulla SFX catalog",
   "duplicateThulluSfxIDs": "Duplicate Thulla SFX IDs",
   "missingDefaultThulluSfx": "The Thulla SFX catalog is missing its default sound",

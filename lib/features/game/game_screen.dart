@@ -270,6 +270,9 @@ class _GameScreenState extends State<GameScreen>
       victimCardCount: victimInfo == null
           ? 0
           : (oldVictimCount - victimInfo.collection.length).clamp(1, 4),
+      skinId:
+          s.players.where((p) => p.id == stealerId).firstOrNull?.selectedSkin ??
+          0,
     );
   }
 
@@ -282,6 +285,7 @@ class _GameScreenState extends State<GameScreen>
     required bool areaCapture,
     required int areaCardCount,
     required int victimCardCount,
+    required int skinId,
   }) {
     setState(() => _daketiStealActive = true);
     _daketiStealOverlay?.remove();
@@ -294,6 +298,7 @@ class _GameScreenState extends State<GameScreen>
         areaCapture: areaCapture,
         areaCardCount: areaCardCount,
         victimCardCount: victimCardCount,
+        skinId: skinId,
         onComplete: _onDaketiStealComplete,
       ),
     );
@@ -349,6 +354,12 @@ class _GameScreenState extends State<GameScreen>
         playerStripKey: _playerStripKey,
         stockKey: _stockKey,
         drawerSeat: drawerSeat < 0 ? 0 : drawerSeat,
+        skinId:
+            s.players
+                .where((p) => p.id == s.currentPlayerId)
+                .firstOrNull
+                ?.selectedSkin ??
+            0,
         onComplete: _onStockDrawComplete,
       ),
     );
@@ -405,6 +416,12 @@ class _GameScreenState extends State<GameScreen>
         handKey: _handKey,
         cardCount: info.cardCount,
         card: info.card,
+        skinId:
+            s.players
+                .where((p) => p.id == info.playerId)
+                .firstOrNull
+                ?.selectedSkin ??
+            0,
         onComplete: _onCardPlayedComplete,
       ),
     );
@@ -487,6 +504,7 @@ class _GameScreenState extends State<GameScreen>
         challengedPfp: challenged?.selectedPfp ?? 0,
         declaredRank: event.declaredRank,
         lastPlayCards: event.lastPlayCards,
+        skinId: challenged?.selectedSkin ?? 0,
         pileCount: pileCount,
         sachaName: sachaName,
         jhutaName: jhutaName,
@@ -558,6 +576,7 @@ class _GameScreenState extends State<GameScreen>
         receiverName: nameOf(receiverId),
         receiverPfp: receiver?.selectedPfp ?? 0,
         trickCards: [for (final played in bhabhi.trick) played.card],
+        skinId: receiver?.selectedSkin ?? 0,
         pileCount: bhabhi.trick.length,
         trickKey: _bhabhiTrickKey,
         playerStripKey: _playerStripKey,
@@ -599,8 +618,8 @@ class _GameScreenState extends State<GameScreen>
             message: (snapshot?.room.isWaiting ?? false)
                 ? GameCopy.leaveMessageWaiting
                 : spectator
-                    ? GameCopy.leaveMessageSafe
-                    : GameCopy.leaveMessage,
+                ? GameCopy.leaveMessageSafe
+                : GameCopy.leaveMessage,
             confirmLabel: Copy.leaveRoom,
           ) ||
           !mounted) {
@@ -1021,6 +1040,12 @@ class _GameScreenState extends State<GameScreen>
                                   canPlay: allowed,
                                   isYourTurn: mine,
                                   game: s.room.game,
+                                  skinId:
+                                      s.players
+                                          .where((p) => p.id == s.you.id)
+                                          .firstOrNull
+                                          ?.selectedSkin ??
+                                      0,
                                   allowSort:
                                       s.room.game == GameType.bhabhi ||
                                       s.room.game == GameType.bluff,
@@ -1118,6 +1143,7 @@ class _GameScreenState extends State<GameScreen>
                     events: session.animations,
                     players: s.players,
                     selfId: session.playerId,
+                    playerStripKey: _playerStripKey,
                     muted: muted,
                   ),
                 ),

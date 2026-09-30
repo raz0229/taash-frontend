@@ -52,57 +52,62 @@ class GameSurface extends StatelessWidget {
       ? Copy.you
       : snapshot.players.where((p) => p.id == id).firstOrNull?.displayName ??
             Copy.player;
+  int skinFor(String id) =>
+      snapshot.players.where((p) => p.id == id).firstOrNull?.selectedSkin ?? 0;
+  int get ownSkin => skinFor(snapshot.you.id);
 
   @override
   Widget build(BuildContext context) {
     final tint = GameTint(snapshot.room.game);
     return DragTarget<String>(
-    onWillAcceptWithDetails: (_) => canDrop,
-    onAcceptWithDetails: (d) => onCardDrop(d.data),
-    builder: (context, candidates, _) => AnimatedContainer(
-      duration: MediaQuery.disableAnimationsOf(context)
-          ? Duration.zero
-          : T.micro,
-      width: double.infinity,
-      margin: const EdgeInsets.fromLTRB(12, 4, 12, 8),
-      padding: EdgeInsets.fromLTRB(12, compact ? 8 : 16, 12, compact ? 6 : 14),
-      decoration: BoxDecoration(
-        gradient: RadialGradient(
-          colors: [
-            tint.surface,
-            Color.lerp(tint.surface, tint.tray, .7)!,
+      onWillAcceptWithDetails: (_) => canDrop,
+      onAcceptWithDetails: (d) => onCardDrop(d.data),
+      builder: (context, candidates, _) => AnimatedContainer(
+        duration: MediaQuery.disableAnimationsOf(context)
+            ? Duration.zero
+            : T.micro,
+        width: double.infinity,
+        margin: const EdgeInsets.fromLTRB(12, 4, 12, 8),
+        padding: EdgeInsets.fromLTRB(
+          12,
+          compact ? 8 : 16,
+          12,
+          compact ? 6 : 14,
+        ),
+        decoration: BoxDecoration(
+          gradient: RadialGradient(
+            colors: [tint.surface, Color.lerp(tint.surface, tint.tray, .7)!],
+            radius: .85,
+          ),
+          borderRadius: BorderRadius.circular(64),
+          border: Border.all(
+            color: candidates.isNotEmpty ? tint.accent : tint.edge,
+            width: 2,
+          ),
+          boxShadow: [
+            const BoxShadow(
+              color: Color(0xff0C0825),
+              offset: Offset(0, 7),
+              blurRadius: 2,
+            ),
+            BoxShadow(
+              color: tint.surface.withValues(alpha: .25),
+              blurRadius: 22,
+            ),
           ],
-          radius: .85,
         ),
-        borderRadius: BorderRadius.circular(64),
-        border: Border.all(
-          color: candidates.isNotEmpty ? tint.accent : tint.edge,
-          width: 2,
-        ),
-        boxShadow: [
-          const BoxShadow(
-            color: Color(0xff0C0825),
-            offset: Offset(0, 7),
-            blurRadius: 2,
+        child: switch (snapshot.gameState) {
+          final BhabhiState state => _bhabhi(state, tint),
+          final BluffState state => _bluff(state, tint),
+          final DaketiState state => _daketi(state, tint),
+          final TcState state => _tc(state, tint),
+          null => const Text(
+            Copy.waitingForTheLatestRoom,
+            textAlign: TextAlign.center,
           ),
-          BoxShadow(
-            color: tint.surface.withValues(alpha: .25),
-            blurRadius: 22,
-          ),
-        ],
+        },
       ),
-      child: switch (snapshot.gameState) {
-        final BhabhiState state => _bhabhi(state, tint),
-        final BluffState state => _bluff(state, tint),
-        final DaketiState state => _daketi(state, tint),
-        final TcState state => _tc(state, tint),
-        null => const Text(
-          Copy.waitingForTheLatestRoom,
-          textAlign: TextAlign.center,
-        ),
-      },
-    ),
-  );
+    );
   }
 
   Widget _label(String title, {String? detail, Color? shade}) => Column(
@@ -122,7 +127,10 @@ class GameSurface extends StatelessWidget {
         Text(
           detail,
           textAlign: TextAlign.center,
-          style: TextStyle(color: shade ?? const Color(0xffC7BCE8), fontSize: 11),
+          style: TextStyle(
+            color: shade ?? const Color(0xffC7BCE8),
+            fontSize: 11,
+          ),
         ),
       ],
     ],
@@ -171,6 +179,7 @@ class GameSurface extends StatelessWidget {
                           key: ValueKey('${play.playerId}:${play.card}'),
                           child: PlayingCard(
                             card: play.card,
+                            skinId: play.skinId,
                             width: compact ? 46 : 66,
                           ),
                         ),
@@ -191,9 +200,7 @@ class GameSurface extends StatelessWidget {
         ),
       ),
       Text(
-        state.firstTrick
-            ? 'Lead with any card'
-            : 'Follow suit when you can',
+        state.firstTrick ? 'Lead with any card' : 'Follow suit when you can',
         style: TextStyle(color: tint.tint, fontSize: 11),
       ),
     ],
@@ -221,7 +228,11 @@ class GameSurface extends StatelessWidget {
             alignment: Alignment.center,
             children: [
               for (var i = 0; i < state.pileCount; i++)
-                _pileCard(state.pileCount, i),
+                _pileCard(
+                  state.pileCount,
+                  i,
+                  i < state.pileSkins.length ? state.pileSkins[i] : 0,
+                ),
             ],
           ),
         ),
@@ -251,7 +262,7 @@ class GameSurface extends StatelessWidget {
   // A face-down fan that grows with the real pile count: cards shrink, bunch
   // closer and flatten as the pile gets taller so the number drawn always
   // matches `state.pileCount`.
-  Widget _pileCard(int total, int index) {
+  Widget _pileCard(int total, int index, int skinId) {
     final center = (total - 1) / 2;
     final step = total <= 4
         ? 5.0
@@ -278,7 +289,7 @@ class GameSurface extends StatelessWidget {
       angle: (index - center) * rotate,
       child: Transform.translate(
         offset: Offset((index - center) * step, (index - center) * rise),
-        child: PlayingCard(faceDown: true, width: width),
+        child: PlayingCard(faceDown: true, width: width, skinId: skinId),
       ),
     );
   }
@@ -302,10 +313,16 @@ class GameSurface extends StatelessWidget {
         : Row(
             mainAxisSize: MainAxisSize.min,
             children: [
-              for (final card in state.playArea)
+              for (var i = 0; i < state.playArea.length; i++)
                 _AnimatedCard(
-                  key: ValueKey(card),
-                  child: PlayingCard(card: card, width: compact ? 44 : 60),
+                  key: ValueKey(state.playArea[i]),
+                  child: PlayingCard(
+                    card: state.playArea[i],
+                    width: compact ? 44 : 60,
+                    skinId: state.playAreaSkins.length > i
+                        ? state.playAreaSkins[i]
+                        : 0,
+                  ),
                 ),
             ],
           ),
@@ -314,98 +331,95 @@ class GameSurface extends StatelessWidget {
   Widget _daketi(DaketiState state, GameTint tint) {
     final daketiCanDraw =
         snapshot.isYourTurn &&
-        HandGuidance.daketiMayDraw(
-          snapshot.you.hand.length,
-          state.stockCount,
-        );
+        HandGuidance.daketiMayDraw(snapshot.you.hand.length, state.stockCount);
     final stock = KeyedSubtree(
       key: stockKey,
       child: PlayingCard(
         faceDown: true,
         width: 44,
+        skinId: ownSkin,
         onTap: onDrawStock,
       ),
     );
     return compact
         ? Column(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            Row(
-              children: [
-                Expanded(
-                  child: _label(
-                    'Match a rank',
-                    detail: '${state.stockCount} in stock',
-                    shade: tint.tint,
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Row(
+                children: [
+                  Expanded(
+                    child: _label(
+                      'Match a rank',
+                      detail: '${state.stockCount} in stock',
+                      shade: tint.tint,
+                    ),
+                  ),
+                  IconButton(
+                    tooltip: 'Your collection',
+                    onPressed: _inspectOwnCollection,
+                    icon: Icon(
+                      Icons.collections_bookmark_outlined,
+                      color: tint.accent,
+                    ),
+                  ),
+                ],
+              ),
+              _cards([
+                daketiCanDraw ? CardShake(child: stock) : stock,
+                _daketiArea(state),
+              ]),
+              if (state.playArea.isEmpty)
+                Text(
+                  Copy.thePlayAreaIsClear,
+                  style: TextStyle(color: tint.tint, fontSize: 11),
+                ),
+            ],
+          )
+        : Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              _label(
+                'Match a rank. Take the cards.',
+                detail: '${state.stockCount} in stock',
+                shade: tint.tint,
+              ),
+              _cards([
+                KeyedSubtree(
+                  key: stockKey,
+                  child: _pile(
+                    'Stock',
+                    '${state.stockCount}',
+                    null,
+                    back: true,
+                    shake: daketiCanDraw,
+                    onTap: onDrawStock,
+                    tint: tint,
                   ),
                 ),
-                IconButton(
-                  tooltip: 'Your collection',
-                  onPressed: _inspectOwnCollection,
-                  icon: Icon(
-                    Icons.collections_bookmark_outlined,
-                    color: tint.accent,
-                  ),
+                _daketiArea(state),
+              ]),
+              if (state.playArea.isEmpty)
+                Text(
+                  Copy.thePlayAreaIsClear,
+                  style: TextStyle(color: tint.tint, fontSize: 11),
                 ),
-              ],
-            ),
-            _cards([
-              daketiCanDraw
-                  ? CardShake(child: stock)
-                  : stock,
-              _daketiArea(state),
-            ]),
-            if (state.playArea.isEmpty)
-              Text(
-                Copy.thePlayAreaIsClear,
-                style: TextStyle(color: tint.tint, fontSize: 11),
-              ),
-          ],
-        )
-      : Column(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            _label(
-              'Match a rank. Take the cards.',
-              detail: '${state.stockCount} in stock',
-              shade: tint.tint,
-            ),
-            _cards([
-              KeyedSubtree(
-                key: stockKey,
-                child: _pile(
-                  'Stock',
-                  '${state.stockCount}',
-                  null,
-                  back: true,
-                  shake: daketiCanDraw,
-                  onTap: onDrawStock,
-                  tint: tint,
+              TextButton.icon(
+                onPressed: _inspectOwnCollection,
+                style: TextButton.styleFrom(
+                  foregroundColor: tint.accent,
+                  minimumSize: const Size(48, 48),
+                  padding: const EdgeInsets.symmetric(horizontal: 8),
+                ),
+                icon: const Icon(Icons.collections_bookmark_outlined, size: 17),
+                label: const Text(
+                  'Your collection',
+                  style: TextStyle(fontSize: 12),
                 ),
               ),
-              _daketiArea(state),
-            ]),
-            if (state.playArea.isEmpty)
-              Text(
-                Copy.thePlayAreaIsClear,
-                style: TextStyle(color: tint.tint, fontSize: 11),
-              ),
-            TextButton.icon(
-              onPressed: _inspectOwnCollection,
-              style: TextButton.styleFrom(
-                foregroundColor: tint.accent,
-                minimumSize: const Size(48, 48),
-                padding: const EdgeInsets.symmetric(horizontal: 8),
-              ),
-              icon: const Icon(Icons.collections_bookmark_outlined, size: 17),
-              label: const Text(
-                'Your collection',
-                style: TextStyle(fontSize: 12),
-              ),
-            ),
-          ],
-        );
+            ],
+          );
   }
+
   Widget _tc(TcState state, GameTint tint) => Column(
     mainAxisSize: MainAxisSize.min,
     children: [
@@ -439,10 +453,17 @@ class GameSurface extends StatelessWidget {
             shake: snapshot.isYourTurn && state.discardTop != null,
             onTap: onTakeDiscard,
             tint: tint,
+            skinId: state.discardSkin,
           ),
         ),
         Container(width: 1, height: compact ? 80 : 100, color: Colors.white24),
-        _pile(Copy.indicator, 'Yarak rank', state.indicator, tint: tint),
+        _pile(
+          Copy.indicator,
+          'Yarak rank',
+          state.indicator,
+          tint: tint,
+          skinId: state.indicatorSkin,
+        ),
       ]),
     ],
   );
@@ -454,6 +475,7 @@ class GameSurface extends StatelessWidget {
     bool shake = false,
     VoidCallback? onTap,
     GameTint? tint,
+    int skinId = 0,
   }) {
     final cardWidget = (card == null && !back)
         ? Container(
@@ -470,6 +492,7 @@ class GameSurface extends StatelessWidget {
             card: card,
             faceDown: back,
             width: compact ? 44 : 60,
+            skinId: back ? ownSkin : skinId,
           );
     return GestureDetector(
       onTap: onTap,
@@ -528,6 +551,7 @@ Future<void> inspectCollection(BuildContext context, PublicPlayer player) =>
                       _CardStack(
                         cards: group,
                         width: 58,
+                        skinId: player.selectedSkin,
                       ),
                   ],
                 ),
@@ -566,9 +590,14 @@ List<List<String>> _groupByRank(List<String> collection) {
 /// peeks out by a small corner so the pile is visually countable. A count badge
 /// sits on the bottom edge of the pile only when a group has more than one card.
 class _CardStack extends StatelessWidget {
-  const _CardStack({required this.cards, required this.width});
+  const _CardStack({
+    required this.cards,
+    required this.width,
+    required this.skinId,
+  });
   final List<String> cards;
   final double width;
+  final int skinId;
 
   @override
   Widget build(BuildContext context) {
@@ -585,7 +614,7 @@ class _CardStack extends StatelessWidget {
             Positioned(
               left: i * step,
               top: i * step,
-              child: PlayingCard(card: cards[i], width: width),
+              child: PlayingCard(card: cards[i], width: width, skinId: skinId),
             ),
           if (count > 1)
             Positioned(

@@ -30,6 +30,7 @@ class BluffChallengeAnimation extends StatefulWidget {
     required this.challengedPfp,
     required this.declaredRank,
     required this.lastPlayCards,
+    this.skinId = 0,
     required this.pileCount,
     required this.sachaName,
     required this.jhutaName,
@@ -42,6 +43,7 @@ class BluffChallengeAnimation extends StatefulWidget {
   final int challengerPfp, challengedPfp;
   final String declaredRank;
   final List<String> lastPlayCards;
+  final int skinId;
   final int pileCount;
   final String sachaName, jhutaName;
   final GlobalKey pileStackKey;
@@ -510,6 +512,7 @@ class _BluffChallengeAnimationState extends State<BluffChallengeAnimation>
                       child: PlayingCard(
                         card: widget.lastPlayCards[i],
                         width: 54,
+                        skinId: widget.skinId,
                       ),
                     ),
                   ),

@@ -84,6 +84,19 @@ class _ResultsViewState extends State<ResultsView> {
             groups: s.winnerGroups,
             hand: s.winnerHand,
             cardWidth: 60,
+            skinId:
+                s.players
+                    .where(
+                      (p) =>
+                          p.id ==
+                          s.winners
+                              .where((w) => w.place == 1)
+                              .firstOrNull
+                              ?.playerId,
+                    )
+                    .firstOrNull
+                    ?.selectedSkin ??
+                0,
             compact: true,
           ),
         ),
@@ -178,6 +191,19 @@ class _ResultsViewState extends State<ResultsView> {
                 groups: s.winnerGroups,
                 hand: s.winnerHand,
                 cardWidth: 68,
+                skinId:
+                    s.players
+                        .where(
+                          (p) =>
+                              p.id ==
+                              s.winners
+                                  .where((w) => w.place == 1)
+                                  .firstOrNull
+                                  ?.playerId,
+                        )
+                        .firstOrNull
+                        ?.selectedSkin ??
+                    0,
               ),
               const SizedBox(height: 20),
               Wrap(
@@ -364,11 +390,13 @@ class _WinnerGroups extends StatelessWidget {
     required this.groups,
     required this.hand,
     required this.cardWidth,
+    required this.skinId,
     this.compact = false,
   });
   final List<List<String>> groups;
   final List<String> hand;
   final double cardWidth;
+  final int skinId;
   final bool compact;
 
   @override
@@ -410,7 +438,13 @@ class _WinnerGroups extends StatelessWidget {
                   runSpacing: 10,
                   alignment: WrapAlignment.center,
                   children: group
-                      .map((c) => PlayingCard(card: c, width: cardWidth))
+                      .map(
+                        (c) => PlayingCard(
+                          card: c,
+                          width: cardWidth,
+                          skinId: skinId,
+                        ),
+                      )
                       .toList(),
                 ),
               ],

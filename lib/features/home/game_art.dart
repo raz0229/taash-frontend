@@ -50,8 +50,9 @@ String gameDescription(GameType game) => switch (game) {
 
 /// Composes the supplied portrait and card assets into a game-specific scene.
 class GameArt extends StatelessWidget {
-  const GameArt({super.key, required this.game});
+  const GameArt({super.key, required this.game, this.skinId = 0});
   final GameType game;
+  final int skinId;
   @override
   Widget build(BuildContext context) => ExcludeSemantics(
     child: LayoutBuilder(
@@ -100,6 +101,7 @@ class GameArt extends StatelessWidget {
                   angle: (i - 1) * .22 - .10,
                   child: PlayingCard(
                     card: cards[i],
+                    skinId: skinId,
                     width: w * .34,
                     faceDown: game == GameType.bluff && i < 2,
                   ),
@@ -193,9 +195,7 @@ class HowToArt extends StatelessWidget {
                 padding: const EdgeInsets.all(9),
                 decoration: const BoxDecoration(
                   shape: BoxShape.circle,
-                  gradient: LinearGradient(
-                    colors: [Color(0xffE9DFFF), _coral],
-                  ),
+                  gradient: LinearGradient(colors: [Color(0xffE9DFFF), _coral]),
                   boxShadow: [
                     BoxShadow(
                       color: Colors.black38,

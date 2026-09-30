@@ -1,12 +1,128 @@
 [
-    {"anim_id": 0, "anim_cost_in_coins": 15, "static": true, "contributor": "Laughing by Google Inc.", "anim_href_in_frontend": "0.gif", "sfx_to_play": "audio/reactions/0.ogg"},
-    {"anim_id": 1, "anim_cost_in_coins": 15, "static": true, "contributor": "Hot Face by Google Inc. on IconScout", "anim_href_in_frontend": "1.gif", "sfx_to_play": "audio/reactions/1.ogg"},
-    {"anim_id": 2, "anim_cost_in_coins": 20, "static": true, "contributor":"Folded Hands by Google Inc. on IconScout","anim_href_in_frontend": "2.gif", "sfx_to_play": "audio/reactions/2.ogg" },
-    {"anim_id": 3, "anim_cost_in_coins": 20, "static": true, "contributor": "Concerned Emoji by Google Inc. on IconScout", "anim_href_in_frontend": "3.gif", "sfx_to_play": "audio/reactions/3.ogg" },
-    {"anim_id": 4, "anim_cost_in_coins": 30, "static": true, "contributor": "Angry emoji by Google Inc. on IconScout", "anim_href_in_frontend": "4.gif", "sfx_to_play": "audio/reactions/4.ogg" },
-    {"anim_id": 5, "anim_cost_in_coins": 30, "static": true, "contributor": "Clap by Google Inc.", "anim_href_in_frontend": "5.gif", "sfx_to_play": "audio/reactions/5.ogg" },
-    {"anim_id": 6, "anim_cost_in_coins": 50, "static": false, "contributor": "Flying Rose by LordIcon", "anim_href_in_frontend": "6.gif", "sfx_to_play": "audio/reactions/6.ogg" },
-    {"anim_id": 7, "anim_cost_in_coins": 50, "static": false, "contributor": "Sparkling Heart by LordIcon", "anim_href_in_frontend": "7.gif", "sfx_to_play": "audio/reactions/7.ogg" },
-    {"anim_id": 8, "anim_cost_in_coins": 100, "static": false, "contributor": "Tomato Splash by LottieFiles", "anim_href_in_frontend": "8.gif", "sfx_to_play": "audio/reactions/8.ogg" },
-    {"anim_id": 9, "anim_cost_in_coins": 100, "static": false, "contributor": "Donkey Braying by LottieFiles", "anim_href_in_frontend": "9.gif", "sfx_to_play": "audio/reactions/9.ogg" }
+  {
+    "anim_id": 0,
+    "name": "Laugh",
+    "anim_cost_in_coins": 15,
+    "static": true,
+    "contributor": "Original Taash artwork",
+    "anim_href_in_frontend": "0.gif",
+    "sfx_to_play": "audio/reactions/0.ogg"
+  },
+  {
+    "anim_id": 1,
+    "name": "Phew",
+    "anim_cost_in_coins": 15,
+    "static": true,
+    "contributor": "Original Taash artwork",
+    "anim_href_in_frontend": "1.gif",
+    "sfx_to_play": "audio/reactions/1.ogg"
+  },
+  {
+    "anim_id": 2,
+    "name": "Shukriya",
+    "anim_cost_in_coins": 20,
+    "static": true,
+    "contributor": "Folded Hands by Google Inc. on IconScout",
+    "anim_href_in_frontend": "2.gif",
+    "sfx_to_play": "audio/reactions/2.ogg"
+  },
+  {
+    "anim_id": 3,
+    "name": "Oh no",
+    "anim_cost_in_coins": 20,
+    "static": true,
+    "contributor": "Original Taash artwork",
+    "anim_href_in_frontend": "3.gif",
+    "sfx_to_play": "audio/reactions/3.ogg"
+  },
+  {
+    "anim_id": 4,
+    "name": "Grr",
+    "anim_cost_in_coins": 30,
+    "static": true,
+    "contributor": "Original Taash artwork",
+    "anim_href_in_frontend": "4.gif",
+    "sfx_to_play": "audio/reactions/4.ogg"
+  },
+  {
+    "anim_id": 5,
+    "name": "Applause",
+    "anim_cost_in_coins": 30,
+    "static": true,
+    "contributor": "Clap by Google Inc.",
+    "anim_href_in_frontend": "5.gif",
+    "sfx_to_play": "audio/reactions/5.ogg"
+  },
+  {
+    "anim_id": 6,
+    "name": "Rose",
+    "anim_cost_in_coins": 50,
+    "static": false,
+    "contributor": "Original Taash artwork",
+    "anim_href_in_frontend": "6.gif",
+    "sfx_to_play": "audio/reactions/6.ogg"
+  },
+  {
+    "anim_id": 7,
+    "name": "Heart",
+    "anim_cost_in_coins": 50,
+    "static": false,
+    "contributor": "Original Taash artwork",
+    "anim_href_in_frontend": "7.gif",
+    "sfx_to_play": "audio/reactions/7.ogg"
+  },
+  {
+    "anim_id": 8,
+    "name": "Tomato",
+    "anim_cost_in_coins": 100,
+    "static": false,
+    "contributor": "Original Taash artwork",
+    "anim_href_in_frontend": "8.gif",
+    "sfx_to_play": "audio/reactions/8.ogg"
+  },
+  {
+    "anim_id": 9,
+    "name": "Donkey",
+    "anim_cost_in_coins": 100,
+    "static": false,
+    "contributor": "Original Taash artworks",
+    "anim_href_in_frontend": "9.gif",
+    "sfx_to_play": "audio/reactions/9.ogg"
+  },
+  {
+    "anim_id": 10,
+    "anim_cost_in_coins": 20,
+    "static": false,
+    "contributor": "Original Taash artwork",
+    "anim_href_in_frontend": "10.gif",
+    "name": "Thulla!",
+    "sfx_to_play": "audio/reactions/10.ogg"
+  },
+  {
+    "anim_id": 11,
+    "anim_cost_in_coins": 20,
+    "static": true,
+    "contributor": "Original Taash artwork",
+    "anim_href_in_frontend": "11.gif",
+    "name": "Chai",
+    "sfx_to_play": "audio/reactions/11.ogg"
+  },
+  {
+    "anim_id": 12,
+    "anim_cost_in_coins": 25,
+    "static": false,
+    "contributor": "Original Taash artwork",
+    "anim_href_in_frontend": "12.gif",
+    "name": "Winner",
+    "sfx_to_play": "audio/reactions/12.ogg"
+  },
+  {
+    "anim_id": 13,
+    "anim_cost_in_coins": 30,
+    "static": false,
+    "contributor": "Original Taash artwork",
+    "anim_href_in_frontend": "13.gif",
+    "name": "Jaldi Karo",
+    "sfx_to_play": "audio/reactions/13.ogg"
+  }
 ]

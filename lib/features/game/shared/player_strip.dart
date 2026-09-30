@@ -166,9 +166,7 @@ class _PlayerStripState extends State<PlayerStrip>
                               decoration: BoxDecoration(
                                 shape: BoxShape.circle,
                                 border: Border.all(
-                                  color: turn
-                                      ? tint.accent
-                                      : tint.edge,
+                                  color: turn ? tint.accent : tint.edge,
                                   width: turn ? 2 : 1,
                                 ),
                                 boxShadow: turn
@@ -277,6 +275,7 @@ class _PlayerStripState extends State<PlayerStrip>
                                           : null,
                                       faceDown: !collection,
                                       width: collection ? 22 : 11,
+                                      skinId: collection ? p.selectedSkin : 0,
                                     ),
                                     SizedBox(width: collection ? 4 : 3),
                                     Text(

@@ -1,7 +1,7 @@
 name: taash
 description: TaashOnline — Bhabhi, Daketi, Bluff, Tissar-Chousar.
 publish_to: none
-version: 1.2.0+19
+version: 1.2.0+20
 environment:
   sdk: '>=3.10.0 <4.0.0'
 dependencies:
@@ -22,6 +22,8 @@ dependencies:
   firebase_messaging: ^16.0.0
   google_sign_in: ^7.2.0
   in_app_update: ^5.0.0
+  in_app_purchase: ^3.2.3
+  crypto: ^3.0.6
 dev_dependencies:
   flutter_test:
     sdk: flutter
@@ -37,6 +39,19 @@ flutter:
     - assets/catalogs/
     - assets/brand/
     - assets/cards/
+    - assets/cards/default/
+    - assets/cards/abyss/
+    - assets/cards/basant/
+    - assets/cards/amber/
+    - assets/cards/frostforge/
+    - assets/cards/green_room/
+    - assets/cards/vintage/
+    - assets/cards/midnight/
+    - assets/cards/monsoon/
+    - assets/cards/neon_city/
+    - assets/cards/phool_patti/
+    - assets/cards/pixel_quest/
+    - assets/cards/starfall/
     - assets/pfps/
     - assets/reactions/
     - assets/audio/

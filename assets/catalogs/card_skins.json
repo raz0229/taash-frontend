@@ -1,0 +1,93 @@
+[
+    {
+        "skin_id": "0",
+        "skin_name": "Classic",
+        "skin_cost_in_coins": 0,
+        "skin_rank": "common",
+        "skin_directory_in_frontend": "cards/default"
+    },
+    {
+        "skin_id": "1",
+        "skin_name": "Abyss",
+        "skin_cost_in_coins": 20000,
+        "skin_rank": "epic",
+        "skin_directory_in_frontend": "cards/abyss"
+    },
+    {
+        "skin_id": "2",
+        "skin_name": "Basant",
+        "skin_cost_in_coins": 15000,
+        "skin_rank": "common",
+        "skin_directory_in_frontend": "cards/basant"
+    },
+    {
+        "skin_id": "3",
+        "skin_name": "Amber",
+        "skin_cost_in_coins": 10000,
+        "skin_rank": "common",
+        "skin_directory_in_frontend": "cards/amber"
+    },
+    {
+        "skin_id": "4",
+        "skin_name": "Frost Forge",
+        "skin_cost_in_coins": 10000,
+        "skin_rank": "rare",
+        "skin_directory_in_frontend": "cards/frostforge"
+    },
+    {
+        "skin_id": "5",
+        "skin_name": "Green Room",
+        "skin_cost_in_coins": 9000,
+        "skin_rank": "rare",
+        "skin_directory_in_frontend": "cards/green_room"
+    },
+    {
+        "skin_id": "6",
+        "skin_name": "Vintage 1920",
+        "skin_cost_in_coins": 9000,
+        "skin_rank": "rare",
+        "skin_directory_in_frontend": "cards/vintage"
+    },
+    {
+        "skin_id": "7",
+        "skin_name": "Midnight",
+        "skin_cost_in_coins": 30000,
+        "skin_rank": "rare",
+        "skin_directory_in_frontend": "cards/midnight"
+    },
+    {
+        "skin_id": "8",
+        "skin_name": "Monsoon",
+        "skin_cost_in_coins": 9500,
+        "skin_rank": "rare",
+        "skin_directory_in_frontend": "cards/monsoon"
+    },
+    {
+        "skin_id": "9",
+        "skin_name": "Neon City",
+        "skin_cost_in_coins": 50000,
+        "skin_rank": "epic",
+        "skin_directory_in_frontend": "cards/neon_city"
+    },
+    {
+        "skin_id": "10",
+        "skin_name": "Phool Patti",
+        "skin_cost_in_coins": 70000,
+        "skin_rank": "epic",
+        "skin_directory_in_frontend": "cards/phool_patti"
+    },
+    {
+        "skin_id": "11",
+        "skin_name": "Pixel Quest",
+        "skin_cost_in_coins": 85000,
+        "skin_rank": "epic",
+        "skin_directory_in_frontend": "cards/pixel_quest"
+    },
+    {
+        "skin_id": "12",
+        "skin_name": "Starfall",
+        "skin_cost_in_coins": 90000,
+        "skin_rank": "epic",
+        "skin_directory_in_frontend": "cards/starfall"
+    }
+]

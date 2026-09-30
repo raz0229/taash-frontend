@@ -18,12 +18,14 @@ class HandView extends StatefulWidget {
     this.onDrop,
     this.sortByRank,
     this.allowSort = false,
+    this.skinId = 0,
   });
   final HandOrder hand;
   final VoidCallback onChanged;
   final bool multiSelect, canSelect, allowSort, isYourTurn;
   final bool? sortByRank;
   final GameType game;
+  final int skinId;
   final bool Function(String) canPlay;
   final void Function(String)? onDrop;
 
@@ -173,10 +175,7 @@ class _HandViewState extends State<HandView> {
                             widget.hand.selected.isEmpty
                                 ? Copy.tapToSelectHoldToDragArrange
                                 : '${widget.hand.selected.length} selected · tap the action below or drag to the room',
-                            style: TextStyle(
-                              fontSize: 11,
-                              color: tint.tint,
-                            ),
+                            style: TextStyle(fontSize: 11, color: tint.tint),
                           ),
                         ),
                       ],
@@ -209,11 +208,20 @@ class _HandViewState extends State<HandView> {
           maxSimultaneousDrags: widget.canSelect ? 1 : 0,
           feedback: Material(
             type: MaterialType.transparency,
-            child: PlayingCard(card: card, width: 76, selected: true),
+            child: PlayingCard(
+              card: card,
+              width: 76,
+              selected: true,
+              skinId: widget.skinId,
+            ),
           ),
           childWhenDragging: Opacity(
             opacity: .3,
-            child: PlayingCard(card: card, selected: selected),
+            child: PlayingCard(
+              card: card,
+              selected: selected,
+              skinId: widget.skinId,
+            ),
           ),
           child: Transform.rotate(
             angle: ((index - (widget.hand.cards.length - 1) / 2) * .045).clamp(
@@ -223,6 +231,7 @@ class _HandViewState extends State<HandView> {
             alignment: Alignment.bottomCenter,
             child: PlayingCard(
               card: card,
+              skinId: widget.skinId,
               width:
                   MediaQuery.sizeOf(context).height < 720 &&
                       MediaQuery.textScalerOf(context).scale(1) <= 1.4
@@ -281,7 +290,11 @@ class _HandViewState extends State<HandView> {
                           ),
                           child: Row(
                             children: [
-                              PlayingCard(card: card, width: 42),
+                              PlayingCard(
+                                card: card,
+                                width: 42,
+                                skinId: widget.skinId,
+                              ),
                               const SizedBox(width: 12),
                               Expanded(
                                 child: Text(

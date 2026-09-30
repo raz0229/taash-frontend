@@ -21,6 +21,7 @@ class CardPlayAnimation extends StatefulWidget {
     required this.fromSeat,
     required this.cardCount,
     this.card = '',
+    this.skinId = 0,
     this.handKey,
     this.onComplete,
   });
@@ -37,6 +38,7 @@ class CardPlayAnimation extends StatefulWidget {
 
   /// Face of the played card ('' renders a face-down cover).
   final String card;
+  final int skinId;
   final GlobalKey? handKey;
   final VoidCallback? onComplete;
   @override
@@ -164,8 +166,7 @@ class _CardPlayAnimationState extends State<CardPlayAnimation>
                 _target,
                 Curves.easeInOut.transform(fly),
               );
-              final scale =
-                  1 + .24 * (1 - grab) * (t < .1 ? 1 : 0) - .06 * fly;
+              final scale = 1 + .24 * (1 - grab) * (t < .1 ? 1 : 0) - .06 * fly;
               final cardsOut = Curves.easeOutBack
                   .transform(_s(t, .04, .14))
                   .clamp(0.0, 1.0);
@@ -182,8 +183,7 @@ class _CardPlayAnimationState extends State<CardPlayAnimation>
               return Stack(
                 fit: StackFit.expand,
                 children: [
-                  if (grabPoofA > 0)
-                    _poof(_source, grabPoofA),
+                  if (grabPoofA > 0) _poof(_source, grabPoofA),
                   if (dropA > 0 && dropHold > 0)
                     Positioned(
                       left: _target.dx - 55,
@@ -248,11 +248,7 @@ class _CardPlayAnimationState extends State<CardPlayAnimation>
         decoration: BoxDecoration(
           shape: BoxShape.circle,
           gradient: const RadialGradient(
-            colors: [
-              Colors.white,
-              Color(0x40FFFFFF),
-              Colors.transparent,
-            ],
+            colors: [Colors.white, Color(0x40FFFFFF), Colors.transparent],
             stops: [0, .55, 1],
           ),
         ),
@@ -306,6 +302,7 @@ class _CardPlayAnimationState extends State<CardPlayAnimation>
                               card: showFace ? widget.card : null,
                               faceDown: !showFace,
                               width: 26,
+                              skinId: widget.skinId,
                             ),
                           ),
                         ),

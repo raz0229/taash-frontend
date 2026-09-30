@@ -555,6 +555,22 @@ class ApiClient {
     );
   }
 
+  Future<void> buySkin(String playerId, int skinId) async {
+    await request(
+      'POST',
+      '/v1/skins/buy',
+      body: {'player_id': playerId, 'skin_id': skinId},
+    );
+  }
+
+  Future<void> selectSkin(String playerId, int skinId) async {
+    await request(
+      'POST',
+      '/v1/skins/select',
+      body: {'player_id': playerId, 'skin_id': skinId},
+    );
+  }
+
   /// Unlocks a thullu sound. The coin price is resolved server-side from the
   /// soundboard catalog, so no amount is sent from here.
   Future<void> buyThulluSfx(String playerId, int thulluId) async {
@@ -604,6 +620,60 @@ class ApiClient {
       '/v1/rewards/ad/devgrant',
       body: {'reward_session_id': sessionId},
     );
+  }
+
+  // --- Coins Shop -----------------------------------------------------------
+  //
+  // The client never sends a coin amount. It names a product, hands over the
+  // Google purchase token, and the server decides what that token is worth.
+
+  /// Loads the server-owned coin pack catalog. The returned packs carry no
+  /// prices yet; [BillingService] fills those in from Google Play.
+  Future<CoinCatalog> getCoinPacks() async {
+    final json = await request('GET', '/v1/iap/products');
+    return CoinCatalog.fromJson(json);
+  }
+
+  /// Asks the server to verify a Google Play purchase and credit the coins.
+  ///
+  /// [obfuscatedAccountId] is the same value that was handed to Google Play, and
+  /// the server recomputes the expected one. It is echoed back so a captured
+  /// request cannot be replayed against a token bought on another account. An
+  /// empty string means the purchase carried no binding, which the server
+  /// accepts or refuses according to its own setting.
+  ///
+  /// [retryRead] is set because this call credits coins: a network failure here
+  /// may have already been applied, so the client retries rather than reporting
+  /// a failure for a purchase that succeeded.
+  Future<CoinPurchaseResult> verifyCoinPurchase({
+    required String productId,
+    required String token,
+    required String obfuscatedAccountId,
+  }) async {
+    final json = await request(
+      'POST',
+      '/v1/iap/purchases/verify',
+      body: {
+        'product_id': productId,
+        'token': token,
+        'obfuscated_account_id': obfuscatedAccountId,
+      },
+      retryRead: true,
+    );
+    return CoinPurchaseResult.fromJson(json);
+  }
+
+  /// The player's own purchase history, newest first.
+  Future<List<CoinPurchaseRecord>> getCoinPurchases({int limit = 25}) async {
+    final json = await request(
+      'GET',
+      '/v1/iap/purchases',
+      query: {'limit': '$limit'},
+    );
+    return (json['purchases'] as List? ?? const [])
+        .whereType<Map<String, dynamic>>()
+        .map(CoinPurchaseRecord.fromJson)
+        .toList(growable: false);
   }
 
   void close() => _client.close();

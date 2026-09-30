@@ -24,6 +24,7 @@ class BhabhiThulluAnimation extends StatefulWidget {
     required this.receiverName,
     required this.receiverPfp,
     required this.trickCards,
+    this.skinId = 0,
     required this.pileCount,
     required this.trickKey,
     required this.playerStripKey,
@@ -33,6 +34,7 @@ class BhabhiThulluAnimation extends StatefulWidget {
   final String giverName, receiverName;
   final int giverPfp, receiverPfp;
   final List<String> trickCards;
+  final int skinId;
   final int pileCount;
   final GlobalKey trickKey;
   final GlobalKey playerStripKey;
@@ -472,7 +474,11 @@ class _BhabhiThulluAnimationState extends State<BhabhiThulluAnimation>
                 scale: 1 - .1 * eased,
                 child: Opacity(
                   opacity: (p / .12).clamp(0.0, 1.0) * (1 - _smooth(t, .94, 1)),
-                  child: PlayingCard(card: cards[i], width: 48),
+                  child: PlayingCard(
+                    card: cards[i],
+                    width: 48,
+                    skinId: widget.skinId,
+                  ),
                 ),
               ),
             ),

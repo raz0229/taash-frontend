@@ -7,20 +7,26 @@ import 'package:flutter/services.dart';
 import '../../core/models/models.dart';
 import '../../core/theme/taash_theme.dart';
 import '../../core/audio/audio_system.dart';
+import '../game/shared/player_strip.dart';
 
 class ReactionChoice {
-  const ReactionChoice(this.id, this.cost, this.static, {this.sfx});
+  const ReactionChoice(this.id, this.name, this.cost, this.static, {this.sfx});
   final int id, cost;
+  final String name;
   final bool static;
+
   /// Playable sfx key for this reaction (matches keys in the reaction overlay
   /// env-agnostic catalog, e.g. `reactions/3`). `null` when the catalog has
   /// not been loaded yet or the reaction has no sound effect configured.
   final String? sfx;
-  String get label => reactionLabel(id);
+  String get label => name;
   static Map<int, String>? _sfxCache;
+  static Map<int, String>? _nameCache;
+
   /// The playable sfx key (e.g. `reactions/3`) for a reaction anim id, or
   /// `null` if the catalog has not been loaded yet or the reaction has no sfx.
   static String? sfxFor(int animId) => _sfxCache?[animId];
+  static String labelFor(int animId) => _nameCache?[animId] ?? 'Reaction';
   static Future<List<ReactionChoice>> load() async {
     final data =
         jsonDecode(
@@ -31,6 +37,7 @@ class ReactionChoice {
         .map(
           (row) => ReactionChoice(
             row['anim_id'] as int,
+            row['name'] as String,
             row['anim_cost_in_coins'] as int,
             row['static'] == true,
             sfx: (row['sfx_to_play'] as String?)?.sfxKey,
@@ -41,6 +48,7 @@ class ReactionChoice {
       for (final c in choices)
         if (c.sfx != null) c.id: c.sfx!,
     };
+    _nameCache = {for (final c in choices) c.id: c.name};
     return choices;
   }
 }
@@ -51,39 +59,30 @@ extension on String {
   String get sfxKey => substring('audio/'.length).replaceAll('.ogg', '');
 }
 
-String reactionLabel(int id) => const [
-  Copy.laugh,
-  Copy.phew,
-  Copy.shukriya,
-  Copy.ohNo,
-  Copy.grr,
-  Copy.applause,
-  Copy.rose,
-  Copy.heart,
-  Copy.tomato,
-  Copy.donkey,
-][id.clamp(0, 9)];
-
 /// Supplied reaction artwork; reduced motion keeps a static vector equivalent.
 class ReactionArt extends StatelessWidget {
-  const ReactionArt({super.key, required this.id, this.size = 48});
+  const ReactionArt({super.key, required this.id, this.label, this.size = 48});
   final int id;
+  final String? label;
   final double size;
   @override
-  Widget build(BuildContext context) => Semantics(
-    label: reactionLabel(id),
-    image: true,
-    child: MediaQuery.disableAnimationsOf(context)
-        ? CustomPaint(size: Size.square(size), painter: _ReactionPainter(id))
-        : Image.asset(
-            'assets/reactions/${id.clamp(0, 9)}.gif',
-            width: size,
-            height: size,
-            fit: BoxFit.contain,
-            cacheWidth: 160,
-            gaplessPlayback: true,
-          ),
-  );
+  Widget build(BuildContext context) {
+    final reduce = MediaQuery.disableAnimationsOf(context);
+    return Semantics(
+      label: label ?? ReactionChoice.labelFor(id),
+      image: true,
+      child: reduce && id <= 9
+          ? CustomPaint(size: Size.square(size), painter: _ReactionPainter(id))
+          : Image.asset(
+              'assets/reactions/$id.gif',
+              width: size,
+              height: size,
+              fit: BoxFit.contain,
+              cacheWidth: 160,
+              gaplessPlayback: true,
+            ),
+    );
+  }
 }
 
 class _ReactionPainter extends CustomPainter {
@@ -270,11 +269,13 @@ class ReactionOverlay extends StatefulWidget {
     required this.events,
     required this.players,
     required this.selfId,
+    required this.playerStripKey,
     this.muted = false,
   });
   final List<ChatAnimation> events;
   final List<PublicPlayer> players;
   final String selfId;
+  final GlobalKey playerStripKey;
   final bool muted;
   @override
   State<ReactionOverlay> createState() => _ReactionOverlayState();
@@ -356,7 +357,25 @@ class _ReactionOverlayState extends State<ReactionOverlay>
     super.dispose();
   }
 
-  Alignment _anchor(String playerId) {
+  Alignment _anchor(BuildContext context, String playerId) {
+    final ordered = [...widget.players]
+      ..sort((a, b) => a.seat.compareTo(b.seat));
+    final target = ordered.where((p) => p.id == playerId).firstOrNull;
+    final overlay = context.findRenderObject();
+    if (target != null && overlay is RenderBox && overlay.hasSize) {
+      final seatIndex = ordered.indexWhere((p) => p.id == playerId);
+      final global = stripSeatGlobalCenter(widget.playerStripKey, seatIndex);
+      if (global != null) {
+        final local = overlay.globalToLocal(global);
+        return Alignment(
+          (local.dx / overlay.size.width * 2) - 1,
+          (local.dy / overlay.size.height * 2) - 1,
+        );
+      }
+    }
+
+    // Keep a stable fallback for the first frame, before PlayerStrip has laid
+    // itself out. The destination still comes from the server's player ID.
     if (playerId == widget.selfId) return const Alignment(0, .7);
     final players = widget.players.where((p) => p.id != widget.selfId).toList()
       ..sort((a, b) => a.seat.compareTo(b.seat));
@@ -375,8 +394,8 @@ class _ReactionOverlayState extends State<ReactionOverlay>
           _ReactionFlight(
             key: ValueKey(event.deduplicationKey),
             event: event,
-            from: _anchor(event.fromPlayer),
-            to: _anchor(event.toPlayer),
+            from: _anchor(context, event.fromPlayer),
+            to: _anchor(context, event.toPlayer),
             isStatic: event.animId <= 5,
             recipient:
                 widget.players
@@ -420,7 +439,10 @@ class _ReactionFlight extends StatefulWidget {
 class _ReactionFlightState extends State<_ReactionFlight>
     with SingleTickerProviderStateMixin {
   late final AnimationController _controller =
-      AnimationController(vsync: this, duration: const Duration(milliseconds: 3500))
+      AnimationController(
+          vsync: this,
+          duration: const Duration(milliseconds: 3500),
+        )
         ..addStatusListener((status) {
           if (status == AnimationStatus.completed) widget.onDone();
         })
@@ -447,13 +469,6 @@ class _ReactionFlightState extends State<_ReactionFlight>
             opacity: v > .85 ? (1 - v) / .15 : 1,
             child: Container(
               padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
-              decoration: BoxDecoration(
-                color: T.surface,
-                borderRadius: BorderRadius.circular(22),
-                boxShadow: const [
-                  BoxShadow(color: Colors.black26, blurRadius: 12),
-                ],
-              ),
               child: Column(
                 mainAxisSize: MainAxisSize.min,
                 children: [

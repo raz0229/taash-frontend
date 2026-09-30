@@ -420,11 +420,17 @@ class BotsRoomFlow extends StatefulWidget {
     required this.auth,
     required this.onJoin,
     this.adService,
+    this.onPurchaseCoins,
     this.game = GameType.bhabhi,
   });
   final ApiClient api;
   final AuthController auth;
   final AdService? adService;
+
+  /// Leaves this flow and opens the Coins Shop. This screen is pushed over the
+  /// lobby, so the shop is reached by closing the flow first; the caller then
+  /// switches the lobby's tab.
+  final VoidCallback? onPurchaseCoins;
   final GameType game;
   final ValueChanged<RoomSummary> onJoin;
   @override
@@ -483,7 +489,18 @@ class _BotsRoomFlowState extends State<BotsRoomFlow> {
       isScrollControlled: true,
       useSafeArea: true,
       showDragHandle: true,
-      builder: (ctx) => RewardSheet(adService: adService, auth: widget.auth),
+      builder: (ctx) => RewardSheet(
+        adService: adService,
+        auth: widget.auth,
+        // Only wired when the lobby can switch tabs, so the reward sheet hides
+        // the purchase button rather than offering a dead end.
+        onPurchaseCoins: widget.onPurchaseCoins == null
+            ? null
+            : () {
+                Navigator.of(ctx).pop();
+                widget.onPurchaseCoins!();
+              },
+      ),
     );
   }
 

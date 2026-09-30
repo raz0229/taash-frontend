@@ -227,6 +227,34 @@ abstract final class Copy {
   static const shop = 'Shop';
   static const avatarsTab = 'Avatars';
   static const thulluSfxTab = 'Thulla SFX';
+
+  // Coins Shop. The tab name, the pack labels and the completion modal. Prices
+  // are never here: they come from the Play Store, so the UI must render
+  // whatever Google returns rather than a bundled string.
+  static const skinsTab = 'Skins';
+  static const coinsShopTab = 'Coins Shop';
+  static const coinsShopTitle = 'Coins Shop';
+  static const coinsShopSubtitle =
+      'Buy coins once, spend them on avatars, skins and sounds.';
+  static const loadingCoinPacks = 'Loading coin packs';
+  static const coinShopUnavailableTitle = 'Coins Shop unavailable';
+  static const buy = 'Buy';
+  static String savePercent(Object? value0) => 'SAVE $value0%';
+  static String packCoins(Object? value0) => '$value0 coins';
+  static const purchaseCompleteTitle = 'Purchase complete';
+  static String coinsAdded(Object? value0) => '$value0 coins added to your balance';
+  static const alreadyProcessedTitle = 'Already in your account';
+  static const alreadyProcessedBody =
+      'This purchase was already credited, so nothing was charged twice.';
+  static String newBalance(Object? value0) => 'New balance: $value0 coins';
+  static const continueLabel = 'Continue';
+  static const securePaymentNote =
+      'Payments are handled by Google Play. Coins are added once your purchase is '
+      'verified.';
+  static const viewPurchaseHistory = 'Purchase history';
+  static const noPurchasesYet = 'No coin purchases yet.';
+  static const coinsShopUnavailableBody =
+      'Coin purchases are not available right now. Please try again later.';
   static const invalidThulluSfxCatalog = 'Invalid Thulla SFX catalog';
   static const duplicateThulluSfxIDs = 'Duplicate Thulla SFX IDs';
   static const missingDefaultThulluSfx =

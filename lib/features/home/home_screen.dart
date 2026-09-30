@@ -36,11 +36,16 @@ class HomeScreen extends StatefulWidget {
     required this.onPlayBots,
     required this.onLearn,
     this.adService,
+    this.onPurchaseCoins,
   });
   final AuthController auth;
   final VoidCallback onProfile, onSettings, onJoin, onPlayBots, onLearn;
   final ValueChanged<GameType> onQuickMatch, onCreate;
   final AdService? adService;
+
+  /// Opens the Coins Shop. Null when this screen cannot switch tabs, in which
+  /// case the reward sheet does not offer the purchase path at all.
+  final VoidCallback? onPurchaseCoins;
   @override
   State<HomeScreen> createState() => _HomeScreenState();
 }
@@ -111,7 +116,20 @@ class _HomeScreenState extends State<HomeScreen>
       isScrollControlled: true,
       useSafeArea: true,
       showDragHandle: true,
-      builder: (ctx) => RewardSheet(adService: adService, auth: widget.auth),
+      builder: (ctx) => RewardSheet(
+        adService: adService,
+        auth: widget.auth,
+        // Only wired when the lobby can actually switch tabs, so the reward sheet
+        // hides the purchase button instead of offering a dead end.
+        onPurchaseCoins: widget.onPurchaseCoins == null
+            ? null
+            : () {
+                // Dismiss the sheet through its own context so the tab switch
+                // happens from a closed route, then let the lobby change tabs.
+                Navigator.of(ctx).pop();
+                widget.onPurchaseCoins!.call();
+              },
+      ),
     );
   }
 
@@ -491,7 +509,11 @@ class _HomeScreenState extends State<HomeScreen>
                 final GameLobbyCard(:game) = lobbyCards[i];
                 return Padding(
                   padding: const EdgeInsets.only(right: 12),
-                  child: GameTile(game: game, focused: i == index),
+                  child: GameTile(
+                    game: game,
+                    focused: i == index,
+                    skinId: profile.selectedSkin,
+                  ),
                 );
               },
             ),

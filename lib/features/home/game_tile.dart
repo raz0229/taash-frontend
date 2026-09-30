@@ -184,7 +184,11 @@ class HowToPlayTile extends StatelessWidget {
                       ),
                     ),
                   ),
-                  const Icon(Icons.auto_stories_outlined, color: _coral, size: 23),
+                  const Icon(
+                    Icons.auto_stories_outlined,
+                    color: _coral,
+                    size: 23,
+                  ),
                 ],
               ),
               const SizedBox(height: 6),
@@ -206,8 +210,11 @@ class HowToPlayTile extends StatelessWidget {
                     ),
                   ),
                   const Spacer(),
-                  const Icon(Icons.play_lesson_outlined,
-                      color: T.muted, size: 17),
+                  const Icon(
+                    Icons.play_lesson_outlined,
+                    color: T.muted,
+                    size: 17,
+                  ),
                 ],
               ),
             ],
@@ -219,9 +226,15 @@ class HowToPlayTile extends StatelessWidget {
 }
 
 class GameTile extends StatelessWidget {
-  const GameTile({super.key, required this.game, required this.focused});
+  const GameTile({
+    super.key,
+    required this.game,
+    required this.focused,
+    this.skinId = 0,
+  });
   final GameType game;
   final bool focused;
+  final int skinId;
   @override
   Widget build(BuildContext context) => Container(
     width: double.infinity,
@@ -247,7 +260,9 @@ class GameTile extends StatelessWidget {
         Expanded(
           child: Stack(
             children: [
-              Positioned.fill(child: GameArt(game: game)),
+              Positioned.fill(
+                child: GameArt(game: game, skinId: skinId),
+              ),
               Positioned(
                 top: 12,
                 left: 12,

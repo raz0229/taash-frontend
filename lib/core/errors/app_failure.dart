@@ -73,8 +73,9 @@ class AppFailure implements Exception {
         'challenge_conflict' =>
           'You already have a pending challenge. Finish it before creating another.',
         'challenge_closed' => 'This challenge is no longer open.',
-        'already_unlocked' => 'You already own this avatar.',
+        'already_unlocked' => 'You already own this cosmetic.',
         'pfp_not_unlocked' => 'Unlock this avatar before selecting it.',
+        'skin_not_unlocked' => 'Unlock this card skin before selecting it.',
         'rate_limited' => 'A little too fast. Wait a moment and try again.',
         'chat_disabled' => 'Room chat is currently turned off by TaashOnline.',
         'anim_id_does_not_exist' => 'This reaction is no longer available.',

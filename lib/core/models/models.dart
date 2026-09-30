@@ -54,11 +54,14 @@ class PlayerProfile {
     this.xp = 0,
     List<int> unlockedPfps = const [],
     this.selectedPfp = 0,
+    List<int> unlockedSkins = const [0],
+    this.selectedSkin = 0,
     List<int> unlockedThulluSfx = const [0],
     this.selectedThulluSfx = 0,
     required this.createdAt,
-  })  : unlockedPfps = List.unmodifiable(unlockedPfps),
-        unlockedThulluSfx = List.unmodifiable(unlockedThulluSfx);
+  }) : unlockedPfps = List.unmodifiable(unlockedPfps),
+       unlockedSkins = List.unmodifiable(unlockedSkins),
+       unlockedThulluSfx = List.unmodifiable(unlockedThulluSfx);
 
   factory PlayerProfile.fromJson(Map<String, dynamic> json) => PlayerProfile(
     id: jsonString(json['id']),
@@ -69,6 +72,10 @@ class PlayerProfile {
     xp: jsonInt(json['xp']),
     unlockedPfps: jsonList(json['unlocked_pfps'], (v) => jsonInt(v)),
     selectedPfp: jsonInt(json['selected_pfp']),
+    unlockedSkins: json['unlocked_skins'] == null
+        ? const [0]
+        : jsonList(json['unlocked_skins'], (v) => jsonInt(v)),
+    selectedSkin: jsonInt(json['selected_skin']),
     // Accounts created before the soundboard shipped have no thullu columns,
     // so default to the one sound every account is guaranteed to own.
     unlockedThulluSfx: json['unlocked_thullu_sfx'] == null
@@ -79,8 +86,8 @@ class PlayerProfile {
   );
 
   final String id, displayName, email, country;
-  final int coins, xp, selectedPfp, selectedThulluSfx;
-  final List<int> unlockedPfps, unlockedThulluSfx;
+  final int coins, xp, selectedPfp, selectedSkin, selectedThulluSfx;
+  final List<int> unlockedPfps, unlockedSkins, unlockedThulluSfx;
   final DateTime createdAt;
 }
 
@@ -307,6 +314,7 @@ class PublicPlayer {
     this.place = 0,
     this.points = 0,
     this.selectedPfp = 0,
+    this.selectedSkin = 0,
     this.selectedThulluSfx = 0,
     List<String> collection = const [],
   }) : collection = List.unmodifiable(collection);
@@ -320,11 +328,18 @@ class PublicPlayer {
     place: jsonInt(json['place']),
     points: jsonInt(json['points']),
     selectedPfp: jsonInt(json['selectedPfp']),
+    selectedSkin: jsonInt(json['selectedSkin']),
     selectedThulluSfx: jsonInt(json['selectedThulluSfx']),
     collection: cardList(json['collection']),
   );
   final String id, displayName, country;
-  final int seat, handCount, place, points, selectedPfp, selectedThulluSfx;
+  final int seat,
+      handCount,
+      place,
+      points,
+      selectedPfp,
+      selectedSkin,
+      selectedThulluSfx;
   final bool connected;
   final List<String> collection;
   bool get isBot => id.startsWith('bot-');
@@ -364,12 +379,18 @@ class Winner {
 }
 
 class PlayedCard {
-  const PlayedCard({required this.playerId, required this.card});
+  const PlayedCard({
+    required this.playerId,
+    required this.card,
+    this.skinId = 0,
+  });
   factory PlayedCard.fromJson(Map<String, dynamic> json) => PlayedCard(
     playerId: jsonString(json['player_id']),
     card: cardList([json['card']]).single,
+    skinId: jsonInt(json['skin_id']),
   );
   final String playerId, card;
+  final int skinId;
 }
 
 sealed class PublicGameState {
@@ -398,6 +419,7 @@ class BhabhiState extends PublicGameState {
   final List<PlayedCard> trick;
   final bool firstTrick, lastThullu;
   final String leadSuit, lastPickupPlayerId;
+
   /// Who handed over the Thullu, and which clip the server resolved for them.
   /// Both default to the free sound so a room broadcast from an older server
   /// still plays something.
@@ -415,18 +437,22 @@ class BluffState extends PublicGameState {
         json['passed_player_ids'],
         (v) => jsonString(v),
       ),
-      pendingWinnerId = jsonString(json['pending_winner_id']);
+      pendingWinnerId = jsonString(json['pending_winner_id']),
+      pileSkins = jsonList(json['pile_skins'], (v) => jsonInt(v));
   final int pileCount, lastPlayCount;
   final String lastPlayerId, declaredRank, pendingWinnerId;
   final List<String> passedPlayerIds;
+  final List<int> pileSkins;
 }
 
 class DaketiState extends PublicGameState {
   DaketiState.fromJson(Map<String, dynamic> json)
     : stockCount = jsonInt(json['stock_count']),
-      playArea = cardList(json['play_area']);
+      playArea = cardList(json['play_area']),
+      playAreaSkins = jsonList(json['play_area_skins'], (v) => jsonInt(v));
   final int stockCount;
   final List<String> playArea;
+  final List<int> playAreaSkins;
 }
 
 class TcState extends PublicGameState {
@@ -439,10 +465,13 @@ class TcState extends PublicGameState {
       indicator = json['indicator'] == null
           ? null
           : cardList([json['indicator']]).single,
-      yarakRank = jsonString(json['yarak_rank']);
+      yarakRank = jsonString(json['yarak_rank']),
+      discardSkin = jsonInt(json['discard_skin']),
+      indicatorSkin = jsonInt(json['indicator_skin']);
   final int stockCount, discardCount;
   final String? discardTop, indicator;
   final String yarakRank;
+  final int discardSkin, indicatorSkin;
 }
 
 class RoomSnapshot {
@@ -664,4 +693,181 @@ class ChatAnimation {
   final DateTime sentAt;
   String get deduplicationKey =>
       '$animId:$fromPlayer:$toPlayer:${sentAt.toIso8601String()}';
+}
+
+/// One purchasable coin bundle, as the backend catalog describes it.
+///
+/// The server is the only authority for [coins]. The price shown to the player
+/// comes from Google Play via [priceLabel], not from the catalog, because Play
+/// decides the real local price. [basePricePkr] is only used to rank bundles
+/// when Play has not answered yet.
+class CoinPack {
+  const CoinPack({
+    required this.productId,
+    required this.coins,
+    required this.basePricePkr,
+    required this.title,
+    this.tagline = '',
+    this.badge = '',
+    this.priceLabel = '',
+    this.basePlanId = '',
+    this.savingsPercent = 0,
+  });
+
+  factory CoinPack.fromJson(Map<String, dynamic> json) => CoinPack(
+    productId: jsonString(json['product_id']),
+    coins: jsonInt(json['coins']),
+    basePricePkr: jsonInt(json['base_price_pkr']),
+    title: jsonString(json['title']),
+    tagline: jsonString(json['tagline']),
+    badge: jsonString(json['badge']),
+    priceLabel: jsonString(json['price_label']),
+    basePlanId: jsonString(json['base_plan_id']),
+    savingsPercent: jsonInt(json['savings_percent']),
+  );
+
+  final String productId;
+  final int coins;
+  final int basePricePkr;
+  final String title;
+  final String tagline;
+  final String badge;
+
+  /// The localized price Google returned, e.g. "PKR 900.00". Empty until the
+  /// product query completes, at which point the UI falls back to [basePricePkr].
+  final String priceLabel;
+  final String basePlanId;
+
+  /// How much cheaper per coin this bundle is than the entry-level pack.
+  /// 0 means there is no saving to advertise.
+  final int savingsPercent;
+
+  CoinPack withPlayDetails({
+    String? price,
+    String? basePlan,
+    String? productId,
+  }) => CoinPack(
+    productId: productId ?? this.productId,
+    coins: coins,
+    basePricePkr: basePricePkr,
+    title: title,
+    tagline: tagline,
+    badge: badge,
+    priceLabel: price ?? priceLabel,
+    basePlanId: basePlan ?? basePlanId,
+    savingsPercent: savingsPercent,
+  );
+
+  /// A price the UI can always render, even before Play has answered.
+  String get fallbackPriceLabel => 'PKR $basePricePkr';
+  String get displayPrice => priceLabel.isEmpty ? fallbackPriceLabel : priceLabel;
+  bool get isAvailable => priceLabel.isNotEmpty;
+}
+
+/// Whether the shop can be used at all.
+class CoinCatalog {
+  const CoinCatalog({required this.enabled, required this.currency, required this.packs});
+
+  factory CoinCatalog.fromJson(Map<String, dynamic> json) => CoinCatalog(
+    enabled: json['enabled'] == true,
+    currency: jsonString(json['currency']).isEmpty
+        ? 'PKR'
+        : jsonString(json['currency']),
+    packs: (json['packs'] as List? ?? const [])
+        .whereType<Map<String, dynamic>>()
+        .map(CoinPack.fromJson)
+        .toList(growable: false),
+  );
+
+  final bool enabled;
+  final String currency;
+  final List<CoinPack> packs;
+
+  static const empty = CoinCatalog(enabled: false, currency: 'PKR', packs: []);
+}
+
+/// The server's answer to a purchase verification.
+class CoinPurchaseResult {
+  const CoinPurchaseResult({
+    required this.status,
+    required this.productId,
+    required this.coins,
+    required this.balance,
+    required this.consumed,
+    this.orderId = '',
+  });
+
+  factory CoinPurchaseResult.fromJson(Map<String, dynamic> json) =>
+      CoinPurchaseResult(
+        status: jsonString(json['status']),
+        productId: jsonString(json['product_id']),
+        coins: jsonInt(json['coins']),
+        balance: jsonInt(json['balance']),
+        consumed: json['consumed'] == true,
+        orderId: jsonString(json['order_id']),
+      );
+
+  /// The server credited the coins now.
+  static const statusCredited = 'credited';
+
+  /// The coins were already credited by an earlier attempt. Not a failure: a
+  /// retried or double-tapped purchase lands here and must not look like an error.
+  static const statusAlreadyProcessed = 'already_processed';
+
+  final String status;
+  final String productId;
+  final int coins;
+  final int balance;
+  final bool consumed;
+  final String orderId;
+
+  bool get isSuccess =>
+      status == statusCredited || status == statusAlreadyProcessed;
+
+  /// True when the coins were already on the account, so the completion modal
+  /// should not claim the player just bought something.
+  bool get isReplay => status == statusAlreadyProcessed;
+}
+
+/// One row of the player's purchase history, for the restored-purchases screen
+/// and for support when a charge is disputed.
+class CoinPurchaseRecord {
+  const CoinPurchaseRecord({
+    required this.id,
+    required this.productId,
+    required this.coins,
+    required this.status,
+    this.reason = '',
+    this.orderId = '',
+    this.price = '',
+    this.currencyCode = '',
+    this.purchasedAt,
+  });
+
+  factory CoinPurchaseRecord.fromJson(Map<String, dynamic> json) =>
+      CoinPurchaseRecord(
+        id: jsonInt(json['id']),
+        productId: jsonString(json['product_id']),
+        coins: jsonInt(json['coins']),
+        status: jsonString(json['status']),
+        reason: jsonString(json['reason']),
+        orderId: jsonString(json['order_id']),
+        price: jsonString(json['price']),
+        currencyCode: jsonString(json['currency_code']),
+        purchasedAt: jsonDate(json['purchased_at']),
+      );
+
+  static const statusVerified = 'verified';
+
+  final int id;
+  final String productId;
+  final int coins;
+  final String status;
+  final String reason;
+  final String orderId;
+  final String price;
+  final String currencyCode;
+  final DateTime? purchasedAt;
+
+  bool get isVerified => status == statusVerified;
 }
