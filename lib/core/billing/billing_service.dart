@@ -258,8 +258,16 @@ class BillingService extends ChangeNotifier {
   }
 
   /// Sends the token to the server and reports the outcome.
+  ///
+  /// The token is [PurchaseVerificationData.serverVerificationData], which the
+  /// plugin populates from Play's `Purchase.getPurchaseToken()`.
+  /// [PurchaseDetails.purchaseID] is **not** the token: on Android the plugin
+  /// fills it with the *order id* (`GPA.1234-5678-9012-3456`). An order id looks
+  /// enough like a purchase token to pass the server's validation, so sending
+  /// it makes Google answer 400 "Invalid Value" and the player is charged with
+  /// no coins. Read the token from verificationData.
   Future<void> _verifyAndCredit(PurchaseDetails purchase) async {
-    final token = purchase.purchaseID;
+    final token = purchase.verificationData.serverVerificationData;
     if (token == null || token.isEmpty) {
       // Play can deliver a purchase with no receipt, which is a plugin or store
       // problem rather than a payment. Forwarding an empty token would just

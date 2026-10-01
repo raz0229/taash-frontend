@@ -105,11 +105,15 @@ PurchaseDetails purchased({
   String? token = 'token-abc',
   PurchaseStatus status = PurchaseStatus.purchased,
 }) => PurchaseDetails(
-  purchaseID: token,
+  // On Android the plugin fills purchaseID with the *order id*, and the real
+  // purchase token only ever arrives in verificationData.serverVerificationData.
+  // Modelling it the other way round is what let the shipped build verify an
+  // order id and leave every paying customer without coins.
+  purchaseID: 'GPA.3300-1234-5678-8901',
   productID: productId,
   verificationData: PurchaseVerificationData(
     localVerificationData: 'local',
-    serverVerificationData: 'server',
+    serverVerificationData: token ?? '',
     source: "GooglePlay",
   ),
   transactionDate: '1700000000000',
@@ -491,6 +495,22 @@ void main() {
       });
       expect(svc.stage, PurchaseStage.done);
       expect(results, ['credited']);
+      await store.close();
+      svc.dispose();
+    });
+
+    test('sends the purchase token, never the order id', () async {
+      // Regression: purchaseID is the order id on Android, and an order id is
+      // accepted by the server's token shape check. Sending it made Google reply
+      // 400 "Invalid Value" and every paying customer was charged with no coins.
+      await boot();
+
+      store.deliver(purchased(productId: 'coins_10k'));
+      await pumpEventQueue();
+
+      final sent = backend.verifications.single['token'] as String;
+      expect(sent, 'token-abc');
+      expect(sent, isNot(startsWith('GPA.')));
       await store.close();
       svc.dispose();
     });
