@@ -313,5 +313,14 @@ void main() {
     final emailExists = AppFailure.fromServer('email_exists');
     expect(emailExists.message, contains('already exists'));
     expect(emailExists.message, contains('Try signing in'));
+
+    // A chargeback is not a server fault, so it must not fall through to the
+    // "try again shortly" default that would invite another purchase.
+    final voided = AppFailure.fromServer(
+      'purchase_voided',
+      serverMessage: 'purchase could not be verified',
+    );
+    expect(voided.message, contains('refunded or charged back'));
+    expect(voided.message, isNot(contains('try again')));
   });
 }

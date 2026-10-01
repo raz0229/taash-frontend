@@ -88,6 +88,10 @@ class AppFailure implements Exception {
         'firebase_delete_failed' => 'Sign out and Sign in again, then Retry.',
         'invalid_request' =>
           'That action is not available right now. Check your choices.',
+        // A card chargeback, not a server fault. Telling the player to try again
+        // would send them straight back into a purchase that has been reversed.
+        'purchase_voided' =>
+          'This purchase was refunded or charged back, so no coins were added.',
         _ => 'Something went wrong on the server. Please try again shortly.',
       };
     }
