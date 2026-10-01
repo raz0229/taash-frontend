@@ -962,6 +962,9 @@ class AppLocalizationsEn extends AppLocalizations {
   String get leaveRoom => 'Leave room';
 
   @override
+  String get pressAgainToExitTheGame => 'Press again to exit the game';
+
+  @override
   String get copyCode => 'Copy code';
 
   @override

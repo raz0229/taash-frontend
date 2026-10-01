@@ -484,6 +484,9 @@ class LobbyShell extends StatefulWidget {
 }
 
 class _LobbyShellState extends State<LobbyShell> {
+  /// How long the first back press stays armed on the Home tab.
+  static const exitGrace = Duration(seconds: 2);
+
   int tab = 2;
   int shopTab = 0;
   RoomSession? room;
@@ -494,6 +497,8 @@ class _LobbyShellState extends State<LobbyShell> {
   String? pendingChallengeId;
   bool challengePromptOpen = false;
   Timer? friendBadgeTimer;
+  bool exitArmed = false;
+  Timer? exitArmedTimer;
 
   @override
   void initState() {
@@ -788,8 +793,30 @@ class _LobbyShellState extends State<LobbyShell> {
   @override
   void dispose() {
     friendBadgeTimer?.cancel();
+    exitArmedTimer?.cancel();
     room?.dispose();
     super.dispose();
+  }
+
+  /// System back inside the lobby: any tab other than Home returns to Home,
+  /// and a second back within [exitGrace] on Home leaves the app.
+  void _handleLobbyBack() {
+    if (tab != 2) {
+      widget.preferences.selection();
+      audio.playSfx('generic_button_press');
+      exitArmedTimer?.cancel();
+      exitArmed = false;
+      setState(() => tab = 2);
+      return;
+    }
+    if (exitArmed) {
+      SystemNavigator.pop();
+      return;
+    }
+    exitArmed = true;
+    exitArmedTimer?.cancel();
+    exitArmedTimer = Timer(exitGrace, () => exitArmed = false);
+    showFlash(context, Copy.pressAgainToExitTheGame);
   }
 
   @override
@@ -858,50 +885,56 @@ class _LobbyShellState extends State<LobbyShell> {
         onLearn: learn,
       ),
     };
-    final shell = Scaffold(
-      body: SafeArea(bottom: false, child: child),
-      bottomNavigationBar: NavigationBar(
-        selectedIndex: tab,
-        onDestinationSelected: (i) {
-          widget.preferences.selection();
-          if (i != tab) audio.playSfx('generic_button_press');
-          setState(() => tab = i);
-        },
-        height: 74,
-        backgroundColor: T.surface,
-        indicatorColor: T.coral.withValues(alpha: .3),
-        destinations: [
-          NavigationDestination(
-            icon: Badge(
-              isLabelVisible: friendRequestCount > 0,
-              label: Text('$friendRequestCount'),
-              child: const Icon(Icons.people_outline),
+    final shell = PopScope(
+      canPop: false,
+      onPopInvokedWithResult: (didPop, _) {
+        if (!didPop) _handleLobbyBack();
+      },
+      child: Scaffold(
+        body: SafeArea(bottom: false, child: child),
+        bottomNavigationBar: NavigationBar(
+          selectedIndex: tab,
+          onDestinationSelected: (i) {
+            widget.preferences.selection();
+            if (i != tab) audio.playSfx('generic_button_press');
+            setState(() => tab = i);
+          },
+          height: 74,
+          backgroundColor: T.surface,
+          indicatorColor: T.coral.withValues(alpha: .3),
+          destinations: [
+            NavigationDestination(
+              icon: Badge(
+                isLabelVisible: friendRequestCount > 0,
+                label: Text('$friendRequestCount'),
+                child: const Icon(Icons.people_outline),
+              ),
+              selectedIcon: Badge(
+                isLabelVisible: friendRequestCount > 0,
+                label: Text('$friendRequestCount'),
+                child: const Icon(Icons.people_alt_rounded),
+              ),
+              label: 'Friends',
             ),
-            selectedIcon: Badge(
-              isLabelVisible: friendRequestCount > 0,
-              label: Text('$friendRequestCount'),
-              child: const Icon(Icons.people_alt_rounded),
+            const NavigationDestination(
+              icon: Icon(Icons.shopping_bag_outlined),
+              label: S.shop,
             ),
-            label: 'Friends',
-          ),
-          const NavigationDestination(
-            icon: Icon(Icons.shopping_bag_outlined),
-            label: S.shop,
-          ),
-          const NavigationDestination(
-            icon: Icon(Icons.home_outlined),
-            selectedIcon: Icon(Icons.home_rounded),
-            label: S.home,
-          ),
-          const NavigationDestination(
-            icon: Icon(Icons.emoji_events_outlined),
-            label: S.leaders,
-          ),
-          const NavigationDestination(
-            icon: Icon(Icons.info_outline),
-            label: S.about,
-          ),
-        ],
+            const NavigationDestination(
+              icon: Icon(Icons.home_outlined),
+              selectedIcon: Icon(Icons.home_rounded),
+              label: S.home,
+            ),
+            const NavigationDestination(
+              icon: Icon(Icons.emoji_events_outlined),
+              label: S.leaders,
+            ),
+            const NavigationDestination(
+              icon: Icon(Icons.info_outline),
+              label: S.about,
+            ),
+          ],
+        ),
       ),
     );
     final newsService = widget.newsService;

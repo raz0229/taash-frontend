@@ -401,6 +401,7 @@
   "botsMayFillEmptySeatsShortly": "Bots may fill empty seats shortly.",
   "theGameStartsWhenEverySeatIs": "The game starts when every seat is filled.",
   "leaveRoom": "Leave room",
+  "pressAgainToExitTheGame": "Press again to exit the game",
   "copyCode": "Copy code",
   "roomCodeCopied": "Room code copied",
   "taashonlineIsTakingAMaintenanceBreak": "TaashOnline is taking a maintenance break.",

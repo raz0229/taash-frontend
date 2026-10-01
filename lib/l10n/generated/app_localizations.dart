@@ -1768,6 +1768,12 @@ abstract class AppLocalizations {
   /// **'Leave room'**
   String get leaveRoom;
 
+  /// No description provided for @pressAgainToExitTheGame.
+  ///
+  /// In en, this message translates to:
+  /// **'Press again to exit the game'**
+  String get pressAgainToExitTheGame;
+
   /// No description provided for @copyCode.
   ///
   /// In en, this message translates to:

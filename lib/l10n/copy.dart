@@ -392,6 +392,7 @@ abstract final class Copy {
   static const theGameStartsWhenEverySeatIs =
       'The game starts when every seat is filled.';
   static const leaveRoom = 'Leave room';
+  static const pressAgainToExitTheGame = 'Press again to exit the game';
   static const copyCode = 'Copy code';
   static const roomCodeCopied = 'Room code copied';
   static const taashonlineIsTakingAMaintenanceBreak =
