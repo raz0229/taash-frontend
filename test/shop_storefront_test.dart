@@ -350,7 +350,51 @@ void main() {
     expect(tester.takeException(), isNull);
   });
 
-  testWidgets('the home discount label opens the Coins Shop', (tester) async {
+  testWidgets('the home discount badge shows its copy inside the disc',
+      (tester) async {
+    phone(tester);
+    await tester.pumpWidget(
+      host(Align(alignment: Alignment.centerLeft, child: DiscountTab(onTap: () {}))),
+    );
+    await tester.pump();
+
+    // The whole point of the badge is the wording, stacked on two lines so it
+    // fits a circle: "GET" over "DISCOUNTS", in white.
+    for (final line in [Copy.getDiscountsTop, Copy.getDiscountsBottom]) {
+      expect(find.text(line), findsOneWidget, reason: line);
+      expect(
+        tester.widget<Text>(find.text(line)).style?.color,
+        const Color(0xFFFFFFFF),
+        reason: '$line must be white to read on the red badge',
+      );
+    }
+
+    final top = tester.getRect(find.text(Copy.getDiscountsTop));
+    final bottom = tester.getRect(find.text(Copy.getDiscountsBottom));
+    expect(top.bottom, lessThanOrEqualTo(bottom.top), reason: 'GET is on top');
+
+    // And it must actually be legible: unscaled, and not cut off by the edge
+    // the badge hangs over.
+    for (final line in [Copy.getDiscountsTop, Copy.getDiscountsBottom]) {
+      final finder = find.text(line);
+      final painted = tester.getSize(finder).width;
+      final style = tester.widget<Text>(finder).style!;
+      final natural = TextPainter(
+        text: TextSpan(text: line, style: style),
+        textDirection: TextDirection.ltr,
+      )..layout();
+      expect(
+        painted,
+        greaterThanOrEqualTo(natural.width - 0.5),
+        reason: '$line is scaled down to $painted of ${natural.width}: '
+            'too small to read',
+      );
+      expect(tester.getRect(finder).left, greaterThanOrEqualTo(0),
+          reason: '$line runs off the left edge');
+    }
+  });
+
+  testWidgets('the home discount badge opens the Coins Shop', (tester) async {
     phone(tester);
     var opened = 0;
     await tester.pumpWidget(
@@ -365,10 +409,23 @@ void main() {
       ),
     );
     await tester.pump();
-    expect(find.text('Get Discounts'), findsOneWidget);
-    await tester.tap(find.text('Get Discounts'));
+    // A spiky disc peeking off the left edge, not a full-width row: the badge
+    // must stay square-ish and be clipped by the screen edge it hangs off.
+    final badge = tester.getSize(
+      find.byType(DiscountTab),
+    );
+    expect(badge.width, moreOrLessEquals(badge.height, epsilon: 0.5));
+    expect(badge.width, lessThan(140));
+    await tester.tap(find.text(Copy.getDiscountsBottom));
     await tester.pump();
     expect(opened, 1);
+
+    // The icon is not the label: a screen reader still announces the whole
+    // affordance, so the badge must keep saying what it is for.
+    final semantics = tester.getSemantics(
+      find.bySemanticsLabel(Copy.getDiscounts),
+    );
+    expect(semantics.label, Copy.getDiscounts);
   });
 }
 

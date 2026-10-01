@@ -239,6 +239,10 @@ abstract final class Copy {
   static const coinShopUnavailableTitle = 'Coins Shop unavailable';
   static const buy = 'Buy';
   static const getDiscounts = 'Get Discounts';
+  // The badge sets the same idea in two stacked lines so it fits inside a
+  // circle. Kept beside getDiscounts, which stays the accessible name.
+  static const getDiscountsTop = 'GET';
+  static const getDiscountsBottom = 'DISCOUNTS';
   static String savePercent(Object? value0) => 'SAVE $value0%';
   static String packCoins(Object? value0) => '$value0 coins';
   static const purchaseCompleteTitle = 'Purchase complete';

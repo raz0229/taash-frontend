@@ -1,10 +1,13 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:google_mobile_ads/google_mobile_ads.dart';
+import 'package:taash/core/ads/ad_service.dart';
 import 'package:taash/core/config/app_config.dart';
 import 'package:taash/core/models/models.dart';
 import 'package:taash/core/theme/taash_theme.dart';
 import 'package:taash/core/websocket/room_session.dart';
+import 'package:taash/core/widgets/banner_ad.dart';
 import 'package:taash/features/game/game_screen.dart';
 import 'package:taash/features/game/game_surfaces.dart';
 import 'package:taash/features/game/shared/hand_view.dart';
@@ -209,4 +212,37 @@ void main() {
       session.dispose();
     });
   }
+
+  testWidgets('a waiting room with no banner unit is unchanged', (tester) async {
+    tester.view.devicePixelRatio = 1;
+    tester.view.physicalSize = const Size(390, 844);
+    addTearDown(tester.view.resetPhysicalSize);
+    addTearDown(tester.view.resetDevicePixelRatio);
+    // Empty units mean the banner widget never asks AdMob for anything, so the
+    // waiting state must look and behave exactly as it did before banners.
+    final ads = AdService(adUnitId: '');
+    addTearDown(ads.dispose);
+    final session = VisualSession(tableFixture(GameType.tc, 'waiting'));
+    await tester.pumpWidget(
+      MaterialApp(
+        theme: T.theme,
+        home: GameScreen(
+          session: session,
+          onExit: () {},
+          adService: ads,
+        ),
+      ),
+    );
+    await tester.pump(const Duration(milliseconds: 500));
+    expect(tester.takeException(), isNull);
+    // The slot is built and anchored under the content, but with no unit
+    // configured it draws nothing and claims no height.
+    expect(find.byType(TaashBannerAd), findsOneWidget);
+    expect(find.byType(AdWidget), findsNothing);
+    expect(tester.getSize(find.byType(TaashBannerAd)), Size.zero);
+    // The waiting content itself is untouched.
+    expect(find.text('Make yourself at home'), findsOneWidget);
+    await tester.pumpWidget(const SizedBox());
+    session.dispose();
+  });
 }

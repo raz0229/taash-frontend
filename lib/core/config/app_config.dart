@@ -18,6 +18,7 @@ class AppConfig {
     this.adMobAppId = '',
     this.adMobRewardedAdUnitId = '',
     this.adMobInterstitialAdUnitId = '',
+    this.adMobBannerAdUnitId = '',
     this.devRewardGrant = false,
     this.firebaseAppId = '',
     this.firebaseMessagingSenderId = '',
@@ -42,6 +43,9 @@ class AppConfig {
     ),
     adMobInterstitialAdUnitId: const String.fromEnvironment(
       'ADMOB_INTERSTITIAL_AD_UNIT_ID',
+    ),
+    adMobBannerAdUnitId: const String.fromEnvironment(
+      'ADMOB_BANNER_AD_UNIT_ID',
     ),
     devRewardGrant: const bool.fromEnvironment('ADMOB_DEV_REWARD_GRANT'),
     firebaseAppId: const String.fromEnvironment('FIREBASE_APP_ID'),
@@ -77,6 +81,11 @@ class AppConfig {
   final String adMobAppId;
   final String adMobRewardedAdUnitId;
   final String adMobInterstitialAdUnitId;
+
+  /// Unit shown as a banner in the room's waiting state. Empty means the build
+  /// ships without one, and the room then shows no ad at all.
+  final String adMobBannerAdUnitId;
+
   final bool devRewardGrant;
   final String firebaseAppId;
   final String firebaseMessagingSenderId;

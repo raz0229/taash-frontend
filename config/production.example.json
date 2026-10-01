@@ -13,6 +13,7 @@
   "ADMOB_APP_ID": "",
   "ADMOB_REWARDED_AD_UNIT_ID": "",
   "ADMOB_INTERSTITIAL_AD_UNIT_ID": "",
+  "ADMOB_BANNER_AD_UNIT_ID": "",
   "ADMOB_DEV_REWARD_GRANT": "false",
   "IAP_ENABLED": "false",
   "IAP_PRODUCT_IDS": "coins_5k,coins_10k,coins_20k,coins_50k,coins_100k",

@@ -5,12 +5,14 @@ import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import '../../core/auth/auth_controller.dart';
+import '../../core/ads/ad_service.dart';
 import '../../core/errors/app_failure.dart';
 import '../../core/models/models.dart';
 import '../../core/network/api_client.dart';
 import '../../core/preferences/preferences.dart';
 import '../../core/theme/taash_theme.dart';
 import '../../core/websocket/room_session.dart';
+import '../../core/widgets/banner_ad.dart';
 import '../../core/widgets/taash_widgets.dart';
 import '../chat/chat_sheet.dart';
 import '../chat/reactions.dart';
@@ -47,6 +49,7 @@ class GameScreen extends StatefulWidget {
     this.preferences,
     this.auth,
     this.api,
+    this.adService,
   });
   final RoomSession session;
   final VoidCallback onExit;
@@ -59,6 +62,10 @@ class GameScreen extends StatefulWidget {
   // hides that row, which keeps existing callers and tests working.
   final AuthController? auth;
   final ApiClient? api;
+
+  // Only drives the waiting-state banner. Null simply shows no ad, which keeps
+  // callers and tests that were written before the banner existed working.
+  final AdService? adService;
   @override
   State<GameScreen> createState() => _GameScreenState();
 }
@@ -117,6 +124,8 @@ class _GameScreenState extends State<GameScreen>
   OverlayEntry? _playOverlay;
   @override
   RoomSession get session => widget.session;
+  @override
+  AdService? get adService => widget.adService;
   bool _played10sSound = false;
   late final AnimationController _turnTimer =
       AnimationController(vsync: this, duration: const Duration(seconds: 90))

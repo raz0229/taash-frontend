@@ -5,6 +5,7 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:http/http.dart' as http;
 import 'package:http/testing.dart';
 import 'package:in_app_purchase/in_app_purchase.dart';
+import 'package:google_mobile_ads/google_mobile_ads.dart';
 import 'package:taash/core/ads/ad_service.dart';
 import 'package:taash/core/auth/auth_controller.dart';
 import 'package:taash/core/billing/billing_service.dart';
@@ -13,6 +14,7 @@ import 'package:taash/core/config/app_config.dart';
 import 'package:taash/core/models/models.dart';
 import 'package:taash/core/network/api_client.dart';
 import 'package:taash/core/storage/session_store.dart';
+import 'package:taash/core/widgets/banner_ad.dart';
 import 'package:taash/core/widgets/reward_sheet.dart';
 import 'package:taash/features/shop/coins_shop_tab.dart';
 
@@ -286,5 +288,29 @@ void main() {
     await tester.pumpAndSettle();
 
     expect(opened, 1);
+  });
+
+  test('the room banner is only built when a unit is configured', () {
+    // An empty ad unit means loadBannerAd returns null before touching AdMob.
+    // That is the contract the room relies on: a build without
+    // ADMOB_BANNER_AD_UNIT_ID shows no ad and reserves no space for one.
+    final ads = AdService(adUnitId: '');
+    addTearDown(ads.dispose);
+    expect(ads.loadBannerAd(size: AdSize.banner), isNull);
+  });
+
+  testWidgets('a build without a banner unit leaves no gap in the room', (
+    tester,
+  ) async {
+    final ads = AdService(adUnitId: '');
+    addTearDown(ads.dispose);
+    await tester.pumpWidget(
+      MaterialApp(
+        home: Scaffold(body: TaashBannerAd(adService: ads)),
+      ),
+    );
+    await tester.pump();
+    expect(find.byType(AdWidget), findsNothing);
+    expect(tester.getSize(find.byType(TaashBannerAd)), Size.zero);
   });
 }

@@ -6,6 +6,7 @@ class AdService extends ChangeNotifier {
   AdService({
     required this.adUnitId,
     this.interstitialAdUnitId = '',
+    this.bannerAdUnitId = '',
     Future<void>? initialization,
   }) : _initialization = initialization ?? Future<void>.value() {
     _start();
@@ -13,6 +14,11 @@ class AdService extends ChangeNotifier {
 
   final String adUnitId;
   final String interstitialAdUnitId;
+
+  /// Unit for the room's waiting-state banner. Empty when the build ships
+  /// without one, which is how [loadBannerAd] knows to hand back nothing.
+  final String bannerAdUnitId;
+
   final Future<void> _initialization;
 
   RewardedAd? _rewardedAd;
@@ -231,6 +237,55 @@ class AdService extends ChangeNotifier {
       return false;
     }
   }
+
+  // ── Banner Ad ─────────────────────────────────────────────────────────
+
+  /// Creates a banner of [size] and starts loading it.
+  ///
+  /// Unlike the full-screen formats this is not preloaded here: a banner is a
+  /// platform view, so the widget that shows it owns it and must hand it back
+  /// through [disposeBannerAd] at exactly the moment it leaves the tree. The
+  /// failed banner is disposed before [onFailed] runs, so the callback only has
+  /// to decide whether to ask for another.
+  ///
+  /// Returns null when this build has no banner unit configured, which is how a
+  /// caller knows to render nothing at all rather than an empty slot.
+  BannerAd? loadBannerAd({
+    required AdSize size,
+    void Function(Ad ad)? onFailed,
+  }) {
+    if (_disposed || bannerAdUnitId.isEmpty) {
+      debugPrint(
+        '[AdService] loadBannerAd skipped: disposed=$_disposed, '
+        'unitIdEmpty=${bannerAdUnitId.isEmpty}',
+      );
+      return null;
+    }
+    debugPrint('[AdService] loading ${size.width}x${size.height} banner ad…');
+    final ad = BannerAd(
+      adUnitId: bannerAdUnitId,
+      size: size,
+      request: const AdRequest(),
+      listener: BannerAdListener(
+        onAdFailedToLoad: (ad, error) {
+          debugPrint('[AdService] banner ad FAILED TO LOAD: $error');
+          ad.dispose();
+          onFailed?.call(ad);
+        },
+      ),
+    )..load();
+    return ad;
+  }
+
+  /// Resolves once MobileAds has initialised, which every ad request must wait
+  /// on. Rewarded and interstitial get this for free because [_start] gates
+  /// them; a banner is created on demand by the widget that shows it, so that
+  /// widget waits on this before asking for one.
+  Future<void> whenInitialized() => _initialization;
+
+  /// Releases a banner handed out by [loadBannerAd]. Banners hold no shared
+  /// state to recycle, so disposing the ad is all there is to do.
+  void disposeBannerAd(BannerAd ad) => ad.dispose();
 
   @override
   void dispose() {

@@ -2,6 +2,7 @@ part of 'game_screen.dart';
 
 mixin _GameStatus on State<GameScreen> {
   RoomSession get session;
+  AdService? get adService;
   String get notice;
   bool get leaving;
   void announce(String text);
@@ -70,7 +71,14 @@ mixin _GameStatus on State<GameScreen> {
   };
   Widget _waiting(RoomSnapshot s) {
     final tint = GameTint(s.room.game);
-    return ListView(
+    final ads = adService;
+    // The banner is pinned under the scrolling waiting content instead of being
+    // one more item in it: inside the list it would only be built once the
+    // player scrolled past the room code, which is not the same as showing it.
+    return Column(
+    children: [
+      Expanded(
+      child: ListView(
     padding: const EdgeInsets.all(24),
     children: [
       const SizedBox(height: 15),
@@ -271,6 +279,22 @@ mixin _GameStatus on State<GameScreen> {
         fill: tint.accent,
         onFill: tint.onAccent,
       ),
+    ],
+  )),
+      // The one place a banner is allowed: the player is parked here with
+      // nothing to do and nothing at stake, which is what the room's banner
+      // policy asks for. It sits under the content so it never moves the room
+      // code, and it disappears entirely, gap included, when the build has no
+      // banner unit configured.
+      if (ads != null)
+        TaashBannerAd(
+          adService: ads,
+          frame: BoxDecoration(
+            color: tint.tray,
+            borderRadius: BorderRadius.circular(14),
+            border: Border.all(color: tint.edge),
+          ),
+        ),
     ],
   );
   }

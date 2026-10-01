@@ -96,10 +96,12 @@ class _TaashAppState extends State<TaashApp> with WidgetsBindingObserver {
       widget.newsService ?? InGameNewsService(config: widget.config);
   late final adService =
       widget.config.adMobRewardedAdUnitId.isNotEmpty ||
-          widget.config.adMobInterstitialAdUnitId.isNotEmpty
+          widget.config.adMobInterstitialAdUnitId.isNotEmpty ||
+          widget.config.adMobBannerAdUnitId.isNotEmpty
       ? AdService(
           adUnitId: widget.config.adMobRewardedAdUnitId,
           interstitialAdUnitId: widget.config.adMobInterstitialAdUnitId,
+          bannerAdUnitId: widget.config.adMobBannerAdUnitId,
           initialization:
               widget.admobInitialization ??
               // If a test harness provided no init future, fall back to a
@@ -802,6 +804,8 @@ class _LobbyShellState extends State<LobbyShell> {
         // Enables the in-room Thullu sound picker in the room options sheet.
         auth: widget.auth,
         api: widget.api,
+        // Drives the banner shown while the room waits for its players.
+        adService: widget.adService,
         onPlayerProfile: profile,
         onAddFriend: (playerId) async {
           try {
