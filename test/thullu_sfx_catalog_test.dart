@@ -53,7 +53,8 @@ void main() {
         throwsFormatException,
       );
       expect(
-        () => ThulluSfxItem.fromJson(const {'thullu_id': 1, 'cost_in_coins': -5}),
+        () =>
+            ThulluSfxItem.fromJson(const {'thullu_id': 1, 'cost_in_coins': -5}),
         throwsFormatException,
       );
     });
@@ -71,19 +72,17 @@ void main() {
   });
 
   group('thullu sfx ownership', () {
-    ThulluSfxItem item(int id, int cost) =>
-        ThulluSfxItem(id: id, name: 'S$id', cost: cost, sfxKey: 'thullu-soundboard/$id');
+    ThulluSfxItem item(int id, int cost) => ThulluSfxItem(
+      id: id,
+      name: 'S$id',
+      cost: cost,
+      sfxKey: 'thullu-soundboard/$id',
+    );
 
     test('selected, owned, affordable and insufficient are distinct', () {
       final p = profile();
-      expect(
-        thulluSfxOwnership(item(2, 5000), p),
-        ThulluSfxOwnership.selected,
-      );
-      expect(
-        thulluSfxOwnership(item(0, 0), p),
-        ThulluSfxOwnership.owned,
-      );
+      expect(thulluSfxOwnership(item(2, 5000), p), ThulluSfxOwnership.selected);
+      expect(thulluSfxOwnership(item(0, 0), p), ThulluSfxOwnership.owned);
       expect(
         thulluSfxOwnership(item(5, 1500), p),
         ThulluSfxOwnership.affordable,
@@ -95,8 +94,9 @@ void main() {
     });
 
     test('an owned sound the player has not picked is still selectable', () {
-      final ownedButNotPicked = PlayerProfile.fromJson(Map<String, dynamic>.of(profileJson)
-        ..['selected_thullu_sfx'] = 0);
+      final ownedButNotPicked = PlayerProfile.fromJson(
+        Map<String, dynamic>.of(profileJson)..['selected_thullu_sfx'] = 0,
+      );
       expect(
         thulluSfxOwnership(
           const ThulluSfxItem(

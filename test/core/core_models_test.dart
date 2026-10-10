@@ -122,9 +122,7 @@ void main() {
   });
 
   test('winner coins earned distinguish unpaid from unreported', () {
-    final snapshot = RoomSnapshot.fromJson(
-      snapshotFixture(status: 'finished'),
-    );
+    final snapshot = RoomSnapshot.fromJson(snapshotFixture(status: 'finished'));
     final paid = snapshot.winners.firstWhere((w) => w.place == 1);
     final unpaid = snapshot.winners.firstWhere((w) => w.place == 2);
     expect(paid.coinsEarned, 640);
@@ -133,10 +131,7 @@ void main() {
     expect(unpaid.coinsEarned, 0);
     // An older server that never reports the field must not look like a zero
     // payout, otherwise the results screen claims a win earned nothing.
-    expect(
-      const Winner(playerId: 'x', place: 1).coinsEarned,
-      isNull,
-    );
+    expect(const Winner(playerId: 'x', place: 1).coinsEarned, isNull);
   });
 
   test('Bluff public model ignores injected hidden pile fields', () {
@@ -149,67 +144,69 @@ void main() {
     expect(snapshot.players.every((p) => p.collection.isEmpty), true);
   });
 
-  test('bluff challenge event parses from ack envelope, result or bare data',
-      () {
-    final fromEnvelope = BluffChallengeEvent.tryParse({
-      'command': 'bluff.challenge',
-      'result': {
-        'type': 'bluff.challenge_result',
-        'data': {
-          'bluff_caught': true,
-          'challenger': 'player-a',
-          'challenged': 'player-b',
-          'pile_goes_to': 'player-b',
-          'declared_rank': '2',
-          'last_play_cards': ['h-2', 'c-4'],
-        },
-      },
-    });
-    expect(fromEnvelope, isNotNull);
-    expect(fromEnvelope!.bluffCaught, true);
-    expect(fromEnvelope.challenger, 'player-a');
-    expect(fromEnvelope.challenged, 'player-b');
-    expect(fromEnvelope.pileGoesTo, 'player-b');
-    expect(fromEnvelope.declaredRank, '2');
-    expect(fromEnvelope.lastPlayCards, ['h-2', 'c-4']);
-
-    final fromResult = BluffChallengeEvent.tryParse({
-      'type': 'bluff.challenge_result',
-      'data': {
-        'bluff_caught': false,
-        'challenger': 'player-a',
-        'challenged': 'player-b',
-        'pile_goes_to': 'player-a',
-        'declared_rank': 'y',
-        'last_play_cards': ['h-y'],
-      },
-    });
-    expect(fromResult!.bluffCaught, false);
-    expect(fromResult.pileGoesTo, 'player-a');
-
-    final fromData = BluffChallengeEvent.tryParse({
-      'bluff_caught': true,
-      'challenger': 'player-a',
-      'challenged': 'player-b',
-      'pile_goes_to': 'player-b',
-      'declared_rank': 'g',
-      'last_play_cards': ['h-g'],
-    });
-    expect(fromData!.declaredRank, 'g');
-
-    expect(BluffChallengeEvent.tryParse({'type': 'room.snapshot'}), isNull);
-    expect(BluffChallengeEvent.tryParse('not-a-map'), isNull);
-    expect(
-      BluffChallengeEvent.tryParse({
+  test(
+    'bluff challenge event parses from ack envelope, result or bare data',
+    () {
+      final fromEnvelope = BluffChallengeEvent.tryParse({
         'command': 'bluff.challenge',
         'result': {
           'type': 'bluff.challenge_result',
-          'data': {'bluff_caught': true},
+          'data': {
+            'bluff_caught': true,
+            'challenger': 'player-a',
+            'challenged': 'player-b',
+            'pile_goes_to': 'player-b',
+            'declared_rank': '2',
+            'last_play_cards': ['h-2', 'c-4'],
+          },
         },
-      }),
-      isNull,
-    );
-  });
+      });
+      expect(fromEnvelope, isNotNull);
+      expect(fromEnvelope!.bluffCaught, true);
+      expect(fromEnvelope.challenger, 'player-a');
+      expect(fromEnvelope.challenged, 'player-b');
+      expect(fromEnvelope.pileGoesTo, 'player-b');
+      expect(fromEnvelope.declaredRank, '2');
+      expect(fromEnvelope.lastPlayCards, ['h-2', 'c-4']);
+
+      final fromResult = BluffChallengeEvent.tryParse({
+        'type': 'bluff.challenge_result',
+        'data': {
+          'bluff_caught': false,
+          'challenger': 'player-a',
+          'challenged': 'player-b',
+          'pile_goes_to': 'player-a',
+          'declared_rank': 'y',
+          'last_play_cards': ['h-y'],
+        },
+      });
+      expect(fromResult!.bluffCaught, false);
+      expect(fromResult.pileGoesTo, 'player-a');
+
+      final fromData = BluffChallengeEvent.tryParse({
+        'bluff_caught': true,
+        'challenger': 'player-a',
+        'challenged': 'player-b',
+        'pile_goes_to': 'player-b',
+        'declared_rank': 'g',
+        'last_play_cards': ['h-g'],
+      });
+      expect(fromData!.declaredRank, 'g');
+
+      expect(BluffChallengeEvent.tryParse({'type': 'room.snapshot'}), isNull);
+      expect(BluffChallengeEvent.tryParse('not-a-map'), isNull);
+      expect(
+        BluffChallengeEvent.tryParse({
+          'command': 'bluff.challenge',
+          'result': {
+            'type': 'bluff.challenge_result',
+            'data': {'bluff_caught': true},
+          },
+        }),
+        isNull,
+      );
+    },
+  );
 
   test('stale, foreign room and foreign self snapshots are rejected', () {
     final reducer = SnapshotReducer(playerId: 'player-a');

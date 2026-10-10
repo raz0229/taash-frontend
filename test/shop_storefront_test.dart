@@ -157,9 +157,7 @@ void main() {
     phone(tester);
     final auth = signedIn();
     addTearDown(auth.dispose);
-    await tester.pumpWidget(
-      host(ShopScreen(auth: auth, api: auth.api)),
-    );
+    await tester.pumpWidget(host(ShopScreen(auth: auth, api: auth.api)));
     await tester.pump(const Duration(milliseconds: 500));
 
     for (final label in ['Avatars', 'Skins', 'Thulla SFX']) {
@@ -169,9 +167,7 @@ void main() {
       final painter = TextPainter(
         text: TextSpan(text: text.data, style: text.style),
         textDirection: TextDirection.ltr,
-        textScaler: MediaQuery.textScalerOf(
-          tester.element(finder),
-        ),
+        textScaler: MediaQuery.textScalerOf(tester.element(finder)),
       )..layout();
       final painted = tester.getSize(finder).width;
       expect(
@@ -182,8 +178,9 @@ void main() {
     }
   });
 
-  testWidgets('selecting a tab pins it to the edge and drops the last',
-      (tester) async {
+  testWidgets('selecting a tab pins it to the edge and drops the last', (
+    tester,
+  ) async {
     phone(tester);
     final auth = signedIn();
     addTearDown(auth.dispose);
@@ -192,11 +189,11 @@ void main() {
 
     final bar = tester.getRect(find.byType(SingleChildScrollView).first);
     // Avatars selected: the bar sits at rest and the next tab peeks in.
-    expect(tabRect(tester, 'Avatars').left, moreOrLessEquals(bar.left, epsilon: 1));
     expect(
-      tabRect(tester, 'Skins').right,
-      lessThanOrEqualTo(bar.right + 0.5),
+      tabRect(tester, 'Avatars').left,
+      moreOrLessEquals(bar.left, epsilon: 1),
     );
+    expect(tabRect(tester, 'Skins').right, lessThanOrEqualTo(bar.right + 0.5));
 
     await tester.tap(find.text('Skins'));
     // The reveal lands in a post-frame callback and the bar has no animation
@@ -205,7 +202,10 @@ void main() {
     await tester.pump();
 
     // Skins now leads: Avatars has scrolled out of the bar, Thulla SFX is in.
-    expect(tabRect(tester, 'Skins').left, moreOrLessEquals(bar.left, epsilon: 1));
+    expect(
+      tabRect(tester, 'Skins').left,
+      moreOrLessEquals(bar.left, epsilon: 1),
+    );
     expect(tabRect(tester, 'Avatars').right, lessThanOrEqualTo(bar.left + 0.5));
     expect(
       tabRect(tester, 'Thulla SFX').right,
@@ -213,8 +213,9 @@ void main() {
     );
   });
 
-  testWidgets('the Coins Shop opens on its own tab, scrolled into view',
-      (tester) async {
+  testWidgets('the Coins Shop opens on its own tab, scrolled into view', (
+    tester,
+  ) async {
     phone(tester);
     final auth = signedIn();
     addTearDown(auth.dispose);
@@ -260,7 +261,9 @@ void main() {
     expect(tester.takeException(), isNull);
   });
 
-  testWidgets('a coin pack leads with its badge and its artwork', (tester) async {
+  testWidgets('a coin pack leads with its badge and its artwork', (
+    tester,
+  ) async {
     phone(tester);
     final auth = signedIn();
     addTearDown(auth.dispose);
@@ -274,9 +277,7 @@ void main() {
     );
     addTearDown(billing.dispose);
 
-    await tester.pumpWidget(
-      host(CoinsShopTab(auth: auth, billing: billing)),
-    );
+    await tester.pumpWidget(host(CoinsShopTab(auth: auth, billing: billing)));
     await tester.pump();
     await tester.pumpAndSettle();
 
@@ -300,17 +301,17 @@ void main() {
       (w) => w is Image && assetOf(w).startsWith('assets/purchases/'),
     );
     expect(art, findsNWidgets(2));
-    expect(assetOf(tester.widget<Image>(art.first)), 'assets/purchases/coins_5k.png');
+    expect(
+      assetOf(tester.widget<Image>(art.first)),
+      'assets/purchases/coins_5k.png',
+    );
 
     // The saving is a tag hung off the top-right corner, and hangs inwards.
     expect(find.text('SAVE 25%'), findsOneWidget);
     expect(find.text('SAVE 0%'), findsNothing);
     final card = tester.getRect(
       find
-          .ancestor(
-            of: find.text('SAVE 25%'),
-            matching: find.byType(Stack),
-          )
+          .ancestor(of: find.text('SAVE 25%'), matching: find.byType(Stack))
           .first,
     );
     final rotate = find
@@ -350,11 +351,17 @@ void main() {
     expect(tester.takeException(), isNull);
   });
 
-  testWidgets('the home discount badge shows its copy inside the disc',
-      (tester) async {
+  testWidgets('the home discount badge shows its copy inside the disc', (
+    tester,
+  ) async {
     phone(tester);
     await tester.pumpWidget(
-      host(Align(alignment: Alignment.centerLeft, child: DiscountTab(onTap: () {}))),
+      host(
+        Align(
+          alignment: Alignment.centerLeft,
+          child: DiscountTab(onTap: () {}),
+        ),
+      ),
     );
     await tester.pump();
 
@@ -386,11 +393,15 @@ void main() {
       expect(
         painted,
         greaterThanOrEqualTo(natural.width - 0.5),
-        reason: '$line is scaled down to $painted of ${natural.width}: '
+        reason:
+            '$line is scaled down to $painted of ${natural.width}: '
             'too small to read',
       );
-      expect(tester.getRect(finder).left, greaterThanOrEqualTo(0),
-          reason: '$line runs off the left edge');
+      expect(
+        tester.getRect(finder).left,
+        greaterThanOrEqualTo(0),
+        reason: '$line runs off the left edge',
+      );
     }
   });
 
@@ -411,9 +422,7 @@ void main() {
     await tester.pump();
     // A spiky disc peeking off the left edge, not a full-width row: the badge
     // must stay square-ish and be clipped by the screen edge it hangs off.
-    final badge = tester.getSize(
-      find.byType(DiscountTab),
-    );
+    final badge = tester.getSize(find.byType(DiscountTab));
     expect(badge.width, moreOrLessEquals(badge.height, epsilon: 0.5));
     expect(badge.width, lessThan(140));
     await tester.tap(find.text(Copy.getDiscountsBottom));
@@ -428,4 +437,3 @@ void main() {
     expect(semantics.label, Copy.getDiscounts);
   });
 }
-

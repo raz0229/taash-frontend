@@ -160,7 +160,9 @@ Future<AuthController> pumpShop(WidgetTester tester) async {
 
   await tester.pumpWidget(
     MaterialApp(
-      home: Scaffold(body: CoinsShopTab(auth: auth, billing: billing)),
+      home: Scaffold(
+        body: CoinsShopTab(auth: auth, billing: billing),
+      ),
     ),
   );
   await tester.pumpAndSettle();
@@ -223,37 +225,38 @@ void main() {
     expect(find.byType(Divider), findsWidgets);
   });
 
-  testWidgets('the reward sheet hides the purchase option when it goes nowhere', (
-    tester,
-  ) async {
-    final auth = signedInAuth();
-    addTearDown(auth.dispose);
-    final ads = AdService(adUnitId: '');
-    addTearDown(ads.dispose);
+  testWidgets(
+    'the reward sheet hides the purchase option when it goes nowhere',
+    (tester) async {
+      final auth = signedInAuth();
+      addTearDown(auth.dispose);
+      final ads = AdService(adUnitId: '');
+      addTearDown(ads.dispose);
 
-    await tester.pumpWidget(
-      MaterialApp(
-        home: Scaffold(
-          body: Builder(
-            builder: (context) => TextButton(
-              onPressed: () => showModalBottomSheet<void>(
-                context: context,
-                isScrollControlled: true,
-                builder: (_) => RewardSheet(adService: ads, auth: auth),
+      await tester.pumpWidget(
+        MaterialApp(
+          home: Scaffold(
+            body: Builder(
+              builder: (context) => TextButton(
+                onPressed: () => showModalBottomSheet<void>(
+                  context: context,
+                  isScrollControlled: true,
+                  builder: (_) => RewardSheet(adService: ads, auth: auth),
+                ),
+                child: const Text('open'),
               ),
-              child: const Text('open'),
             ),
           ),
         ),
-      ),
-    );
-    await tester.tap(find.text('open'));
-    await tester.pumpAndSettle();
+      );
+      await tester.tap(find.text('open'));
+      await tester.pumpAndSettle();
 
-    // A build with no billing service must not show a button leading nowhere.
-    expect(find.text('Purchase Coins'), findsNothing);
-    expect(find.text('Watch Ad +100 Coins'), findsOneWidget);
-  });
+      // A build with no billing service must not show a button leading nowhere.
+      expect(find.text('Purchase Coins'), findsNothing);
+      expect(find.text('Watch Ad +100 Coins'), findsOneWidget);
+    },
+  );
 
   testWidgets('pressing it runs the navigation callback', (tester) async {
     final auth = signedInAuth();

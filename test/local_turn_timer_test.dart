@@ -35,8 +35,9 @@ void main() {
     return int.parse(parts[0]) * 60 + int.parse(parts[1]);
   }
 
-  testWidgets('the countdown keeps running while the app is in the background',
-      (tester) async {
+  testWidgets('the countdown keeps running while the app is in the background', (
+    tester,
+  ) async {
     var expired = 0;
     await tester.pumpWidget(host(seconds: 90, onExpired: () => expired++));
     await tester.pump();

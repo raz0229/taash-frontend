@@ -237,15 +237,17 @@ void main() {
             child: child!,
           ),
           home: Scaffold(
-            body: SafeArea(child: ShopScreen(auth: auth, api: api)),
+            body: SafeArea(
+              child: ShopScreen(auth: auth, api: api),
+            ),
           ),
         ),
       );
       await tester.tap(find.text('Thulla SFX'));
       await tester.pump();
-      await tester.runAsync(() async => Future<void>.delayed(
-        const Duration(milliseconds: 100),
-      ));
+      await tester.runAsync(
+        () async => Future<void>.delayed(const Duration(milliseconds: 100)),
+      );
       await tester.pump(const Duration(milliseconds: 500));
       expect(tester.takeException(), isNull);
       expect(find.byType(CircularProgressIndicator), findsNothing);

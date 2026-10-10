@@ -3,338 +3,511 @@ import 'package:flutter/material.dart';
 import '../../core/models/models.dart';
 import '../../core/theme/taash_theme.dart';
 import '../../core/widgets/taash_widgets.dart';
-import '../game/shared/playing_card.dart';
 import '../home/game_art.dart';
+import 'courses/basics_course.dart';
+import 'courses/bhabhi_course.dart';
+import 'courses/bluff_course.dart';
+import 'courses/daketi_course.dart';
+import 'courses/tc_course.dart';
+import 'learn_drills.dart';
+import 'learn_model.dart';
+import 'learn_progress.dart';
+import 'lesson_player.dart';
 
-class Lesson {
-  const Lesson(
-    this.title,
-    this.body,
-    this.cards,
-    this.question,
-    this.answers,
-    this.correct,
-    this.explanation,
-  );
-  final String title, body, question, explanation;
-  final List<String> cards, answers;
-  final int correct;
-}
-
-const lessons = {
-  GameType.bhabhi: [
-    Lesson(
-      Copy.leaveTheCardsBehind,
-      Copy.finishYourHandBeforeTheLastPlayer,
-      ['h-y', 'h-3', 'p-k'],
-      Copy.whoGetsTheFirstTurn,
-      [Copy.theHYHolder, Copy.theDealer],
-      0,
-      Copy.hYHolderGetsFirstTurn,
-    ),
-    Lesson(
-      Copy.followTheLead,
-      Copy.whenYouHaveTheLeadSuitYou,
-      ['e-3', 'e-g', 'p-k'],
-      Copy.eitLeadsAndYouHoldEitWhat,
-      ['A Pawn card', Copy.anEitCard],
-      1,
-      Copy.youMustFollowEitWhileYouHave,
-    ),
-    Lesson(
-      Copy.watchTheThullu,
-      Copy.theHighestLeadSuitPlayerPicksUp,
-      ['e-3', 'e-g', 'p-k'],
-      Copy.whoTakesThisOffSuitThullu,
-      [Copy.theEitGolaPlayer, Copy.thePawnKingaPlayer],
-      0,
-      Copy.eitGolaIsHighestInTheLead,
-    ),
-  ],
-  GameType.bluff: [
-    Lesson(
-      'A good poker face',
-      Copy.finishYourCardsTheHYHolder,
-      ['h-y', 'c-3'],
-      Copy.howManyCardsOpenANewRound,
-      ['1 card', '2–4 cards'],
-      1,
-      'A new round needs 2–4 cards. Only the claim and card count are public.',
-    ),
-    Lesson(
-      Copy.keepTheStoryGoing,
-      Copy.laterPlaysUse14CardsAnd,
-      ['e-5', 'p-k'],
-      Copy.canTheNextPlayerChangeAnActive,
-      [Copy.noKeepTheDeclaredRank, Copy.yesEveryTurn],
-      0,
-      Copy.theRoundKeepsItsDeclaredRankUntil,
-    ),
-    Lesson(
-      Copy.callItCarefully,
-      Copy.ifTheLastPlayIsABluff,
-      ['h-b', 'c-b'],
-      Copy.isAnEmptyHandAnImmediateFinal,
-      [Copy.always, Copy.itMayStillBeChallenged],
-      1,
-      Copy.waitForServerConfirmationACaughtProvisional,
-    ),
-  ],
-  GameType.daketi: [
-    Lesson(
-      Copy.buildYourCollection,
-      Copy.startWithFourCardsDrawFromStock,
-      ['c-7', 'e-7', 'p-7'],
-      Copy.whatMakesACapture,
-      [Copy.matchingSuits, Copy.matchingRanks],
-      1,
-      'A seven can collect other sevens, whichever suit they have.',
-    ),
-    Lesson(
-      Copy.keepAnEyeOnTheTops,
-      'A rank matching your own collection top adds to it. A successful capture keeps your turn while stock remains. Once stock is empty, play advances after every card.',
-      ['h-g', 'p-g', 'e-g'],
-      Copy.stockIsEmptyDoesACaptureKeep,
-      [Copy.noPlayAdvances, Copy.yes],
-      0,
-      Copy.afterStockRunsOutEveryPlayedCard,
-    ),
-    Lesson(
-      Copy.makeEveryCardCount,
-      Copy.yourFinalCollectionDecidesYourPointsYakka,
-      ['h-y', 'h-k', 'h-7'],
-      Copy.howManyPointsIsYakkaWorth,
-      ['20 points', '5 points'],
-      0,
-      Copy.yakkaIsWorth20PointsWatchExposed,
-    ),
-  ],
-  GameType.tc: [
-    Lesson(
-      Copy.find433,
-      Copy.buildOneGroupOfFourAndTwo,
-      ['p-3', 'p-4', 'p-5'],
-      Copy.isThisAValidTypeOfGroup,
-      ['A same-suit run', Copy.anUnrelatedTrio],
-      0,
-      Copy.pawn345IsASame,
-    ),
-    Lesson(
-      Copy.meetYourYarak,
-      Copy.yarakIsTheRankImmediatelyAfterThe,
-      ['h-k', 'p-y', 'c-y'],
-      Copy.ifTheIndicatorIsKingaWhichRank,
-      [Copy.yakka2, Copy.gola],
-      0,
-      Copy.yakkaFollowsKingaEveryYakkaBecomesA,
-    ),
-    Lesson(
-      Copy.drawArrangeDiscard,
-      Copy.drawStockOrTakeTheTopDiscard,
-      ['p-6', 'p-7', 'p-8'],
-      Copy.canYouImmediatelyReturnThePickedDiscard,
-      [Copy.noChooseAnotherCard, Copy.yes],
-      0,
-      Copy.pickAnotherCardToDiscardTheServer,
-    ),
-  ],
+final courses = {
+  GameType.bhabhi: bhabhiCourse,
+  GameType.bluff: bluffCourse,
+  GameType.daketi: daketiCourse,
+  GameType.tc: tcCourse,
 };
 
+const _basicsColor = Color(0xff5B4A86);
+
 class LearnScreen extends StatefulWidget {
-  const LearnScreen({super.key});
+  const LearnScreen({super.key, this.initialGame = GameType.bhabhi});
+  final GameType initialGame;
   @override
   State<LearnScreen> createState() => _LearnScreenState();
 }
 
 class _LearnScreenState extends State<LearnScreen> {
-  GameType game = GameType.bhabhi;
-  int step = 0;
-  int? answer;
-  String? selected;
+  late GameType game = widget.initialGame;
+  final progress = LearnProgress.instance;
+
   @override
-  Widget build(BuildContext context) {
-    final lesson = lessons[game]![step];
-    return ListView(
-      padding: const EdgeInsets.all(20),
-      children: [
-        const TaashSectionHeader(
-          eyebrow: Copy.learnATYOURPACE,
-          title: Copy.fromFirstCardToOneMoreRound,
-          subtitle: 'A little practice. A lot more confidence.',
-        ),
-        const SizedBox(height: 22),
-        SingleChildScrollView(
-          scrollDirection: Axis.horizontal,
-          child: Row(
-            children: [
-              for (final g in lobbyGames)
-                Padding(
-                  padding: const EdgeInsets.only(right: 8),
-                  child: ChoiceChip(
-                    label: Text(g == GameType.tc ? Copy.tc : g.label),
-                    selected: g == game,
-                    onSelected: (_) => setState(() {
-                      game = g;
-                      step = 0;
-                      answer = null;
-                      selected = null;
-                    }),
-                  ),
-                ),
-            ],
-          ),
-        ),
-        const SizedBox(height: 24),
-        Container(
-          padding: const EdgeInsets.all(22),
-          decoration: BoxDecoration(
-            color: gameColor(game),
-            borderRadius: BorderRadius.circular(24),
-          ),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Text(
-                Copy.practiceSTEPOF3(step + 1),
-                style: TextStyle(
-                  color: T.white.withValues(alpha: .65),
-                  fontSize: 10,
-                  letterSpacing: 1.6,
-                  fontWeight: FontWeight.w800,
-                ),
-              ),
-              const SizedBox(height: 12),
-              Text(
-                lesson.title,
-                style: const TextStyle(
-                  color: T.white,
-                  fontSize: 26,
-                  fontWeight: FontWeight.w800,
-                ),
-              ),
-              const SizedBox(height: 13),
-              Text(
-                lesson.body,
-                style: const TextStyle(color: T.white, height: 1.5),
-              ),
-              const SizedBox(height: 24),
-              Wrap(
-                spacing: 14,
-                runSpacing: 14,
-                alignment: WrapAlignment.center,
-                children: lesson.cards
-                    .map(
-                      (card) => PlayingCard(
-                        card: card,
-                        width: 70,
-                        selected: selected == card,
-                        onTap: () => setState(
-                          () => selected = selected == card ? null : card,
-                        ),
-                      ),
-                    )
-                    .toList(),
-              ),
-              const SizedBox(height: 16),
-              Text(
-                selected == null
-                    ? Copy.tapACardToLearnItsName
-                    : _cardName(selected!),
-                style: const TextStyle(
-                  color: T.ochre,
-                  fontWeight: FontWeight.w700,
-                ),
-              ),
-            ],
-          ),
-        ),
-        const SizedBox(height: 22),
-        Text(lesson.question, style: Theme.of(context).textTheme.titleLarge),
-        const SizedBox(height: 12),
-        for (var i = 0; i < lesson.answers.length; i++)
-          Padding(
-            padding: const EdgeInsets.only(bottom: 10),
-            child: OutlinedButton(
-              style: OutlinedButton.styleFrom(
-                backgroundColor: answer == i
-                    ? (i == lesson.correct
-                          ? T.mint
-                          : T.ochre.withValues(alpha: .25))
-                    : T.surface,
-              ),
-              onPressed: () => setState(() => answer = i),
-              child: Row(
-                children: [
-                  Icon(
-                    answer == i
-                        ? (i == lesson.correct
-                              ? Icons.check_circle
-                              : Icons.refresh)
-                        : Icons.radio_button_unchecked,
-                    size: 20,
-                  ),
-                  const SizedBox(width: 12),
-                  Expanded(child: Text(lesson.answers[i])),
-                ],
-              ),
-            ),
-          ),
-        if (answer != null)
-          Semantics(
-            liveRegion: true,
-            child: Padding(
-              padding: const EdgeInsets.symmetric(vertical: 10),
-              child: Text(
-                answer == lesson.correct
-                    ? lesson.explanation
-                    : Copy.tryAgain2(lesson.explanation),
-                style: const TextStyle(color: T.muted),
-              ),
-            ),
-          ),
-        const SizedBox(height: 14),
-        Row(
-          children: [
-            Expanded(
-              child: TaashButton(
-                label: Copy.previous,
-                secondary: true,
-                onPressed: step > 0
-                    ? () => setState(() {
-                        step--;
-                        answer = null;
-                        selected = null;
-                      })
-                    : null,
-              ),
-            ),
-            const SizedBox(width: 12),
-            Expanded(
-              child: TaashButton(
-                label: step == 2 ? Copy.practiceAgain : Copy.nextStep,
-                icon: Icons.arrow_forward,
-                onPressed: () => setState(() {
-                  step = (step + 1) % 3;
-                  answer = null;
-                  selected = null;
-                }),
-              ),
-            ),
-          ],
-        ),
-        const SizedBox(height: 20),
-        const Text(
-          Copy.thisIsALearningExerciseItDoes,
-          textAlign: TextAlign.center,
-          style: TextStyle(color: T.muted, fontSize: 12),
-        ),
-        const SizedBox(height: 20),
-      ],
-    );
+  void initState() {
+    super.initState();
+    progress.load();
   }
 
-  String _cardName(String id) {
-    final parts = id.split('-');
-    return '${const {'h': 'Hukam', 'c': 'Chirri', 'e': 'Eit', 'p': 'Pawn'}[parts[0]]} ${const {'y': 'Yakka', 'k': 'Kinga', 'b': 'Begi', 'g': 'Gola'}[parts[1]] ?? parts[1]}';
+  void openLesson(List<Lesson> lessons, int index, Color color) =>
+      Navigator.push(
+        context,
+        MaterialPageRoute(
+          builder: (_) =>
+              LessonPlayerScreen(lessons: lessons, index: index, color: color),
+        ),
+      );
+
+  void openPractice(String id, String title, List<Drill> drills, Color color) =>
+      Navigator.push(
+        context,
+        MaterialPageRoute(
+          builder: (_) => PracticeScreen(
+            id: id,
+            title: title,
+            drills: drills,
+            color: color,
+          ),
+        ),
+      );
+
+  @override
+  Widget build(BuildContext context) => ListenableBuilder(
+    listenable: progress,
+    builder: (context, _) {
+      final course = courses[game]!;
+      final color = gameColor(game);
+      final basicsDone = progress.doneCount(basicsLessons.map((l) => l.id));
+      return ListView(
+        padding: const EdgeInsets.all(20),
+        children: [
+          const TaashSectionHeader(
+            eyebrow: Copy.learnATYOURPACE,
+            title: Copy.fromFirstCardToOneMoreRound,
+            subtitle:
+                'Step-by-step lessons, guided hands and practice that is never the same twice.',
+          ),
+          const SizedBox(height: 20),
+          _sectionLabel('Start here'),
+          for (var i = 0; i < basicsLessons.length; i++)
+            _LessonTile(
+              lesson: basicsLessons[i],
+              number: i + 1,
+              done: progress.isDone(basicsLessons[i].id),
+              color: _basicsColor,
+              onTap: () => openLesson(basicsLessons, i, _basicsColor),
+            ),
+          if (basicsDone == basicsLessons.length)
+            _PracticeTile(
+              title: 'Card names practice',
+              subtitle: 'Names and ranks, endlessly shuffled.',
+              icon: Icons.style_outlined,
+              best: progress.bestStreak('basics.mix'),
+              onTap: () => openPractice(
+                'basics.mix',
+                'Card basics',
+                basicsDrills,
+                _basicsColor,
+              ),
+            ),
+          const SizedBox(height: 18),
+          _sectionLabel('Choose a game'),
+          SingleChildScrollView(
+            scrollDirection: Axis.horizontal,
+            child: Row(
+              children: [
+                for (final g in lobbyGames)
+                  Padding(
+                    padding: const EdgeInsets.only(right: 8),
+                    child: ChoiceChip(
+                      label: Text(g == GameType.tc ? Copy.tc : g.label),
+                      selected: g == game,
+                      onSelected: (_) => setState(() => game = g),
+                    ),
+                  ),
+              ],
+            ),
+          ),
+          const SizedBox(height: 16),
+          _CourseHero(
+            course: course,
+            color: color,
+            done: progress.doneCount(course.lessons.map((l) => l.id)),
+            onContinue: () {
+              final next = course.lessons.indexWhere(
+                (l) => !progress.isDone(l.id),
+              );
+              openLesson(course.lessons, next < 0 ? 0 : next, color);
+            },
+          ),
+          const SizedBox(height: 22),
+          _sectionLabel('Lessons'),
+          for (var i = 0; i < course.lessons.length; i++)
+            _LessonTile(
+              lesson: course.lessons[i],
+              number: i + 1,
+              done: progress.isDone(course.lessons[i].id),
+              color: color,
+              onTap: () => openLesson(course.lessons, i, color),
+            ),
+          const SizedBox(height: 18),
+          _sectionLabel('Practice · never the same twice'),
+          _PracticeTile(
+            title: 'Mixed practice',
+            subtitle:
+                'Every ${game == GameType.tc ? 'Tissar Chausar' : game.label} drill, shuffled together.',
+            icon: Icons.shuffle,
+            best: progress.bestStreak('${game.name}.mix'),
+            highlight: color,
+            onTap: () => openPractice(
+              '${game.name}.mix',
+              '${game.label} practice',
+              course.drills,
+              color,
+            ),
+          ),
+          for (final drill in course.drills)
+            _PracticeTile(
+              title: drill.title,
+              subtitle: drill.subtitle,
+              icon: drill.icon,
+              best: progress.bestStreak(drill.id),
+              onTap: () => openPractice(drill.id, drill.title, [drill], color),
+            ),
+          const SizedBox(height: 18),
+          _sectionLabel('Rules at a glance'),
+          TaashPanel(
+            padding: const EdgeInsets.fromLTRB(18, 8, 18, 14),
+            child: Column(
+              children: [
+                for (final (heading, detail) in course.cheatSheet)
+                  Padding(
+                    padding: const EdgeInsets.only(top: 10),
+                    child: Row(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        SizedBox(
+                          width: 96,
+                          child: Text(
+                            heading,
+                            style: const TextStyle(
+                              color: T.ochre,
+                              fontWeight: FontWeight.w700,
+                            ),
+                          ),
+                        ),
+                        Expanded(
+                          child: Text(
+                            detail,
+                            style: const TextStyle(height: 1.4),
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+              ],
+            ),
+          ),
+          const SizedBox(height: 20),
+          const Text(
+            Copy.thisIsALearningExerciseItDoes,
+            textAlign: TextAlign.center,
+            style: TextStyle(color: T.muted, fontSize: 12),
+          ),
+          const SizedBox(height: 20),
+        ],
+      );
+    },
+  );
+
+  Widget _sectionLabel(String text) => Padding(
+    padding: const EdgeInsets.only(bottom: 10),
+    child: Text(
+      text.toUpperCase(),
+      style: const TextStyle(
+        color: T.coral,
+        fontSize: 11,
+        letterSpacing: 2,
+        fontWeight: FontWeight.w800,
+      ),
+    ),
+  );
+}
+
+class _CourseHero extends StatelessWidget {
+  const _CourseHero({
+    required this.course,
+    required this.color,
+    required this.done,
+    required this.onContinue,
+  });
+  final Course course;
+  final Color color;
+  final int done;
+  final VoidCallback onContinue;
+
+  @override
+  Widget build(BuildContext context) {
+    final total = course.lessons.length;
+    final label = done == 0
+        ? 'Start learning'
+        : done >= total
+        ? 'Review from the start'
+        : 'Continue';
+    return Container(
+      padding: const EdgeInsets.all(20),
+      decoration: BoxDecoration(
+        color: color,
+        borderRadius: BorderRadius.circular(24),
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Row(
+            children: [
+              Expanded(
+                child: Text(
+                  course.game.label,
+                  style: const TextStyle(
+                    color: T.white,
+                    fontSize: 26,
+                    fontWeight: FontWeight.w800,
+                  ),
+                ),
+              ),
+              Container(
+                padding: const EdgeInsets.symmetric(
+                  horizontal: 10,
+                  vertical: 5,
+                ),
+                decoration: BoxDecoration(
+                  color: Colors.black.withValues(alpha: .18),
+                  borderRadius: BorderRadius.circular(20),
+                ),
+                child: Text(
+                  course.players,
+                  style: const TextStyle(
+                    color: T.white,
+                    fontSize: 12,
+                    fontWeight: FontWeight.w700,
+                  ),
+                ),
+              ),
+            ],
+          ),
+          const SizedBox(height: 8),
+          Text(
+            course.goal,
+            style: const TextStyle(color: T.white, height: 1.45),
+          ),
+          const SizedBox(height: 16),
+          ClipRRect(
+            borderRadius: BorderRadius.circular(8),
+            child: LinearProgressIndicator(
+              value: total == 0 ? 0 : done / total,
+              minHeight: 8,
+              color: T.ochre,
+              backgroundColor: Colors.black.withValues(alpha: .2),
+            ),
+          ),
+          const SizedBox(height: 8),
+          Text(
+            '$done of $total lessons complete',
+            style: TextStyle(
+              color: T.white.withValues(alpha: .8),
+              fontSize: 12,
+              fontWeight: FontWeight.w600,
+            ),
+          ),
+          const SizedBox(height: 16),
+          TaashButton(
+            label: label,
+            icon: Icons.play_arrow_rounded,
+            onDark: true,
+            onPressed: onContinue,
+          ),
+        ],
+      ),
+    );
   }
+}
+
+class _LessonTile extends StatelessWidget {
+  const _LessonTile({
+    required this.lesson,
+    required this.number,
+    required this.done,
+    required this.color,
+    required this.onTap,
+  });
+  final Lesson lesson;
+  final int number;
+  final bool done;
+  final Color color;
+  final VoidCallback onTap;
+
+  @override
+  Widget build(BuildContext context) => Padding(
+    padding: const EdgeInsets.only(bottom: 10),
+    child: Material(
+      color: T.surface,
+      borderRadius: BorderRadius.circular(18),
+      child: InkWell(
+        borderRadius: BorderRadius.circular(18),
+        onTap: onTap,
+        child: Container(
+          padding: const EdgeInsets.all(14),
+          decoration: BoxDecoration(
+            borderRadius: BorderRadius.circular(18),
+            border: Border.all(
+              color: lesson.guided ? color.withValues(alpha: .8) : T.outline,
+            ),
+          ),
+          child: Row(
+            children: [
+              Container(
+                width: 40,
+                height: 40,
+                alignment: Alignment.center,
+                decoration: BoxDecoration(
+                  color: done ? T.mint : color.withValues(alpha: .9),
+                  shape: BoxShape.circle,
+                ),
+                child: done
+                    ? const Icon(Icons.check, color: Color(0xff1B2A3A))
+                    : Text(
+                        '$number',
+                        style: const TextStyle(
+                          color: T.white,
+                          fontWeight: FontWeight.w800,
+                        ),
+                      ),
+              ),
+              const SizedBox(width: 14),
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Wrap(
+                      spacing: 8,
+                      crossAxisAlignment: WrapCrossAlignment.center,
+                      children: [
+                        Text(
+                          lesson.title,
+                          style: const TextStyle(
+                            fontWeight: FontWeight.w700,
+                            fontSize: 16,
+                          ),
+                        ),
+                        if (lesson.guided)
+                          Container(
+                            padding: const EdgeInsets.symmetric(
+                              horizontal: 8,
+                              vertical: 2,
+                            ),
+                            decoration: BoxDecoration(
+                              color: T.ochre,
+                              borderRadius: BorderRadius.circular(10),
+                            ),
+                            child: const Text(
+                              'INTERACTIVE',
+                              style: TextStyle(
+                                color: Color(0xff2A193A),
+                                fontSize: 9,
+                                letterSpacing: 1,
+                                fontWeight: FontWeight.w800,
+                              ),
+                            ),
+                          ),
+                      ],
+                    ),
+                    const SizedBox(height: 3),
+                    Text(
+                      lesson.summary,
+                      style: const TextStyle(color: T.muted, fontSize: 13),
+                    ),
+                  ],
+                ),
+              ),
+              const SizedBox(width: 8),
+              Icon(lesson.icon, color: T.muted, size: 22),
+            ],
+          ),
+        ),
+      ),
+    ),
+  );
+}
+
+class _PracticeTile extends StatelessWidget {
+  const _PracticeTile({
+    required this.title,
+    required this.subtitle,
+    required this.icon,
+    required this.best,
+    required this.onTap,
+    this.highlight,
+  });
+  final String title, subtitle;
+  final IconData icon;
+  final int best;
+  final VoidCallback onTap;
+  final Color? highlight;
+
+  @override
+  Widget build(BuildContext context) => Padding(
+    padding: const EdgeInsets.only(bottom: 10),
+    child: Material(
+      color: highlight?.withValues(alpha: .22) ?? T.surface,
+      borderRadius: BorderRadius.circular(18),
+      child: InkWell(
+        borderRadius: BorderRadius.circular(18),
+        onTap: onTap,
+        child: Container(
+          padding: const EdgeInsets.all(14),
+          decoration: BoxDecoration(
+            borderRadius: BorderRadius.circular(18),
+            border: Border.all(color: highlight ?? T.outline),
+          ),
+          child: Row(
+            children: [
+              Icon(icon, color: T.ochre),
+              const SizedBox(width: 14),
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      title,
+                      style: const TextStyle(
+                        fontWeight: FontWeight.w700,
+                        fontSize: 15,
+                      ),
+                    ),
+                    const SizedBox(height: 2),
+                    Text(
+                      subtitle,
+                      style: const TextStyle(color: T.muted, fontSize: 13),
+                    ),
+                  ],
+                ),
+              ),
+              if (best > 0) ...[
+                const SizedBox(width: 8),
+                Column(
+                  children: [
+                    const Icon(
+                      Icons.local_fire_department,
+                      color: T.ochre,
+                      size: 18,
+                    ),
+                    Text(
+                      '$best',
+                      style: const TextStyle(
+                        fontWeight: FontWeight.w800,
+                        fontSize: 12,
+                      ),
+                    ),
+                  ],
+                ),
+              ],
+              const SizedBox(width: 4),
+              const Icon(Icons.chevron_right, color: T.muted),
+            ],
+          ),
+        ),
+      ),
+    ),
+  );
 }

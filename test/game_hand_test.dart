@@ -38,53 +38,19 @@ void main() {
     'Bhabhi opening, follow suit, Thullu eligibility and resolving guidance',
     () {
       const hand = ['h-y', 'h-2', 'c-k'];
+      expect(HandGuidance.bhabhiCardAllowed('h-2', hand, trick: []), true);
+      expect(HandGuidance.bhabhiCardAllowed('h-y', hand, trick: []), true);
+      expect(HandGuidance.bhabhiCardAllowed('c-k', hand, trick: []), true);
       expect(
-        HandGuidance.bhabhiCardAllowed(
-          'h-2',
-          hand,
-          trick: [],
-        ),
-        true,
-      );
-      expect(
-        HandGuidance.bhabhiCardAllowed(
-          'h-y',
-          hand,
-          trick: [],
-        ),
-        true,
-      );
-      expect(
-        HandGuidance.bhabhiCardAllowed(
-          'c-k',
-          hand,
-          trick: [],
-        ),
-        true,
-      );
-      expect(
-        HandGuidance.bhabhiCardAllowed(
-          'c-k',
-          hand,
-          trick: ['h-3'],
-        ),
+        HandGuidance.bhabhiCardAllowed('c-k', hand, trick: ['h-3']),
         false,
       );
       expect(
-        HandGuidance.bhabhiCardAllowed(
-          'c-k',
-          ['c-k'],
-          trick: ['h-3'],
-        ),
+        HandGuidance.bhabhiCardAllowed('c-k', ['c-k'], trick: ['h-3']),
         true,
       );
       expect(
-        HandGuidance.bhabhiCardAllowed(
-          'h-y',
-          hand,
-          trick: [],
-          resolving: true,
-        ),
+        HandGuidance.bhabhiCardAllowed('h-y', hand, trick: [], resolving: true),
         false,
       );
     },

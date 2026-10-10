@@ -213,7 +213,9 @@ void main() {
     });
   }
 
-  testWidgets('a waiting room with no banner unit is unchanged', (tester) async {
+  testWidgets('a waiting room with no banner unit is unchanged', (
+    tester,
+  ) async {
     tester.view.devicePixelRatio = 1;
     tester.view.physicalSize = const Size(390, 844);
     addTearDown(tester.view.resetPhysicalSize);
@@ -226,11 +228,7 @@ void main() {
     await tester.pumpWidget(
       MaterialApp(
         theme: T.theme,
-        home: GameScreen(
-          session: session,
-          onExit: () {},
-          adService: ads,
-        ),
+        home: GameScreen(session: session, onExit: () {}, adService: ads),
       ),
     );
     await tester.pump(const Duration(milliseconds: 500));

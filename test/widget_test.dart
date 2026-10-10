@@ -28,9 +28,7 @@ RoomSnapshot _stripSnapshot() => RoomSnapshot(
 );
 
 void main() {
-  testWidgets('Learning exercise switches games and explains the answer', (
-    tester,
-  ) async {
+  testWidgets('Learn hub switches games and lists lessons', (tester) async {
     await tester.pumpWidget(
       MaterialApp(
         theme: T.theme,
@@ -39,15 +37,12 @@ void main() {
     );
     await tester.tap(find.text('TC'));
     await tester.pumpAndSettle();
-    expect(find.text('Find 4 + 3 + 3'), findsOneWidget);
     await tester.scrollUntilVisible(
-      find.text('A same-suit run'),
+      find.text('Find 4 + 3 + 3'),
       180,
       scrollable: find.byType(Scrollable).first,
     );
-    await tester.tap(find.text('A same-suit run'));
-    await tester.pumpAndSettle();
-    expect(find.textContaining('whole winning hand'), findsOneWidget);
+    expect(find.text('Find 4 + 3 + 3'), findsOneWidget);
     expect(tester.takeException(), isNull);
   });
   testWidgets('Private cards have no identifying semantics', (tester) async {

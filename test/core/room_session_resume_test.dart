@@ -35,66 +35,66 @@ class TestRoomSocket implements RoomSocket {
 }
 
 Future<void> flush() => Future<void>.delayed(const Duration(milliseconds: 5));
-RoomSession sessionFor(
-  TestRoomSocket socket,
-  RoomSocketConnector connector,
-) => RoomSession(
-  config: const AppConfig(backendUrl: 'https://api.example.test'),
-  tokenProvider: () async => 'test-token',
-  playerId: 'player-a',
-  connector: connector,
-  commandTimeout: const Duration(milliseconds: 400),
-  resumeProbeTimeout: const Duration(milliseconds: 60),
-  reconnectBase: const Duration(milliseconds: 5),
-  reconnectJitter: Duration.zero,
-  observeLifecycle: false,
-);
+RoomSession sessionFor(TestRoomSocket socket, RoomSocketConnector connector) =>
+    RoomSession(
+      config: const AppConfig(backendUrl: 'https://api.example.test'),
+      tokenProvider: () async => 'test-token',
+      playerId: 'player-a',
+      connector: connector,
+      commandTimeout: const Duration(milliseconds: 400),
+      resumeProbeTimeout: const Duration(milliseconds: 60),
+      reconnectBase: const Duration(milliseconds: 5),
+      reconnectJitter: Duration.zero,
+      observeLifecycle: false,
+    );
 
 Future<void> enter(RoomSession session, TestRoomSocket socket) async {
   final joining = session.join(
     RoomSummary.fromJson(roomFixture(status: 'active')),
   );
   await flush();
-  socket.receive('room.snapshot', snapshotFixture(version: 2, status: 'active'));
+  socket.receive(
+    'room.snapshot',
+    snapshotFixture(version: 2, status: 'active'),
+  );
   await joining;
 }
 
 void main() {
   TestWidgetsFlutterBinding.ensureInitialized();
 
-  test('resume probes the transport and stays connected when it answers',
-      () async {
-    final socket = TestRoomSocket();
-    var connections = 0;
-    final session = sessionFor(
-      socket,
-      (_, _, _) async {
+  test(
+    'resume probes the transport and stays connected when it answers',
+    () async {
+      final socket = TestRoomSocket();
+      var connections = 0;
+      final session = sessionFor(socket, (_, _, _) async {
         connections++;
         return socket;
-      },
-    );
-    await enter(session, socket);
-    final before = socket.sent.length;
+      });
+      await enter(session, socket);
+      final before = socket.sent.length;
 
-    session.didChangeAppLifecycleState(AppLifecycleState.resumed);
-    await flush();
-    final probe = socket.sent
-        .skip(before)
-        .where((m) => m['type'] == 'room.snapshot')
-        .toList();
-    expect(probe, hasLength(1));
-    socket.receive(
-      'room.snapshot',
-      snapshotFixture(version: 3, status: 'active'),
-      requestId: probe.single['request_id'] as String,
-    );
-    await flush();
+      session.didChangeAppLifecycleState(AppLifecycleState.resumed);
+      await flush();
+      final probe = socket.sent
+          .skip(before)
+          .where((m) => m['type'] == 'room.snapshot')
+          .toList();
+      expect(probe, hasLength(1));
+      socket.receive(
+        'room.snapshot',
+        snapshotFixture(version: 3, status: 'active'),
+        requestId: probe.single['request_id'] as String,
+      );
+      await flush();
 
-    expect(session.connected, true);
-    expect(connections, 1);
-    session.dispose();
-    await flush();
-  });
+      expect(session.connected, true);
+      expect(connections, 1);
+      session.dispose();
+      await flush();
+    },
+  );
 
   test('resume recovers with a fresh connection when the background transport '
       'never answers', () async {

@@ -91,7 +91,9 @@ void main() {
 
   // The picker is a switch between owned sounds, not a store, so it must never
   // offer to spend coins.
-  testWidgets('in-room picker never offers to unlock or charge', (tester) async {
+  testWidgets('in-room picker never offers to unlock or charge', (
+    tester,
+  ) async {
     await pumpSheet(tester);
 
     expect(find.text(Copy.unlock), findsNothing);

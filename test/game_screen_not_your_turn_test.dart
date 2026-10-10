@@ -29,7 +29,18 @@ class NotYourTurnSession extends RoomSession {
 RoomSnapshot tcOutOfTurn() {
   final json = snapshotFixture(
     game: 'tc',
-    hand: const ['h-2', 'h-3', 'h-4', 'h-5', 'c-7', 'e-7', 'p-7', 'p-g', 'p-b', 'p-k'],
+    hand: const [
+      'h-2',
+      'h-3',
+      'h-4',
+      'h-5',
+      'c-7',
+      'e-7',
+      'p-7',
+      'p-g',
+      'p-b',
+      'p-k',
+    ],
   );
   json['current_player_id'] = 'player-b';
   return RoomSnapshot.fromJson(json);
@@ -41,10 +52,7 @@ RoomSnapshot daketiOutOfTurn() {
     hand: const ['h-y', 'h-3', 'h-7', 'e-2'],
   );
   json['current_player_id'] = 'player-b';
-  json['game_state'] = {
-    'stock_count': 19,
-    'play_area': <String>[],
-  };
+  json['game_state'] = {'stock_count': 19, 'play_area': <String>[]};
   return RoomSnapshot.fromJson(json);
 }
 
@@ -63,8 +71,9 @@ Future<void> _pumpNotYourTurn(WidgetTester tester, RoomSnapshot s) async {
 }
 
 void main() {
-  testWidgets('an action button out of turn shows a brief Wait-for-turn hint',
-      (tester) async {
+  testWidgets('an action button out of turn shows a brief Wait-for-turn hint', (
+    tester,
+  ) async {
     await _pumpNotYourTurn(tester, tcOutOfTurn());
 
     await tester.tap(find.text('Claim victory'));
@@ -80,18 +89,20 @@ void main() {
     await tester.pump();
   });
 
-  testWidgets('the Daketi stock pile taps also hint while it is not your turn',
-      (tester) async {
-    await _pumpNotYourTurn(tester, daketiOutOfTurn());
+  testWidgets(
+    'the Daketi stock pile taps also hint while it is not your turn',
+    (tester) async {
+      await _pumpNotYourTurn(tester, daketiOutOfTurn());
 
-    await tester.tap(find.text('Stock'));
-    await tester.pump();
-    await tester.pump(const Duration(milliseconds: 300));
+      await tester.tap(find.text('Stock'));
+      await tester.pump();
+      await tester.pump(const Duration(milliseconds: 300));
 
-    expect(find.text(Copy.waitForYourTurn), findsOneWidget);
+      expect(find.text(Copy.waitForYourTurn), findsOneWidget);
 
-    await tester.pump(const Duration(milliseconds: 1600));
-    await tester.pumpWidget(const SizedBox());
-    await tester.pump();
-  });
+      await tester.pump(const Duration(milliseconds: 1600));
+      await tester.pumpWidget(const SizedBox());
+      await tester.pump();
+    },
+  );
 }

@@ -13,8 +13,9 @@ Offset _shakeOffset(WidgetTester tester) {
 }
 
 void main() {
-  testWidgets('CardShake mounts without touching MediaQuery during initState',
-      (tester) async {
+  testWidgets('CardShake mounts without touching MediaQuery during initState', (
+    tester,
+  ) async {
     await tester.pumpWidget(
       _wrap(const CardShake(child: SizedBox(width: 40, height: 60))),
     );
@@ -22,8 +23,9 @@ void main() {
     expect(tester.takeException(), isNull);
   });
 
-  testWidgets('CardShake wiggles during the shake segment, then rests',
-      (tester) async {
+  testWidgets('CardShake wiggles during the shake segment, then rests', (
+    tester,
+  ) async {
     await tester.pumpWidget(
       _wrap(const CardShake(child: SizedBox(width: 40, height: 60))),
     );
@@ -37,8 +39,9 @@ void main() {
     expect(tester.takeException(), isNull);
   });
 
-  testWidgets('CardShake holds still when reduced motion is enabled',
-      (tester) async {
+  testWidgets('CardShake holds still when reduced motion is enabled', (
+    tester,
+  ) async {
     final data = MediaQueryData(
       size: const Size(800, 600),
       disableAnimations: true,
@@ -46,9 +49,7 @@ void main() {
     await tester.pumpWidget(
       MediaQuery(
         data: data,
-        child: _wrap(
-          const CardShake(child: SizedBox(width: 40, height: 60)),
-        ),
+        child: _wrap(const CardShake(child: SizedBox(width: 40, height: 60))),
       ),
     );
     await tester.pump(const Duration(milliseconds: 200));
@@ -56,8 +57,9 @@ void main() {
     expect(tester.takeException(), isNull);
   });
 
-  testWidgets('CardShake can be torn down without leaking tickers',
-      (tester) async {
+  testWidgets('CardShake can be torn down without leaking tickers', (
+    tester,
+  ) async {
     await tester.pumpWidget(
       _wrap(const CardShake(child: SizedBox(width: 40, height: 60))),
     );

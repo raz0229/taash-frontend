@@ -172,12 +172,15 @@ class FakeBackend {
             headers: {'content-type': 'application/json'},
           );
         case '/v1/iap/purchases/verify':
-          verifications.add(
-            jsonDecode(request.body) as Map<String, dynamic>,
-          );
+          verifications.add(jsonDecode(request.body) as Map<String, dynamic>);
           if (verifyStatus != 200) {
             return http.Response(
-              jsonEncode(verifyBody ?? {'error': {'code': 'x', 'message': 'no'}}),
+              jsonEncode(
+                verifyBody ??
+                    {
+                      'error': {'code': 'x', 'message': 'no'},
+                    },
+              ),
               verifyStatus,
               headers: {'content-type': 'application/json'},
             );
@@ -298,10 +301,7 @@ void main() {
 
       expect(svc.stage, PurchaseStage.done);
       expect(svc.isAvailable, isTrue);
-      expect(svc.packs.map((p) => p.productId), [
-        'coins_10k',
-        'coins_50k',
-      ]);
+      expect(svc.packs.map((p) => p.productId), ['coins_10k', 'coins_50k']);
       // Prices come from Play, never from the server payload, so a tampered
       // client cannot invent a cheaper price.
       expect(svc.packs.first.priceLabel, 'PKR 900');
@@ -530,7 +530,9 @@ void main() {
 
       // The token is re-verified after a reinstall: the server must not fail the
       // request just because the coins were already granted.
-      store.deliver(purchased(productId: 'coins_10k', status: PurchaseStatus.restored));
+      store.deliver(
+        purchased(productId: 'coins_10k', status: PurchaseStatus.restored),
+      );
       await pumpEventQueue();
 
       expect(statuses, ['already_processed']);
@@ -578,10 +580,7 @@ void main() {
     test('a pending purchase is waiting, not failed', () async {
       await boot();
       store.deliver(
-        purchased(
-          productId: 'coins_10k',
-          status: PurchaseStatus.pending,
-        ),
+        purchased(productId: 'coins_10k', status: PurchaseStatus.pending),
       );
       await pumpEventQueue();
 

@@ -90,8 +90,14 @@ void main() {
         ),
       ),
     );
-    await tester.runAsync(() => Future<void>.delayed(const Duration(milliseconds: 100)));
-    for (var i = 0; i < 20 && find.byType(CircularProgressIndicator).evaluate().isNotEmpty; i++) {
+    await tester.runAsync(
+      () => Future<void>.delayed(const Duration(milliseconds: 100)),
+    );
+    for (
+      var i = 0;
+      i < 20 && find.byType(CircularProgressIndicator).evaluate().isNotEmpty;
+      i++
+    ) {
       await tester.pump(const Duration(milliseconds: 100));
     }
     await tester.pump(const Duration(milliseconds: 500));
@@ -109,14 +115,18 @@ void main() {
     expect(tapped, isTrue);
   });
 
-  testWidgets('own profile without onAvatarTap keeps avatar inert', (tester) async {
+  testWidgets('own profile without onAvatarTap keeps avatar inert', (
+    tester,
+  ) async {
     await pumpProfile(tester, own: true);
 
     expect(find.byTooltip(Copy.avatars), findsNothing);
     expect(tester.takeException(), isNull);
   });
 
-  testWidgets("other player's profile never navigates to Avatars", (tester) async {
+  testWidgets("other player's profile never navigates to Avatars", (
+    tester,
+  ) async {
     var tapped = false;
     await pumpProfile(tester, own: false, onAvatarTap: () => tapped = true);
 
@@ -126,7 +136,9 @@ void main() {
     expect(tapped, isFalse);
   });
 
-  testWidgets('lobby own-profile avatar lands on the Avatars tab', (tester) async {
+  testWidgets('lobby own-profile avatar lands on the Avatars tab', (
+    tester,
+  ) async {
     final api = buildApi();
     addTearDown(api.close);
     final store = _MemoryStore()
@@ -149,13 +161,17 @@ void main() {
         home: LobbyShell(auth: auth, api: api, preferences: preferences),
       ),
     );
-    await tester.runAsync(() => Future<void>.delayed(const Duration(milliseconds: 150)));
+    await tester.runAsync(
+      () => Future<void>.delayed(const Duration(milliseconds: 150)),
+    );
     await tester.pump(const Duration(milliseconds: 600));
 
     await tester.tap(find.byType(TaashAvatar).first);
     await tester.pump(const Duration(milliseconds: 600));
     expect(find.byType(BottomSheet), findsOneWidget);
-    await tester.runAsync(() => Future<void>.delayed(const Duration(milliseconds: 150)));
+    await tester.runAsync(
+      () => Future<void>.delayed(const Duration(milliseconds: 150)),
+    );
     await tester.pump(const Duration(milliseconds: 400));
 
     Finder avatarTooltip() => find.descendant(
@@ -169,9 +185,11 @@ void main() {
 
     await tester.tap(avatarTooltip());
     await tester.pump(const Duration(milliseconds: 100));
-    for (var i = 0;
-        i < 20 && find.byType(BottomSheet).evaluate().isNotEmpty;
-        i++) {
+    for (
+      var i = 0;
+      i < 20 && find.byType(BottomSheet).evaluate().isNotEmpty;
+      i++
+    ) {
       await tester.pump(const Duration(milliseconds: 100));
     }
     expect(find.byType(BottomSheet), findsNothing);
@@ -196,14 +214,20 @@ void main() {
         theme: T.theme,
         localizationsDelegates: GlobalMaterialLocalizations.delegates,
         home: Scaffold(
-          body: SafeArea(child: ShopScreen(auth: auth, api: api)),
+          body: SafeArea(
+            child: ShopScreen(auth: auth, api: api),
+          ),
         ),
       ),
     );
     await tester.runAsync(
       () => Future<void>.delayed(const Duration(milliseconds: 150)),
     );
-    for (var i = 0; i < 20 && find.byType(CircularProgressIndicator).evaluate().isNotEmpty; i++) {
+    for (
+      var i = 0;
+      i < 20 && find.byType(CircularProgressIndicator).evaluate().isNotEmpty;
+      i++
+    ) {
       await tester.pump(const Duration(milliseconds: 100));
     }
     await tester.pump(const Duration(milliseconds: 500));

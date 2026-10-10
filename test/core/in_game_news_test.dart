@@ -159,7 +159,8 @@ void main() {
 
     await tester.pumpWidget(tree());
     await tester.runAsync(
-      () => precacheImage(MemoryImage(_png), tester.element(find.byType(Image))),
+      () =>
+          precacheImage(MemoryImage(_png), tester.element(find.byType(Image))),
     );
     await tester.pump();
     await tester.pump(const Duration(milliseconds: 400));
@@ -171,8 +172,10 @@ void main() {
     await tester.pump();
 
     expect(tester.widget<RawImage>(find.byType(RawImage)).image, isNotNull);
-    expect(identical(tester.widget<Image>(find.byType(Image)).image, first),
-        isTrue);
+    expect(
+      identical(tester.widget<Image>(find.byType(Image)).image, first),
+      isTrue,
+    );
   });
 
   testWidgets('news image reports progress while downloading', (tester) async {
@@ -204,9 +207,7 @@ class _PendingImage extends ImageProvider<_PendingImage> {
   ImageStreamCompleter loadImage(
     _PendingImage key,
     ImageDecoderCallback decode,
-  ) => OneFrameImageStreamCompleter(
-    Completer<ImageInfo>().future,
-  );
+  ) => OneFrameImageStreamCompleter(Completer<ImageInfo>().future);
 }
 
 String? _header(http.Request request, String name) {

@@ -55,14 +55,15 @@ Future<void> pressSystemBack(WidgetTester tester) async {
 }
 
 /// The bottom-navigation destinations of the lobby shell, in tab order.
-List<NavigationDestination> navigationDestinations(WidgetTester tester) => tester
-    .widgetList<NavigationDestination>(
-      find.descendant(
-        of: find.byType(NavigationBar),
-        matching: find.byType(NavigationDestination),
-      ),
-    )
-    .toList();
+List<NavigationDestination> navigationDestinations(WidgetTester tester) =>
+    tester
+        .widgetList<NavigationDestination>(
+          find.descendant(
+            of: find.byType(NavigationBar),
+            matching: find.byType(NavigationDestination),
+          ),
+        )
+        .toList();
 
 void main() {
   TestWidgetsFlutterBinding.ensureInitialized();

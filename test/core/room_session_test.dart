@@ -256,13 +256,13 @@ void main() {
   );
 
   Map<String, dynamic> bluffChallengeResult() => {
-        'bluff_caught': true,
-        'challenger': 'player-a',
-        'challenged': 'player-b',
-        'pile_goes_to': 'player-b',
-        'declared_rank': '2',
-        'last_play_cards': ['h-2', 'c-4'],
-      };
+    'bluff_caught': true,
+    'challenger': 'player-a',
+    'challenged': 'player-b',
+    'pile_goes_to': 'player-b',
+    'declared_rank': '2',
+    'last_play_cards': ['h-2', 'c-4'],
+  };
 
   test('bluff challenge broadcast surfaces a BluffChallengeEvent', () async {
     final socket = TestRoomSocket();

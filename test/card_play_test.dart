@@ -35,16 +35,13 @@ TcState _tc(String? discardTop, int discardCount) => TcState.fromJson({
   'yarak_rank': '',
 });
 
-DaketiState _daketi(List<String> playArea) => DaketiState.fromJson({
-  'stock_count': 8,
-  'play_area': playArea,
-});
+DaketiState _daketi(List<String> playArea) =>
+    DaketiState.fromJson({'stock_count': 8, 'play_area': playArea});
 
 BhabhiState _bhabhi(List<String> trick, {String lastWinnerId = 'c'}) =>
     BhabhiState.fromJson({
       'trick': [
-        for (final card in trick)
-          {'player_id': lastWinnerId, 'card': card},
+        for (final card in trick) {'player_id': lastWinnerId, 'card': card},
       ],
       'first_trick': false,
       'lead_suit': '',
@@ -52,15 +49,18 @@ BhabhiState _bhabhi(List<String> trick, {String lastWinnerId = 'c'}) =>
       'last_thullu': false,
     });
 
-BluffState _bluff(int pileCount, {String lastPlayerId = 'a', int lastPlayCount = 1}) =>
-    BluffState.fromJson({
-      'pile_count': pileCount,
-      'last_play_count': lastPlayCount,
-      'last_player_id': lastPlayerId,
-      'declared_rank': 'h',
-      'passed_player_ids': <String>[],
-      'pending_winner_id': '',
-    });
+BluffState _bluff(
+  int pileCount, {
+  String lastPlayerId = 'a',
+  int lastPlayCount = 1,
+}) => BluffState.fromJson({
+  'pile_count': pileCount,
+  'last_play_count': lastPlayCount,
+  'last_player_id': lastPlayerId,
+  'declared_rank': 'h',
+  'passed_player_ids': <String>[],
+  'pending_winner_id': '',
+});
 
 void main() {
   test('TC play detected from the discard growth and actual card', () {
@@ -133,10 +133,7 @@ void main() {
   test('no card played reports nothing', () {
     final info = detectCardPlay(
       _snapshot(players: [_p('a', 3, 0)], gameState: _daketi(['c-2'])),
-      _snapshot(
-        players: [_p('a', 3, 0)],
-        gameState: _daketi(['c-2']),
-      ),
+      _snapshot(players: [_p('a', 3, 0)], gameState: _daketi(['c-2'])),
     );
     expect(info.playerId, isEmpty);
     expect(info.cardCount, 0);
