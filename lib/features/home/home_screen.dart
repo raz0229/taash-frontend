@@ -446,6 +446,8 @@ class _HomeScreenState extends State<HomeScreen>
                 'assets/brand/icon.png',
                 width: 46,
                 height: 46,
+                cacheWidth: (46 * MediaQuery.devicePixelRatioOf(context))
+                    .round(),
               ),
             ),
             const SizedBox(width: 12),

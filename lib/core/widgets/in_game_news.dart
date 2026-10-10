@@ -187,8 +187,16 @@ class _NewsImageState extends State<_NewsImage> {
   /// Built once and reused: handing `Image` a freshly constructed provider on
   /// every rebuild makes it drop the decoded frame and start the download over,
   /// so a remote image can never settle on screen.
+  ///
+  /// Remote images can be any size, so they are decoded at most 1080px wide
+  /// (the card is never wider than a phone screen) instead of at full size.
   late final ImageProvider<Object> _image =
-      widget.imageProvider ?? NetworkImage(widget.news.image.toString());
+      widget.imageProvider ??
+      ResizeImage(
+        NetworkImage(widget.news.image.toString()),
+        width: 1080,
+        policy: ResizeImagePolicy.fit,
+      );
 
   /// Mirrors whether the image has produced a decoded frame yet. `Image` only
   /// exposes loading progress while bytes are still streaming in, so a stalled

@@ -51,6 +51,8 @@ android {
 }
 dependencies {
     implementation("androidx.work:work-runtime:2.10.2")
+    // WindowCompat for edge-to-edge in MainActivity.
+    implementation("androidx.core:core:1.13.1")
 }
 kotlin { compilerOptions { jvmTarget = org.jetbrains.kotlin.gradle.dsl.JvmTarget.JVM_17 } }
 flutter { source = "../.." }

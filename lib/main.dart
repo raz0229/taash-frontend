@@ -48,7 +48,6 @@ Future<void> main() async {
       'DM Sans',
     ], await rootBundle.loadString('assets/fonts/OFL.txt'));
   });
-  await SystemChrome.setPreferredOrientations([DeviceOrientation.portraitUp]);
   await SystemChrome.setEnabledSystemUIMode(SystemUiMode.edgeToEdge);
   await audio.init();
   final config = AppConfig.fromEnvironment();
