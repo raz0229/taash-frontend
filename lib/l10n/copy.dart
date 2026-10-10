@@ -509,7 +509,7 @@ abstract final class Copy {
   static const indicator = 'Indicator';
   static String cards3(Object? value0) => '$value0 cards';
   static const stock = 'Stock';
-  static String cardsAreYarak(Object? value0) => '$value0 cards are Yarak';
+  static String yarakIs(Object? value0) => 'Yarak is $value0';
   static const findYour433 = 'Find your 4 + 3 + 3';
   static const tissarCHAUSAR = 'TISSAR CHAUSAR';
   static const exploreYourCollection = 'Explore your collection';

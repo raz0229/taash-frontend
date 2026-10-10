@@ -20,12 +20,14 @@ import 'core/models/models.dart';
 import 'core/network/api_client.dart';
 import 'core/news/in_game_news_service.dart';
 import 'core/preferences/preferences.dart';
+import 'core/rating/rating_prompt.dart';
 import 'core/theme/taash_theme.dart';
 import 'core/websocket/room_session.dart';
 import 'core/widgets/taash_widgets.dart';
 import 'core/update/app_update_service.dart';
 import 'core/widgets/app_update_banner.dart';
 import 'core/widgets/in_game_news.dart';
+import 'core/widgets/portrait_viewport.dart';
 import 'features/about/about_screen.dart';
 import 'features/auth/auth_screen.dart';
 import 'features/game/game_screen.dart';
@@ -109,6 +111,7 @@ class _TaashAppState extends State<TaashApp> with WidgetsBindingObserver {
               _noopAdmobInit(),
         )
       : null;
+
   /// The Coins Shop's Google Play client. It is created only when the build
   /// actually has products to sell, so a build without IAP never touches the
   /// Play Store.
@@ -192,7 +195,8 @@ class _TaashAppState extends State<TaashApp> with WidgetsBindingObserver {
                 MediaQuery.disableAnimationsOf(context) ||
                 preferences.reducedMotion,
           ),
-          child: child!,
+          // Innermost, so its scaled MediaQuery is the one the app reads.
+          child: PortraitViewport(child: child!),
         ),
       ),
       home: !ready
@@ -499,6 +503,7 @@ class _LobbyShellState extends State<LobbyShell> {
   Timer? friendBadgeTimer;
   bool exitArmed = false;
   Timer? exitArmedTimer;
+  final ratingPrompt = RatingPrompt();
 
   @override
   void initState() {
@@ -750,11 +755,20 @@ class _LobbyShellState extends State<LobbyShell> {
   Future<void> exitRoom() async {
     final session = room;
     if (session == null) return;
+    final completed = session.snapshot?.room.isFinished ?? false;
     session.dispose();
     audio.playSfx('leave_room');
     if (widget.preferences.music) audio.playBgm();
     if (mounted) setState(() => room = null);
-    _tryShowInterstitial();
+    // A finished room may earn the rating prompt; when it does, it takes the
+    // interstitial's slot so the player never gets an ad and a dialog at once.
+    final ratingDue = completed && await ratingPrompt.recordCompletedGame();
+    final askForRating = ratingDue && queuedChallengeRoom == null;
+    if (askForRating && mounted) {
+      unawaited(ratingPrompt.show(context));
+    } else {
+      _tryShowInterstitial();
+    }
     try {
       await widget.auth.refreshProfile();
     } on AppFailure catch (e) {

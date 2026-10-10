@@ -122,6 +122,8 @@ class _GameScreenState extends State<GameScreen>
   String _lastPlayKey = '';
   DateTime _lastPlayAt = DateTime.fromMillisecondsSinceEpoch(0);
   OverlayEntry? _playOverlay;
+  // Whether the system bars are currently hidden for active play.
+  bool _immersive = false;
   @override
   RoomSession get session => widget.session;
   @override
@@ -154,6 +156,20 @@ class _GameScreenState extends State<GameScreen>
     session.onCardPlayed = _onCardPlayed;
     session.addListener(changed);
     _reconcile();
+    _syncSystemBars();
+  }
+
+  /// Hides the navigation keys (and status bar) while a hand is being played,
+  /// so a stray edge tap can't throw the player out mid-turn. Sticky: a swipe
+  /// from the edge reveals them briefly, then they hide again. The waiting
+  /// room and results screen keep the normal bars.
+  void _syncSystemBars() {
+    final want = session.snapshot?.room.isActive ?? false;
+    if (want == _immersive) return;
+    _immersive = want;
+    SystemChrome.setEnabledSystemUIMode(
+      want ? SystemUiMode.immersiveSticky : SystemUiMode.edgeToEdge,
+    );
   }
 
   void _resetTurnTimer() {
@@ -325,6 +341,7 @@ class _GameScreenState extends State<GameScreen>
   void changed() {
     if (!mounted) return;
     _reconcile();
+    _syncSystemBars();
     setState(() {});
   }
 
@@ -339,6 +356,9 @@ class _GameScreenState extends State<GameScreen>
     _daketiStealOverlay?.remove();
     _playOverlay?.remove();
     session.removeListener(changed);
+    if (_immersive) {
+      SystemChrome.setEnabledSystemUIMode(SystemUiMode.edgeToEdge);
+    }
     noticeTimer?.cancel();
     _turnTimer.dispose();
     super.dispose();
@@ -886,10 +906,13 @@ class _GameScreenState extends State<GameScreen>
     final ready = active && session.canSend && !working && !leaving;
     final mine = s?.isYourTurn ?? false;
     return PopScope(
-      // A12: Allow back when room is finished; block during active play.
-      canPop: finished,
+      // The system back key never exits the room directly. During play it
+      // routes through leave(); on the results screen it is ignored so that
+      // "Back to lobby" is the only way out.
+      canPop: false,
       onPopInvokedWithResult: (didPop, result) {
-        if (!didPop) leave();
+        if (didPop || finished) return;
+        leave();
       },
       child: Scaffold(
         backgroundColor: s == null

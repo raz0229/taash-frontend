@@ -650,8 +650,8 @@
     }
   },
   "stock": "Stock",
-  "cardsAreYarak": "{value0} cards are Yarak",
-  "@cardsAreYarak": {
+  "yarakIs": "Yarak is {value0}",
+  "@yarakIs": {
     "placeholders": {
       "value0": {
         "type": "Object"

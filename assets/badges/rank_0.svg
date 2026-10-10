@@ -1,0 +1,13 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 128 128" width="128" height="128"><!-- Rank 0: unranked --><defs>
+<linearGradient id="rim" x1="0" y1="0" x2="0.3" y2="1"><stop offset="0" stop-color="#9AA3B5"/><stop offset=".5" stop-color="#5D6578"/><stop offset="1" stop-color="#2E3343"/></linearGradient>
+<linearGradient id="edge" x1="0" y1="1" x2="0" y2="0"><stop offset="0" stop-color="#2E3343"/><stop offset="1" stop-color="#9AA3B5"/></linearGradient>
+<linearGradient id="hi" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#9AA3B5"/><stop offset="1" stop-color="#5D6578"/></linearGradient>
+<radialGradient id="core" cx=".5" cy=".35" r=".75"><stop offset="0" stop-color="#3A4052"/><stop offset="1" stop-color="#1F2330"/></radialGradient>
+<linearGradient id="coreDark" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#3A4052"/><stop offset="1" stop-color="#1F2330"/></linearGradient>
+<linearGradient id="emb" gradientUnits="userSpaceOnUse" x1="0" y1="0" x2="0" y2="48"><stop offset="0" stop-color="#C9D0DE"/><stop offset="1" stop-color="#7D8699"/></linearGradient>
+<linearGradient id="embEdge" gradientUnits="userSpaceOnUse" x1="0" y1="0" x2="0" y2="48"><stop offset="0" stop-color="#2E3343"/><stop offset="1" stop-color="#1F2330"/></linearGradient>
+<linearGradient id="ribbon" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#5D6578"/><stop offset="1" stop-color="#2E3343"/></linearGradient>
+<linearGradient id="wing" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#C9D0DE"/><stop offset=".6" stop-color="#5D6578"/><stop offset="1" stop-color="#2E3343"/></linearGradient>
+<radialGradient id="aura" cx=".5" cy=".5" r=".5"><stop offset=".55" stop-color="#FFD86B"/><stop offset="1" stop-color="#FF6BD5" stop-opacity=".2"/></radialGradient>
+<linearGradient id="prism" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#7DF9FF"/><stop offset=".35" stop-color="#B57BFF"/><stop offset=".7" stop-color="#FF6BD5"/><stop offset="1" stop-color="#FFD86B"/></linearGradient>
+</defs><circle cx="64" cy="64" r="52" fill="url(#rim)"/><circle cx="64" cy="64" r="43" fill="url(#core)"/><circle cx="64" cy="64" r="47.5" fill="none" stroke="#C9D0DE" stroke-opacity=".55" stroke-width="2" stroke-dasharray="6 5"/><g transform="translate(34.00 34.00) scale(1.25)"><rect x="13" y="6" width="22" height="34" rx="4" fill="none" stroke="url(#emb)" stroke-width="2.5" stroke-dasharray="4 3"/><path d="M24 16 L29 23 L24 30 L19 23 Z" fill="url(#emb)" fill-opacity=".7"/></g><ellipse cx="50" cy="30" rx="26" ry="9" transform="rotate(-25 50 30)" fill="#FFFFFF" fill-opacity=".12"/></svg>

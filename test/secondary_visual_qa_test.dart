@@ -152,7 +152,7 @@ void main() {
           await Future.wait([
             for (var id = 0; id < 15; id++)
               precacheImage(
-                ResizeImage(AssetImage('assets/pfps/$id.png'), width: 88),
+                ResizeImage(AssetImage('assets/pfps/$id.webp'), width: 88),
                 context,
               ),
           ]);

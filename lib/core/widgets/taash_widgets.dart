@@ -193,7 +193,7 @@ class TaashAvatar extends StatelessWidget {
       child: ClipOval(
         child: id >= 0
             ? Image.asset(
-                'assets/pfps/$id.png',
+                'assets/pfps/$id.webp',
                 fit: BoxFit.cover,
                 cacheWidth: (size * MediaQuery.devicePixelRatioOf(context))
                     .ceil()

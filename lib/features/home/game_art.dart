@@ -87,7 +87,7 @@ class GameArt extends StatelessWidget {
                   stops: [0, .6, 1],
                 ).createShader(r),
                 child: Image.asset(
-                  'assets/pfps/$portrait.png',
+                  'assets/pfps/$portrait.webp',
                   fit: BoxFit.contain,
                   cacheWidth: 400,
                 ),

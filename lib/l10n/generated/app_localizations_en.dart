@@ -1300,8 +1300,8 @@ class AppLocalizationsEn extends AppLocalizations {
   String get stock => 'Stock';
 
   @override
-  String cardsAreYarak(Object value0) {
-    return '$value0 cards are Yarak';
+  String yarakIs(Object value0) {
+    return 'Yarak is $value0';
   }
 
   @override

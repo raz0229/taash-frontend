@@ -425,7 +425,7 @@ class GameSurface extends StatelessWidget {
     children: [
       _label(
         'Build 4 + 3 + 3',
-        detail: '${CardIdentity.rankNameFor(state.yarakRank)} cards are Yarak',
+        detail: Copy.yarakIs(CardIdentity.rankNameFor(state.yarakRank)),
         shade: tint.tint,
       ),
       _cards([

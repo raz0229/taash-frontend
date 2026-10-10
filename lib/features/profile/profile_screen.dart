@@ -10,6 +10,7 @@ import '../game/shared/playing_card.dart';
 import '../shop/card_skin_catalog.dart';
 import 'presentation.dart';
 import 'rank.dart';
+import 'rank_badge.dart';
 
 class ProfileScreen extends StatefulWidget {
   const ProfileScreen({
@@ -404,12 +405,8 @@ class RankProgressPanel extends StatelessWidget {
       children: [
         Row(
           children: [
-            const Icon(
-              Icons.workspace_premium_outlined,
-              color: T.ochre,
-              size: 32,
-            ),
-            const SizedBox(width: 12),
+            RankBadge(number: rank.number, size: 64),
+            const SizedBox(width: 14),
             Expanded(
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
@@ -454,11 +451,24 @@ class RankProgressPanel extends StatelessWidget {
             ),
           ),
           const SizedBox(height: 12),
-          Text(
-            rank.isMaximum
-                ? Copy.mythicAchievedKeepMakingYourMark
-                : '${displayNumber(rank.remaining!)} points to ${rankNames[rank.number + 1]}',
-            style: const TextStyle(color: T.mint),
+          Row(
+            children: [
+              Expanded(
+                child: Text(
+                  rank.isMaximum
+                      ? Copy.mythicAchievedKeepMakingYourMark
+                      : '${displayNumber(rank.remaining!)} points to ${rankNames[rank.number + 1]}',
+                  style: const TextStyle(color: T.mint),
+                ),
+              ),
+              if (!rank.isMaximum) ...[
+                const SizedBox(width: 10),
+                Opacity(
+                  opacity: .55,
+                  child: RankBadge(number: rank.number + 1, size: 30),
+                ),
+              ],
+            ],
           ),
         ],
       ],

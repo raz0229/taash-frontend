@@ -2332,11 +2332,11 @@ abstract class AppLocalizations {
   /// **'Stock'**
   String get stock;
 
-  /// No description provided for @cardsAreYarak.
+  /// No description provided for @yarakIs.
   ///
   /// In en, this message translates to:
-  /// **'{value0} cards are Yarak'**
-  String cardsAreYarak(Object value0);
+  /// **'Yarak is {value0}'**
+  String yarakIs(Object value0);
 
   /// No description provided for @findYour433.
   ///

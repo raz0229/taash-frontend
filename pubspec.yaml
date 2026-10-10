@@ -38,6 +38,7 @@ flutter:
   assets:
     - assets/catalogs/
     - assets/brand/
+    - assets/badges/
     - assets/cards/
     - assets/cards/default/
     - assets/cards/abyss/
