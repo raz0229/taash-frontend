@@ -2,6 +2,7 @@ import 'package:taash/l10n/copy.dart';
 import 'package:flutter/material.dart';
 import 'package:url_launcher/url_launcher.dart';
 import '../../core/theme/taash_theme.dart';
+import '../../core/widgets/app_version_text.dart';
 import '../../core/widgets/taash_widgets.dart';
 import '../settings/legal_docs.dart';
 
@@ -66,8 +67,8 @@ class AboutScreen extends StatelessWidget {
               style: TextStyle(color: T.muted),
             ),
             SizedBox(height: 8),
-            Text(
-              Copy.taashonline10012,
+            AppVersionText(
+              prefix: Copy.taashonline,
               style: TextStyle(fontSize: 12, color: T.muted),
             ),
           ],
@@ -85,11 +86,15 @@ class AboutScreen extends StatelessWidget {
         child: const Text(Copy.termsCommunityRules),
       ),
       TextButton(
-        onPressed: () => showLicensePage(
-          context: context,
-          applicationName: Copy.taashonline,
-          applicationVersion: '1.0.0',
-        ),
+        onPressed: () async {
+          final version = await appVersionLabel();
+          if (!context.mounted) return;
+          showLicensePage(
+            context: context,
+            applicationName: Copy.taashonline,
+            applicationVersion: version,
+          );
+        },
         child: const Text(Copy.openSourceLicenses),
       ),
       const SizedBox(height: 28),

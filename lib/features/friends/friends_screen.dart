@@ -10,6 +10,39 @@ import '../home/game_art.dart';
 
 const _friendNameMaxLength = 17;
 
+/// Whether a balance of [coins] covers the entry fee of a [game] challenge.
+/// Accepting is what seats the player, so a short balance can't accept.
+bool canAffordChallenge(GameType game, int coins) => coins >= game.entryFee;
+
+/// Shown beside a disabled Accept button when [canAffordChallenge] is false.
+String notEnoughCoinsForChallenge(GameType game, int coins) =>
+    'You don’t have enough coins to join this challenge. '
+    '${game.label} needs ${game.entryFee} coins and you have $coins.';
+
+/// The note under a disabled Accept button.
+class ChallengeCoinsNote extends StatelessWidget {
+  const ChallengeCoinsNote({super.key, required this.game, required this.coins});
+  final GameType game;
+  final int coins;
+  @override
+  Widget build(BuildContext context) => Row(
+    crossAxisAlignment: CrossAxisAlignment.start,
+    children: [
+      const Padding(
+        padding: EdgeInsets.only(top: 1),
+        child: Icon(Icons.info_outline, size: 16, color: T.danger),
+      ),
+      const SizedBox(width: 6),
+      Expanded(
+        child: Text(
+          notEnoughCoinsForChallenge(game, coins),
+          style: const TextStyle(color: T.danger, fontSize: 12),
+        ),
+      ),
+    ],
+  );
+}
+
 String _friendNameLabel(String value) {
   final name = value.trim();
   return name.length > _friendNameMaxLength
@@ -190,6 +223,7 @@ class _FriendsScreenState extends State<FriendsScreen> {
             challengeId: challenge.id,
             ownId: widget.auth.profile!.id,
             onRoom: widget.onRoom,
+            coinBalance: () => _coins,
           ),
         ),
       );
@@ -199,7 +233,13 @@ class _FriendsScreenState extends State<FriendsScreen> {
     }
   }
 
+  int get _coins => widget.auth.profile?.coins ?? 0;
+
   Future<void> _accept(Challenge challenge) async {
+    if (!canAffordChallenge(challenge.game, _coins)) {
+      showNotice(context, notEnoughCoinsForChallenge(challenge.game, _coins));
+      return;
+    }
     try {
       final updated = await widget.api.acceptChallenge(challenge.id);
       if (!mounted) return;
@@ -215,6 +255,7 @@ class _FriendsScreenState extends State<FriendsScreen> {
             challengeId: challenge.id,
             ownId: widget.auth.profile!.id,
             onRoom: widget.onRoom,
+            coinBalance: () => _coins,
           ),
         ),
       );
@@ -472,6 +513,7 @@ class _FriendsScreenState extends State<FriendsScreen> {
         .firstOrNull;
     final accepted =
         challenge.invites.where((i) => i.status == 'accepted').length + 1;
+    final affordable = canAffordChallenge(challenge.game, _coins);
     final card = TaashPanel(
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -491,18 +533,23 @@ class _FriendsScreenState extends State<FriendsScreen> {
           Text(
             '${challenge.invites.map((i) => i.displayName).join(', ')} invited',
           ),
-          if (incoming && ownInvite?.status == 'pending')
+          if (incoming && ownInvite?.status == 'pending') ...[
+            if (!affordable)
+              Padding(
+                padding: const EdgeInsets.only(top: 10),
+                child: ChallengeCoinsNote(game: challenge.game, coins: _coins),
+              ),
             Align(
               alignment: Alignment.centerRight,
               child: Padding(
                 padding: const EdgeInsets.only(top: 5),
                 child: FilledButton(
-                  onPressed: () => _accept(challenge),
+                  onPressed: affordable ? () => _accept(challenge) : null,
                   child: const Text('Accept challenge'),
                 ),
               ),
-            )
-          else if (challenge.room != null || challenge.roomId.isNotEmpty)
+            ),
+          ] else if (challenge.room != null || challenge.roomId.isNotEmpty)
             Align(
               alignment: Alignment.centerRight,
               child: FilledButton(
@@ -653,10 +700,15 @@ class ChallengeWaitScreen extends StatefulWidget {
     required this.challengeId,
     required this.ownId,
     required this.onRoom,
+    this.coinBalance,
   });
   final ApiClient api;
   final String challengeId, ownId;
   final ValueChanged<RoomSummary> onRoom;
+
+  /// The player's current coins, used to hold back Accept when they cannot
+  /// cover the entry fee. Null leaves the check to the server.
+  final int Function()? coinBalance;
   @override
   State<ChallengeWaitScreen> createState() => _ChallengeWaitScreenState();
 }
@@ -710,7 +762,15 @@ class _ChallengeWaitScreenState extends State<ChallengeWaitScreen> {
     }
   }
 
+  /// Whether the player can cover [c]'s entry fee. Unknown balances pass.
+  bool _affordable(Challenge c) {
+    final coins = widget.coinBalance?.call();
+    return coins == null || canAffordChallenge(c.game, coins);
+  }
+
   Future<void> _accept() async {
+    final current = _challenge;
+    if (current != null && !_affordable(current)) return;
     try {
       final c = await widget.api.acceptChallenge(widget.challengeId);
       if (c.room != null && mounted) {
@@ -845,14 +905,23 @@ class _ChallengeWaitScreenState extends State<ChallengeWaitScreen> {
                                 i.playerId == widget.ownId &&
                                 i.status == 'pending',
                           )
-                          .isNotEmpty)
+                          .isNotEmpty) ...[
+                    if (!_affordable(c))
+                      Padding(
+                        padding: const EdgeInsets.only(top: 10),
+                        child: ChallengeCoinsNote(
+                          game: c.game,
+                          coins: widget.coinBalance!.call(),
+                        ),
+                      ),
                     Padding(
                       padding: const EdgeInsets.only(top: 5),
                       child: FilledButton(
-                        onPressed: _accept,
+                        onPressed: _affordable(c) ? _accept : null,
                         child: const Text('Accept challenge'),
                       ),
                     ),
+                  ],
                   if (creator && accepted >= 2 && c.status == 'waiting')
                     Padding(
                       padding: const EdgeInsets.only(top: 12),

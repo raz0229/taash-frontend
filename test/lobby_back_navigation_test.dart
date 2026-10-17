@@ -138,7 +138,12 @@ void main() {
       MaterialApp(
         theme: T.theme,
         localizationsDelegates: GlobalMaterialLocalizations.delegates,
-        home: LobbyShell(auth: auth, api: api, preferences: preferences),
+        home: LobbyShell(
+          auth: auth,
+          api: api,
+          preferences: preferences,
+          offerLoginReward: false,
+        ),
       ),
     );
     await tester.runAsync(

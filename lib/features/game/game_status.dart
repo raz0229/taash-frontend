@@ -72,40 +72,29 @@ mixin _GameStatus on State<GameScreen> {
   Widget _waiting(RoomSnapshot s) {
     final tint = GameTint(s.room.game);
     final ads = adService;
-    // The banner is pinned under the scrolling waiting content instead of being
-    // one more item in it: inside the list it would only be built once the
-    // player scrolled past the room code, which is not the same as showing it.
+    // The banner is pinned above the scrolling waiting content instead of being
+    // one more item in it: inside the list it could scroll out of view, which
+    // is not the same as showing it.
     return Column(
     children: [
+      // The one place a banner is allowed: the player is parked here with
+      // nothing to do and nothing at stake, which is what the room's banner
+      // policy asks for. Its slot is reserved at full size before the ad loads,
+      // so the content below never shifts and the ad never covers it. It
+      // disappears entirely, gap included, when the build has no banner unit.
+      if (ads != null)
+        TaashBannerAd(
+          adService: ads,
+          frame: BoxDecoration(
+            color: tint.tray,
+            borderRadius: BorderRadius.circular(14),
+            border: Border.all(color: tint.edge),
+          ),
+        ),
       Expanded(
       child: ListView(
     padding: const EdgeInsets.all(24),
     children: [
-      const SizedBox(height: 15),
-      // B7: Enhanced waiting room with animated dots and game badge.
-      Center(
-        child: Container(
-          padding: const EdgeInsets.all(14),
-          decoration: BoxDecoration(
-            shape: BoxShape.circle,
-            gradient: RadialGradient(
-              colors: [tint.accent.withValues(alpha: .18), Colors.transparent],
-            ),
-          ),
-          child: Icon(Icons.chair_alt_outlined, size: 52, color: tint.accent),
-        ),
-      ),
-      const SizedBox(height: 16),
-      const Text(
-        GameCopy.waiting,
-        textAlign: TextAlign.center,
-        style: TextStyle(
-          color: T.white,
-          fontSize: 29,
-          fontWeight: FontWeight.w800,
-        ),
-      ),
-      const SizedBox(height: 8),
       // Game type badge.
       Center(
         child: Container(
@@ -281,20 +270,6 @@ mixin _GameStatus on State<GameScreen> {
       ),
     ],
   )),
-      // The one place a banner is allowed: the player is parked here with
-      // nothing to do and nothing at stake, which is what the room's banner
-      // policy asks for. It sits under the content so it never moves the room
-      // code, and it disappears entirely, gap included, when the build has no
-      // banner unit configured.
-      if (ads != null)
-        TaashBannerAd(
-          adService: ads,
-          frame: BoxDecoration(
-            color: tint.tray,
-            borderRadius: BorderRadius.circular(14),
-            border: Border.all(color: tint.edge),
-          ),
-        ),
     ],
   );
   }

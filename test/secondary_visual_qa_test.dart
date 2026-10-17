@@ -118,6 +118,7 @@ void main() {
             auth: auth,
             api: api,
             preferences: preferences,
+            offerLoginReward: false,
           ),
           'profile' => ProfileScreen(api: api, playerId: 'qa-user', own: true),
           'shop' => ShopScreen(auth: auth, api: api),

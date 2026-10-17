@@ -69,7 +69,6 @@ abstract final class Copy {
   static const done = 'Done';
   static String avatar(Object? value0) => 'Avatar $value0';
   static const tryAgain = 'Try again';
-  static const taashonline1001 = 'TaashOnline · 1.0.0 (1)';
   static const deleteAccount = 'Delete account';
   static const deletingAccount = 'Deleting account…';
   static const signOut = 'Sign out';
@@ -328,7 +327,6 @@ abstract final class Copy {
   static const weCouldNotLoadTheLeaderboardPlease =
       'We could not load the leaderboard. Please try again.';
   static const openSourceLicenses = 'Open-source licenses';
-  static const taashonline10012 = 'TaashOnline 1.0.0 (1)';
   static const virtualCoinsRealCompany =
       'Company choti si ha, pr Dil bohot bara ha!';
   static const bhabhiDaketiBluffAndTissarChausarFamiliar =

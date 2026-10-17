@@ -233,13 +233,14 @@ void main() {
     );
     await tester.pump(const Duration(milliseconds: 500));
     expect(tester.takeException(), isNull);
-    // The slot is built and anchored under the content, but with no unit
+    // The slot is built and anchored above the content, but with no unit
     // configured it draws nothing and claims no height.
     expect(find.byType(TaashBannerAd), findsOneWidget);
     expect(find.byType(AdWidget), findsNothing);
     expect(tester.getSize(find.byType(TaashBannerAd)), Size.zero);
-    // The waiting content itself is untouched.
-    expect(find.text('Make yourself at home'), findsOneWidget);
+    // The waiting content itself is still there, minus the old greeting.
+    expect(find.text('ROOM CODE'), findsOneWidget);
+    expect(find.text('Make yourself at home'), findsNothing);
     await tester.pumpWidget(const SizedBox());
     session.dispose();
   });

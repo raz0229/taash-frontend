@@ -7,6 +7,7 @@ import '../../core/auth/auth_controller.dart';
 import '../../core/errors/app_failure.dart';
 import '../../core/preferences/preferences.dart';
 import '../../core/theme/taash_theme.dart';
+import '../../core/widgets/app_version_text.dart';
 import '../../core/widgets/taash_widgets.dart';
 import '../../l10n/strings.dart';
 import 'legal_docs.dart';
@@ -198,8 +199,9 @@ class _SettingsScreenState extends State<SettingsScreen> {
           ),
           const SizedBox(height: 22),
           const Center(
-            child: Text(
-              Copy.taashonline1001,
+            child: AppVersionText(
+              prefix: Copy.taashonline,
+              separator: ' · ',
               style: TextStyle(color: T.muted, fontSize: 12),
             ),
           ),

@@ -6,12 +6,13 @@ import 'package:google_mobile_ads/google_mobile_ads.dart';
 
 import '../ads/ad_service.dart';
 
-/// Google banner sized to sit inside the room's waiting state.
+/// Google banner sized to sit at the top of the room's waiting state.
 ///
-/// Nothing is rendered until an ad has actually loaded, and nothing at all
-/// unless this build has a banner unit. That is deliberate: an empty unit, or
-/// one that never fills, must leave the waiting state exactly as it was instead
-/// of holding a hole open for an ad that will not arrive.
+/// When this build has a banner unit, the slot is laid out at its final size
+/// from the first frame, before the ad has loaded (and while a failed request
+/// waits to retry), so the waiting content never jumps when the ad arrives and
+/// the ad never lands on top of it. A build without a banner unit has nothing
+/// to wait for, so it renders nothing and claims no space at all.
 class TaashBannerAd extends StatefulWidget {
   const TaashBannerAd({
     super.key,
@@ -23,8 +24,7 @@ class TaashBannerAd extends StatefulWidget {
   /// Null in builds and tests that ship without ads.
   final AdService? adService;
 
-  /// Panel drawn behind the ad, so the room can frame it in its own tint.
-  /// Skipped entirely while there is no ad to put in it.
+  /// Panel drawn behind the ad slot, so the room can frame it in its own tint.
   final Decoration? frame;
 
   /// Horizontal inset, matching the room's own screen inset.
@@ -41,12 +41,15 @@ class _TaashBannerAdState extends State<TaashBannerAd> {
   /// the slot instead of overflowing the screen.
   static final _size = AdSize.banner;
 
-  /// A failed banner leaves a hole rather than an ad. Ask again after this,
-  /// while the room is still parked in its waiting state.
+  /// A failed banner leaves an empty slot rather than an ad. Ask again after
+  /// this, while the room is still parked in its waiting state.
   static const _retryDelay = Duration(seconds: 20);
 
   BannerAd? _ad;
   Timer? _retry;
+
+  /// Whether this build can ever fill the slot. Only then is space reserved.
+  bool get _hasUnit => widget.adService?.bannerAdUnitId.isNotEmpty ?? false;
 
   @override
   void initState() {
@@ -96,21 +99,22 @@ class _TaashBannerAdState extends State<TaashBannerAd> {
   Widget build(BuildContext context) {
     final ad = _ad;
     final frame = widget.frame;
-    if (ad == null) return const SizedBox.shrink();
-    final banner = LayoutBuilder(
+    if (ad == null && !_hasUnit) return const SizedBox.shrink();
+    // Same box whether or not the ad has arrived, so nothing moves around it.
+    final slot = LayoutBuilder(
       builder: (context, constraints) => Center(
         child: SizedBox(
           width: math.min(_size.width.toDouble(), constraints.maxWidth),
           height: _size.height.toDouble(),
-          child: AdWidget(ad: ad),
+          child: ad == null ? null : AdWidget(ad: ad),
         ),
       ),
     );
     return Padding(
-      padding: EdgeInsets.fromLTRB(widget.inset, 0, widget.inset, 12),
+      padding: EdgeInsets.fromLTRB(widget.inset, 12, widget.inset, 0),
       child: frame == null
-          ? banner
-          : DecoratedBox(decoration: frame, child: banner),
+          ? slot
+          : DecoratedBox(decoration: frame, child: slot),
     );
   }
 }

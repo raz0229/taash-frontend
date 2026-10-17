@@ -32,6 +32,7 @@ import 'features/about/about_screen.dart';
 import 'features/auth/auth_screen.dart';
 import 'features/game/game_screen.dart';
 import 'features/home/home_screen.dart';
+import 'features/home/sidelocks_wheel.dart';
 import 'features/how_to_play/learn_screen.dart';
 import 'features/leaderboard/leaderboard_screen.dart';
 import 'features/profile/profile_screen.dart';
@@ -475,6 +476,7 @@ class LobbyShell extends StatefulWidget {
     this.adService,
     this.newsService,
     this.billing,
+    this.offerLoginReward = true,
   });
   final AuthController auth;
   final ApiClient api;
@@ -482,6 +484,10 @@ class LobbyShell extends StatefulWidget {
   final AdService? adService;
   final InGameNewsService? newsService;
   final BillingService? billing;
+
+  /// Opens Lucky Chakkar on its own once the lobby appears after a login.
+  /// Tests that drive the lobby directly turn it off.
+  final bool offerLoginReward;
   @override
   State<LobbyShell> createState() => _LobbyShellState();
 }
@@ -503,10 +509,17 @@ class _LobbyShellState extends State<LobbyShell> {
   bool exitArmed = false;
   Timer? exitArmedTimer;
   final ratingPrompt = RatingPrompt();
+  // The lobby shell is built fresh for every sign-in (and for a session
+  // restored at launch), so this offers Lucky Chakkar once per login.
+  bool loginWheelShown = false;
+  Timer? loginWheelTimer;
 
   @override
   void initState() {
     super.initState();
+    if (widget.offerLoginReward) {
+      _scheduleLoginWheel(const Duration(milliseconds: 700));
+    }
     if (widget.preferences.music) audio.playBgm();
     unawaited(_refreshFriendRequestCount());
     friendBadgeTimer = Timer.periodic(
@@ -519,6 +532,30 @@ class _LobbyShellState extends State<LobbyShell> {
         onChallenge: _receiveChallengeNotification,
       ),
     );
+  }
+
+  void _scheduleLoginWheel(Duration delay) {
+    loginWheelTimer?.cancel();
+    loginWheelTimer = Timer(delay, () => unawaited(_presentLoginWheel()));
+  }
+
+  /// Opens Lucky Chakkar once the lobby is idle: not in or joining a room, and
+  /// with no dialog or sheet (news, a challenge prompt, …) already on top.
+  Future<void> _presentLoginWheel() async {
+    if (!mounted || loginWheelShown) return;
+    if (room != null || joining || Navigator.of(context).canPop()) {
+      _scheduleLoginWheel(const Duration(milliseconds: 500));
+      return;
+    }
+    loginWheelShown = true;
+    await showSidelocksWheel(context, auth: widget.auth);
+    if (!mounted) return;
+    try {
+      // Keep the lobby's coin chip in step with whatever the wheel credited.
+      await widget.auth.refreshProfile();
+    } on AppFailure catch (_) {
+      // The next profile refresh catches up; nothing to tell the player here.
+    }
   }
 
   Future<void> _refreshFriendRequestCount() async {
@@ -566,14 +603,33 @@ class _LobbyShellState extends State<LobbyShell> {
         showNotice(context, 'This challenge is no longer open.');
         return;
       }
+      // Best effort: judge the entry fee against a fresh balance.
+      try {
+        await widget.auth.refreshProfile();
+      } on AppFailure catch (_) {
+        // Fall back to the balance already on hand.
+      }
+      if (!mounted) return;
+      final coins = widget.auth.profile?.coins ?? 0;
+      final affordable = canAffordChallenge(challenge.game, coins);
       final accept = await showDialog<bool>(
         context: context,
         builder: (dialogContext) => AlertDialog(
           title: Text('${challenge.creatorName} invited you'),
-          content: Text(
-            'You have been invited by ${challenge.creatorName} to play '
-            '${challenge.game.label}.\n\n'
-            'Players: ${challenge.invites.map((i) => i.displayName).join(', ')}',
+          content: Column(
+            mainAxisSize: MainAxisSize.min,
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Text(
+                'You have been invited by ${challenge.creatorName} to play '
+                '${challenge.game.label}.\n\n'
+                'Players: ${challenge.invites.map((i) => i.displayName).join(', ')}',
+              ),
+              if (!affordable) ...[
+                const SizedBox(height: 14),
+                ChallengeCoinsNote(game: challenge.game, coins: coins),
+              ],
+            ],
           ),
           actions: [
             TextButton(
@@ -581,8 +637,10 @@ class _LobbyShellState extends State<LobbyShell> {
               child: const Text('Later'),
             ),
             FilledButton(
-              onPressed: () => Navigator.pop(dialogContext, true),
-              child: const Text('Accept'),
+              onPressed: affordable
+                  ? () => Navigator.pop(dialogContext, true)
+                  : null,
+              child: const Text('Accept Challenge'),
             ),
           ],
         ),
@@ -601,6 +659,7 @@ class _LobbyShellState extends State<LobbyShell> {
               challengeId: challengeId,
               ownId: widget.auth.profile!.id,
               onRoom: _queueOrJoinChallenge,
+              coinBalance: () => widget.auth.profile?.coins ?? 0,
             ),
           ),
         );
@@ -807,6 +866,7 @@ class _LobbyShellState extends State<LobbyShell> {
   void dispose() {
     friendBadgeTimer?.cancel();
     exitArmedTimer?.cancel();
+    loginWheelTimer?.cancel();
     room?.dispose();
     super.dispose();
   }

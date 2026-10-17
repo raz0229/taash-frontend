@@ -124,6 +124,18 @@ class _GameScreenState extends State<GameScreen>
   OverlayEntry? _playOverlay;
   // Whether the system bars are currently hidden for active play.
   bool _immersive = false;
+  // Daketi's finishing move arrives in the same snapshot that ends the room,
+  // so the results would replace the table before anyone saw that last trick.
+  // The table stays up for [_finalTrickHold] (and until its play/steal
+  // animation has drained) before the results take over.
+  static const _finalTrickHold = Duration(milliseconds: 3500);
+  bool _holdingFinalTrick = false;
+  Timer? _finalTrickTimer;
+  // Whether this screen has seen the room in play, and whether the last
+  // reconciled snapshot was already finished. Together they tell a live finish
+  // apart from joining a room whose game is already over.
+  bool _sawActive = false;
+  bool _wasFinished = false;
   @override
   RoomSession get session => widget.session;
   @override
@@ -195,9 +207,42 @@ class _GameScreenState extends State<GameScreen>
     }
   }
 
+  /// True when [s] is the snapshot that just finished a Daketi game this
+  /// screen watched being played, i.e. the one whose last trick is on hold.
+  /// Also answers correctly before [_reconcile] has seen [s], because the
+  /// session fires its card-play hook ahead of the listener notification.
+  bool _isFinalTrick(RoomSnapshot s) =>
+      s.room.game == GameType.daketi &&
+      s.room.isFinished &&
+      (_holdingFinalTrick || (_sawActive && !_wasFinished));
+
+  void _holdFinalTrick() {
+    _holdingFinalTrick = true;
+    _finalTrickTimer?.cancel();
+    _finalTrickTimer = Timer(_finalTrickHold, _releaseFinalTrick);
+  }
+
+  void _releaseFinalTrick() {
+    if (!mounted) return;
+    // Let a play or steal animation that is still running finish first.
+    if (_playAnimationActive || _daketiStealActive) {
+      _finalTrickTimer = Timer(
+        const Duration(milliseconds: 500),
+        _releaseFinalTrick,
+      );
+      return;
+    }
+    _finalTrickTimer = null;
+    setState(() => _holdingFinalTrick = false);
+  }
+
   void _reconcile() {
     final s = session.snapshot;
     if (s == null) return;
+    final finishedNow = s.room.isFinished;
+    if (_isFinalTrick(s) && !_holdingFinalTrick) _holdFinalTrick();
+    _wasFinished = finishedNow;
+    if (s.room.isActive) _sawActive = true;
     hand.reconcile(s.you.hand);
 
     final currentPlayer = s.players
@@ -272,7 +317,7 @@ class _GameScreenState extends State<GameScreen>
 
     final hasSteal =
         stealerId.isNotEmpty && (victims.isNotEmpty || areaCapture);
-    if (!hasSteal || !s.room.isActive) return;
+    if (!hasSteal || !(s.room.isActive || _holdingFinalTrick)) return;
     if (_daketiStealActive || MediaQuery.disableAnimationsOf(context)) return;
 
     final sorted = [...s.players]..sort((a, b) => a.seat.compareTo(b.seat));
@@ -360,6 +405,7 @@ class _GameScreenState extends State<GameScreen>
       SystemChrome.setEnabledSystemUIMode(SystemUiMode.edgeToEdge);
     }
     noticeTimer?.cancel();
+    _finalTrickTimer?.cancel();
     _turnTimer.dispose();
     super.dispose();
   }
@@ -408,7 +454,7 @@ class _GameScreenState extends State<GameScreen>
     if (!mounted) return;
     if (MediaQuery.disableAnimationsOf(context)) return;
     final s = session.snapshot;
-    if (s == null || !s.room.isActive) return;
+    if (s == null || !(s.room.isActive || _isFinalTrick(s))) return;
     if (_bluffAnimationActive || _thulluAnimationActive) return;
     final playKey = '${info.playerId}|${info.cardCount}|${info.card}';
     final now = DateTime.now();
@@ -834,14 +880,20 @@ class _GameScreenState extends State<GameScreen>
         child: Row(
           children: [
             Icon(
-              mine ? Icons.play_arrow_rounded : Icons.hourglass_top_rounded,
+              _holdingFinalTrick
+                  ? Icons.flag_rounded
+                  : mine
+                  ? Icons.play_arrow_rounded
+                  : Icons.hourglass_top_rounded,
               color: GameTint(s.room.game).accent,
               size: 22,
             ),
             const SizedBox(width: 8),
             Expanded(
               child: Text(
-                mine
+                _holdingFinalTrick
+                    ? 'Game over · the last trick'
+                    : mine
                     ? Copy.yourTurn2(_instruction(s))
                     : '${s.players.where((p) => p.id == s.currentPlayerId).firstOrNull?.displayName ?? 'Another player'}’s turn',
                 style: const TextStyle(
@@ -897,6 +949,8 @@ class _GameScreenState extends State<GameScreen>
   Widget build(BuildContext context) {
     final s = session.snapshot;
     final finished = s?.room.isFinished ?? false;
+    // While a Daketi finish is on hold the table stays up, read-only.
+    final showResults = finished && !_holdingFinalTrick;
     final active = s?.room.isActive ?? false;
     final terminal = [
       RoomConnectionState.roomUnavailable,
@@ -904,7 +958,7 @@ class _GameScreenState extends State<GameScreen>
       RoomConnectionState.closed,
     ].contains(session.state);
     final ready = active && session.canSend && !working && !leaving;
-    final mine = s?.isYourTurn ?? false;
+    final mine = !finished && (s?.isYourTurn ?? false);
     return PopScope(
       // The system back key never exits the room directly. During play it
       // routes through leave(); on the results screen it is ignored so that
@@ -1022,7 +1076,7 @@ class _GameScreenState extends State<GameScreen>
                         ),
                       ),
                     )
-                  else if (finished)
+                  else if (showResults)
                     Expanded(
                       child: ResultsView(
                         snapshot: s,

@@ -2,7 +2,6 @@ import 'package:taash/l10n/copy.dart';
 
 /// English game copy. Kept in one feature catalog for future ARB migration.
 abstract final class GameCopy {
-  static const waiting = Copy.makeYourselfAtHome;
   static const waitingDetail = Copy.theGameStartsWhenEverySeatIs;
   static const publicBots = Copy.botsMayFillEmptySeatsShortly;
   static const privateWaiting = Copy.shareTheRoomCodeWithFriendsTo;

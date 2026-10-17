@@ -63,6 +63,38 @@ void main() {
     );
   });
 
+  testWidgets('a configured banner reserves its slot before the ad loads', (
+    tester,
+  ) async {
+    // Init never resolves, so no ad ever arrives: the slot must still hold
+    // its full height so nothing shifts when an ad does load.
+    final gate = Completer<void>();
+    final ads = _CountingAds(initialization: gate.future);
+    addTearDown(ads.dispose);
+
+    await tester.pumpWidget(
+      MaterialApp(
+        home: Scaffold(
+          body: Column(
+            children: [
+              TaashBannerAd(adService: ads),
+              const Text('below'),
+            ],
+          ),
+        ),
+      ),
+    );
+    await tester.pump();
+
+    expect(find.byType(AdWidget), findsNothing);
+    final slot = tester.getSize(find.byType(TaashBannerAd));
+    expect(slot.height, AdSize.banner.height + 12);
+    expect(
+      tester.getTopLeft(find.text('below')).dy,
+      greaterThanOrEqualTo(slot.height),
+    );
+  });
+
   testWidgets('a disposed banner does not request after the gate opens', (
     tester,
   ) async {

@@ -24,6 +24,7 @@ dependencies:
   in_app_update: ^5.0.0
   in_app_purchase: ^3.2.3
   crypto: ^3.0.6
+  package_info_plus: ^9.0.0
 dev_dependencies:
   flutter_test:
     sdk: flutter
